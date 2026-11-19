@@ -1,0 +1,8 @@
+# Files every pull request appends to. With `merge=union`, git keeps the lines both sides
+# added instead of declaring a conflict, so parallel PRs do not bounce on them (herdr-agent-pool
+# docs/reference.md, "Fewer conflicts"). Only for files where each change only adds whole lines: a union
+# merge never removes lines, so check the result (scripts/check.sh) as usual. Add the project's
+# own append-only files, e.g. a table of functions or a list of migrations.
+CHANGELOG.md merge=union
+docs/decisions/README.md merge=union
+docs/plan-reviews/README.md merge=union
