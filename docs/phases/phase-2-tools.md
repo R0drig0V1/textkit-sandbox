@@ -10,7 +10,7 @@ start at once.
 - [ ] **T2.2 `sentence_count`** in `textkit/counts.py`: `sentence_count(text) -> int`.
       Write an ADR on abbreviations (`"e.g."`, `"Dr."`) and ellipses. Depends on T1.5 (it
       creates `textkit/counts.py`).
-- [ ] **T2.3 `to_kebab_case`** in `textkit/cases.py`: `to_kebab_case(name) -> str`, built on
+- [x] **T2.3 `to_kebab_case`** in `textkit/cases.py`: `to_kebab_case(name) -> str`, built on
       `to_snake_case`. Depends on T1.7.
 - [ ] **T2.4 `is_palindrome`** in `textkit/strings.py`: `is_palindrome(text) -> bool`,
       ignoring case, spaces, punctuation and accents (use `strip_accents`). Only characters
