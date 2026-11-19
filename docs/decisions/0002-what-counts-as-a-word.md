@@ -48,7 +48,7 @@ link    = J            -- exactly one joiner
 ```
 
 Equivalently, as a left-to-right scan (this is the reference implementation,
-`textkit.counts._words`):
+`textkit._tokens.words`, plan task T1.10):
 
 1. Skip characters until one in class **A**; that character starts a word. A character of
    any other class, **M** included, never starts a word.
