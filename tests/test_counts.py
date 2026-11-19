@@ -2,7 +2,7 @@
 
 import unittest
 
-from textkit.counts import char_freq, reading_time, word_count
+from textkit.counts import char_freq, reading_time, sentence_count, word_count
 
 # Every row of the case table in docs/decisions/0001-what-counts-as-a-word.md, in the same
 # order and with the same literals. Keep the two in sync: T1.10 tests its tokenizer against
@@ -144,6 +144,70 @@ class ReadingTimeTest(unittest.TestCase):
             reading_time(None)  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
             reading_time(["a", "b"])  # type: ignore[arg-type]
+
+
+# Every row of the case table in docs/decisions/0005-sentence-boundaries.md, in the same
+# order and with the same literals. Keep the two in sync.
+SENTENCE_COUNT_CASES = [
+    ("", 0),
+    ("  \n\t  ", 0),
+    ("... !!! ?", 0),
+    ("Hello", 1),
+    ("Hello.", 1),
+    ("Hello. World.", 2),
+    ("One. Two! Three?", 3),
+    ("Really?!", 1),
+    ("What??? Yes!!!", 2),
+    ("Wait...", 1),
+    ("Wait... what?", 1),
+    ("Wait... Then he left.", 2),
+    ("Wait… what?", 1),
+    ("Wait… Then he left.", 2),
+    ("Use a tool, e.g. a hammer.", 1),
+    ("Use e.g. Python.", 2),
+    ("Dr. Smith is here.", 1),
+    ("Mr. and Mrs. Smith left.", 1),
+    ("Prof. Lee met Dr. Who.", 1),
+    ("Ask the Dr. He knows.", 1),
+    ("DR. SMITH LEFT.", 2),
+    ("Pi is 3.14 today.", 1),
+    ("Visit example.com now.", 1),
+    ("end.Start", 1),
+    ("He said \"Stop.\" Then he left.", 2),
+    ("(See above.) Next one.", 2),
+    ("Hello. world", 1),
+    ("Chapter 3. 42 is the answer.", 2),
+    ("First line\nSecond line", 1),
+    ("One.\nTwo.", 2),
+    ("... and then it ended. ", 1),
+    ("¿Qué? ¡Sí!", 2),
+    ("日本語。日本語。", 1),
+]
+
+
+class SentenceCountTest(unittest.TestCase):
+    def test_adr_0005_cases(self):
+        for text, expected in SENTENCE_COUNT_CASES:
+            with self.subTest(text=text):
+                self.assertEqual(sentence_count(text), expected)
+
+    def test_closers_without_space_do_not_end_a_sentence(self):
+        # Rule 2 of ADR 0005 applies after the closers: '"Hi."She' has no whitespace.
+        self.assertEqual(sentence_count('"Hi."She left.'), 1)
+
+    def test_title_rule_needs_a_single_period(self):
+        # Rule 4 of ADR 0005: an ellipsis after a title is an ordinary boundary.
+        self.assertEqual(sentence_count("Call the Dr... Now."), 2)
+
+    def test_long_input_is_linear(self):
+        # Many candidate boundaries with no word after them: must not rescan the tail.
+        self.assertEqual(sentence_count("a" + ". " * 200_000), 1)
+
+    def test_rejects_non_str(self):
+        with self.assertRaises(TypeError):
+            sentence_count(None)  # type: ignore[arg-type]
+        with self.assertRaises(TypeError):
+            sentence_count(["a."])  # type: ignore[arg-type]
 
 
 if __name__ == "__main__":

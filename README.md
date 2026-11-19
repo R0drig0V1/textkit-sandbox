@@ -13,6 +13,7 @@ Every public function is listed here, once (checked by `scripts/check.sh` and by
 | Function | Module | What it does |
 |----------|--------|--------------|
 | `reading_time` | `textkit.counts` | Whole minutes to read a text at `wpm` words per minute, rounded up (ADR 0004) |
+| `sentence_count` | `textkit.counts` | Counts the sentences in a text (abbreviations and ellipses: ADR 0005) |
 | `slug_title` | `textkit.strings` | Slug cut to at most `max_len` characters, never ending in `-` |
 | `slugify` | `textkit.strings` | Lower-case ASCII slug with runs of other characters turned into `-` |
 | `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive, in order of first occurrence |
