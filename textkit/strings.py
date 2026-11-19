@@ -109,3 +109,22 @@ def strip_accents(text: str) -> str:
     decomposed = unicodedata.normalize("NFD", text)
     kept = "".join(c for c in decomposed if not unicodedata.combining(c))
     return unicodedata.normalize("NFC", kept)
+
+
+def slug_title(text: str, max_len: int) -> str:
+    """Make a slug of ``text`` at most ``max_len`` characters long that never ends in ``-``.
+
+    Exactly ``truncate(slugify(text), max_len, suffix="")`` with trailing ``-`` stripped:
+    the slug is cut at a character, not at a word boundary, so ``("Hello, World!", 8)``
+    gives ``"hello-wo"``; when the cut lands just after a ``-``, it is dropped
+    (``("Hello, World!", 6)`` gives ``"hello"``). The result may be ``""``, for example
+    with ``max_len == 0`` or text with no ASCII letters or digits.
+
+    Raises:
+        ValueError: if ``max_len < 0``.
+    """
+    # truncate would also raise for a negative width (it is below len("")), but its message
+    # talks about the suffix, which this function's callers never pass.
+    if max_len < 0:
+        raise ValueError(f"max_len must be at least 0, got {max_len}")
+    return truncate(slugify(text), max_len, suffix="").rstrip("-")

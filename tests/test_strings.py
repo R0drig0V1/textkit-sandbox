@@ -2,7 +2,7 @@ import unittest
 
 import unicodedata
 
-from textkit.strings import slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -160,6 +160,36 @@ class StripAccentsTest(unittest.TestCase):
 
     def test_several_marks_on_one_letter(self):
         self.assertEqual(strip_accents("\u1ec7 cr\u00e8me br\u00fbl\u00e9e"), "e creme brulee")
+
+
+class SlugTitleTest(unittest.TestCase):
+    def test_character_cut_inside_a_word(self):
+        self.assertEqual(slug_title("Hello, World!", 8), "hello-wo")
+
+    def test_trailing_hyphen_after_cut_is_stripped(self):
+        self.assertEqual(slug_title("Hello, World!", 6), "hello")
+
+    def test_slug_that_fits_is_unchanged(self):
+        self.assertEqual(slug_title("Hello, World!", 11), "hello-world")
+        self.assertEqual(slug_title("Hello, World!", 50), "hello-world")
+
+    def test_zero_max_len_gives_empty(self):
+        self.assertEqual(slug_title("x", 0), "")
+
+    def test_empty_slug_gives_empty(self):
+        self.assertEqual(slug_title("!!!", 5), "")
+
+    def test_result_never_ends_in_hyphen_and_respects_max_len(self):
+        for max_len in range(0, 15):
+            result = slug_title("Hello, World!", max_len)
+            self.assertLessEqual(len(result), max_len)
+            self.assertFalse(result.endswith("-"))
+
+    def test_negative_max_len_raises(self):
+        with self.assertRaises(ValueError):
+            slug_title("x", -1)
+        with self.assertRaises(ValueError):
+            slug_title("", -1)
 
 
 if __name__ == "__main__":

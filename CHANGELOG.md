@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `slug_title`: a slug of at most `max_len` characters that never ends in `-` (character cut); raises `ValueError` when `max_len` is negative.
 - Added `slugify`: turns text into a lower-case ASCII slug.
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (`"Ñandú"` -> `"Nandu"`).
