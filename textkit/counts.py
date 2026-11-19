@@ -66,3 +66,25 @@ def word_count(text: str) -> int:
     if not isinstance(text, str):
         raise TypeError(f"word_count() expects a str, got {type(text).__name__}")
     return len(_word_spans(text))
+
+
+def char_freq(text: str) -> dict[str, int]:
+    """Return how many times each non-whitespace character occurs in ``text``.
+
+    Counting is case-sensitive (``"a"`` and ``"A"`` are different keys) and per code point,
+    with no Unicode normalization, so a combining mark counts as a character of its own.
+    Characters for which ``str.isspace()`` is true (spaces, tabs, newlines, no-break spaces
+    and the other Unicode whitespace) are not counted. Keys appear in order of first
+    occurrence. Empty or whitespace-only text gives ``{}``.
+
+    Raises ``TypeError`` if ``text`` is not a ``str``.
+    """
+    if not isinstance(text, str):
+        raise TypeError(f"char_freq() expects a str, got {type(text).__name__}")
+    # A plain dict keeps insertion order (guaranteed since Python 3.7), which is exactly
+    # first-occurrence order; collections.Counter would too, but the contract is a dict.
+    counts: dict[str, int] = {}
+    for char in text:
+        if not char.isspace():
+            counts[char] = counts.get(char, 0) + 1
+    return counts

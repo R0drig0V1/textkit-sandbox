@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `char_freq` in `textkit.counts`: counts each character that is not `str.isspace()`, case-sensitive, keys in order of first occurrence.
 - Added `slug_title`: a slug of at most `max_len` characters that never ends in `-` (character cut); raises `ValueError` when `max_len` is negative.
 - Added `slugify`: turns text into a lower-case ASCII slug.
 - Added `squeeze`: collapses runs of whitespace into single spaces.
