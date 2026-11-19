@@ -2,7 +2,7 @@
 
 Most tests run ``_main(argv)`` in process with stdout, stderr (and stdin, for ``-``)
 replaced by ``io.StringIO``. The output formats and error paths that no real command
-reaches yet (bool, list, ``ValueError``) use small fake commands passed through the
+reaches yet (list, float, ``ValueError``) use small fake commands passed through the
 ``commands`` argument, and command discovery is tested on fake modules registered in
 ``sys.modules``. One subprocess run of ``python3 -m textkit --help`` proves that the entry
 point itself works.
@@ -78,6 +78,10 @@ class RealCommandsTest(unittest.TestCase):
 
     def test_int(self):
         self.assertEqual(run(["word_count", "well-known words here"]), (0, "3\n", ""))
+
+    def test_bool(self):
+        self.assertEqual(run(["is_palindrome", "Was it a car"]), (0, "false\n", ""))
+        self.assertEqual(run(["is_palindrome", "Never odd or even"]), (0, "true\n", ""))
 
     def test_dict_key_tab_value_in_order(self):
         self.assertEqual(run(["char_freq", "baab"]), (0, "b\t2\na\t2\n", ""))
