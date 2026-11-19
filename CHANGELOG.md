@@ -10,3 +10,4 @@
 - Added `to_snake_case`: converts camelCase, PascalCase or kebab-case identifiers to snake_case, splitting runs of capitals as in ADR 0002.
 - Added `truncate`: shortens text to a width, ending in a suffix when cut.
 - Added `word_count`: counts the words in a text, following the word rule of ADR 0001.
+- Added `wrap`: splits text into lines of at most `width` characters at spaces; existing newlines are reflowed (ADR 0003).

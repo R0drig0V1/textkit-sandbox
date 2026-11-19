@@ -7,6 +7,10 @@ import unicodedata
 # An explicit ASCII class, not str.isalnum, which also accepts non-ASCII letters and digits.
 _SLUG_SEPARATOR_RUN = re.compile(r"[^a-z0-9]+")
 
+# Break points for wrap (ADR 0003): ASCII whitespace only, the same set textwrap uses, so a
+# no-break space (U+00A0) keeps its meaning and stays inside its word.
+_WRAP_SEPARATOR_RUN = re.compile(r"[ \t\n\r\v\f]+")
+
 
 def squeeze(text: str) -> str:
     """Collapse runs of whitespace into single spaces and strip both ends."""
@@ -78,3 +82,47 @@ def truncate(text: str, width: int, suffix: str = "...") -> str:
     if len(text) <= width:
         return text
     return text[: width - len(suffix)] + suffix
+
+
+def wrap(text: str, width: int) -> list[str]:
+    """Split ``text`` into lines of at most ``width`` characters, breaking at spaces.
+
+    Words are filled greedily: each line takes as many words as fit, joined by one space.
+    The rules, pinned by ADR 0003 (docs/decisions/0003-wrap-newlines.md):
+
+    - Every ASCII whitespace character (space, tab, ``\\n``, ``\\r``, ``\\v``, ``\\f``)
+      is a break point, and a run of them counts as one. Existing newlines are *not* kept:
+      the text is reflowed as a single paragraph, as ``textwrap.wrap`` does. Non-ASCII
+      whitespace such as the no-break space (U+00A0) is part of the word it sits in.
+    - Leading and trailing whitespace is dropped; no line starts or ends with a space, and
+      the space that separated two lines is in neither of them.
+    - A word longer than ``width`` is never cut: it gets a line of its own, which is then
+      longer than ``width``.
+    - Width is counted in code points (``len``), so a combining mark counts as one.
+    - Text with no words (``""``, spaces or newlines only) gives ``[]``.
+
+    Raises:
+        TypeError: if ``text`` is not a ``str`` or ``width`` is not an ``int``.
+        ValueError: if ``width < 1``, whatever ``text`` is (``""`` included).
+    """
+    if not isinstance(text, str):
+        raise TypeError(f"wrap() expects str text, got {type(text).__name__}")
+    if not isinstance(width, int):
+        raise TypeError(f"wrap() expects int width, got {type(width).__name__}")
+    if width < 1:
+        raise ValueError(f"wrap() width must be at least 1, got {width}")
+    lines: list[str] = []
+    current = ""
+    for word in _WRAP_SEPARATOR_RUN.split(text):
+        if not word:  # empty pieces from leading or trailing whitespace
+            continue
+        if not current:
+            current = word
+        elif len(current) + 1 + len(word) <= width:
+            current = f"{current} {word}"
+        else:
+            lines.append(current)
+            current = word
+    if current:
+        lines.append(current)
+    return lines
