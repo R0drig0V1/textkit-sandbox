@@ -5,6 +5,7 @@
 - Added `render`: fills `{name}` placeholders from a mapping, with `{{`/`}}` escapes and no format specs.
 - Added `levenshtein`: edit distance between two strings (insertions, deletions and substitutions of cost 1).
 - Added `pluralize`: English plural of a singular noun (rules in docs/decisions/0004-pluralize-rules.md).
+- Added `slug_title`: the slug of a text cut to at most `max_len` characters, never ending in `-`.
 - Added `slugify`: lower-case ASCII slug of a text, runs of other characters become one `-`.
 - Added `soundex`: the four-character American Soundex code of a name.
 - Added `is_email`: tells whether a string is a syntactically valid e-mail address, offline.
