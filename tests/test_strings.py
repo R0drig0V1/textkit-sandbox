@@ -3,7 +3,7 @@
 import unicodedata
 import unittest
 
-from textkit.strings import slugify, squeeze, strip_accents, truncate
+from textkit.strings import is_palindrome, slugify, squeeze, strip_accents, truncate
 
 
 class SqueezeTest(unittest.TestCase):
@@ -122,6 +122,45 @@ class StripAccentsTest(unittest.TestCase):
         result = strip_accents("e\u0301 \u00e9")
         self.assertEqual(result, "e e")
         self.assertEqual(result, unicodedata.normalize("NFC", result))
+
+
+class IsPalindromeTest(unittest.TestCase):
+    def test_simple_palindromes(self):
+        self.assertTrue(is_palindrome("racecar"))
+        self.assertTrue(is_palindrome("a"))
+
+    def test_not_a_palindrome(self):
+        self.assertFalse(is_palindrome("hello"))
+        self.assertFalse(is_palindrome("ab"))
+
+    def test_ignores_case_spaces_and_punctuation(self):
+        self.assertTrue(is_palindrome("A man, a plan, a canal: Panama"))
+        self.assertTrue(is_palindrome("Was it a car or a cat I saw?"))
+
+    def test_ignores_accents_nfc_and_nfd(self):
+        self.assertTrue(is_palindrome("A man, a plan, a canal: Panam\u00e1"))
+        self.assertTrue(is_palindrome("E\u0301te\u0301"))
+        self.assertTrue(is_palindrome("\u00c9t\u00e9"))
+
+    def test_digits_count(self):
+        self.assertTrue(is_palindrome("12321"))
+        self.assertTrue(is_palindrome("1a1"))
+        self.assertFalse(is_palindrome("123"))
+        self.assertFalse(is_palindrome("a1b"))
+
+    def test_casefold_not_just_lower(self):
+        # casefold() turns "\u00df" into "ss", which lower() would not.
+        self.assertTrue(is_palindrome("\u00dfS"))
+
+    def test_non_ascii_letters_count(self):
+        self.assertTrue(is_palindrome("\u00f8a\u00f8"))
+        self.assertFalse(is_palindrome("\u00f8a\u0142"))
+
+    def test_empty_and_no_alphanumerics_are_palindromes(self):
+        self.assertTrue(is_palindrome(""))
+        self.assertTrue(is_palindrome("   "))
+        self.assertTrue(is_palindrome("!?, .;"))
+        self.assertTrue(is_palindrome("\u0301"))
 
 
 if __name__ == "__main__":
