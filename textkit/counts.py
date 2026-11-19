@@ -74,3 +74,28 @@ def word_count(text: str) -> int:
     if not isinstance(text, str):
         raise TypeError(f"word_count() expects a str, got {type(text).__name__}")
     return len(_words(text))
+
+
+def char_freq(text: str) -> dict[str, int]:
+    """Return how many times each non-whitespace character occurs in ``text``.
+
+    Counting is case-sensitive (``"a"`` and ``"A"`` are different keys) and per code point:
+    no Unicode normalization is applied, so a decomposed ``"ú"`` counts as ``"u"`` plus the
+    combining acute accent. Characters for which ``str.isspace()`` is true (spaces, tabs,
+    newlines, non-breaking spaces, ...) are not counted. Keys appear in order of first
+    occurrence, so ``char_freq("abca") == {"a": 2, "b": 1, "c": 1}`` with ``"a"`` first;
+    ``""`` and whitespace-only text give ``{}``.
+
+    Raises:
+        TypeError: if ``text`` is not a ``str``.
+    """
+    if not isinstance(text, str):
+        raise TypeError(f"char_freq() expects a str, got {type(text).__name__}")
+    # A plain dict keeps insertion order (guaranteed since Python 3.7), which is exactly the
+    # "order of first occurrence" the plan asks for; collections.Counter would too, but its
+    # repr sorts by count, which would hide that order from readers of test failures.
+    counts: dict[str, int] = {}
+    for char in text:
+        if not char.isspace():
+            counts[char] = counts.get(char, 0) + 1
+    return counts

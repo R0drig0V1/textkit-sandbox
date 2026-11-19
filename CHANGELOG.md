@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added `slugify`: lower-case ASCII slug (non-ASCII removed, other runs become `-`).
+- Added `char_freq`: counts each non-whitespace character of a text, case-sensitive, keys in order of first occurrence.
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (`"Ñandú"` -> `"Nandu"`).
 - Added `to_snake_case`: converts camelCase, PascalCase or kebab-case identifiers to snake_case.
