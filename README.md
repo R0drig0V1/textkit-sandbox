@@ -16,6 +16,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `levenshtein` | `textkit.distance` | Edit distance with insertions, deletions and substitutions of cost 1 |
 | `number_to_words` | `textkit.numwords` | Writes a whole number from 0 to 999 in English words (`42` -> `forty-two`) |
 | `pluralize` | `textkit.plural` | English plural of a singular noun, with a few irregulars |
+| `reading_time` | `textkit.counts` | Whole minutes to read a text at `wpm` words per minute, rounded up |
 | `slug_title` | `textkit.strings` | Slug cut to a maximum length, never ending in `-` |
 | `slugify` | `textkit.strings` | Lower-case ASCII slug, runs of other characters become one `-` |
 | `soundex` | `textkit.phonetic` | Returns the four-character American Soundex code of a name |
