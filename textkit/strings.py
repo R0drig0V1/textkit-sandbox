@@ -56,3 +56,25 @@ def strip_accents(text: str) -> str:
     # Recompose so that characters NFD split without a mark (e.g. Hangul syllables into
     # jamo) come back in their usual composed form.
     return unicodedata.normalize("NFC", kept)
+
+
+def truncate(text: str, width: int, suffix: str = "...") -> str:
+    """Shorten ``text`` to at most ``width`` characters, ending in ``suffix`` when cut.
+
+    Lengths are counted in code points (``len``). If ``len(text) <= width`` the text fits
+    and is returned unchanged. Otherwise the start of ``text`` is kept and ``suffix`` is
+    appended so that the result, suffix included, is exactly ``width`` long:
+    ``truncate("Hello, World!", 8)`` -> ``"Hello..."``.
+
+    Raises:
+        ValueError: if ``width < len(suffix)``. This is checked first, even when ``text``
+            would fit, so an invalid ``width``/``suffix`` pair fails on every input rather
+            than only on the long ones. A negative ``width`` always raises.
+    """
+    if width < len(suffix):
+        raise ValueError(
+            f"width ({width}) must be at least the length of suffix ({len(suffix)})"
+        )
+    if len(text) <= width:
+        return text
+    return text[: width - len(suffix)] + suffix
