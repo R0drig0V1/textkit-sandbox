@@ -3,7 +3,7 @@
 import unicodedata
 import unittest
 
-from textkit.strings import slugify, squeeze, strip_accents, truncate
+from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate
 
 
 class SqueezeTest(unittest.TestCase):
@@ -124,6 +124,46 @@ class StripAccentsTest(unittest.TestCase):
     def test_ascii_and_empty_unchanged(self):
         self.assertEqual(strip_accents("Hello, World! 123"), "Hello, World! 123")
         self.assertEqual(strip_accents(""), "")
+
+
+class SlugTitleTest(unittest.TestCase):
+    def test_cut_inside_a_word(self):
+        self.assertEqual(slug_title("Hello, World!", 8), "hello-wo")
+
+    def test_trailing_dash_after_cut_is_stripped(self):
+        self.assertEqual(slug_title("Hello, World!", 6), "hello")
+
+    def test_slug_that_fits_is_unchanged(self):
+        self.assertEqual(slug_title("Hello, World!", 11), "hello-world")
+        self.assertEqual(slug_title("Hello, World!", 50), "hello-world")
+
+    def test_max_len_zero_gives_empty(self):
+        self.assertEqual(slug_title("x", 0), "")
+
+    def test_never_ends_in_dash_and_respects_max_len(self):
+        text = "a b-c  d__e Hello, World!"
+        for max_len in range(0, 30):
+            result = slug_title(text, max_len)
+            self.assertLessEqual(len(result), max_len)
+            self.assertFalse(result.endswith("-"))
+
+    def test_matches_truncate_of_slugify(self):
+        text = "Version 2.0 Release"
+        for max_len in range(0, 25):
+            expected = truncate(slugify(text), max_len, suffix="").rstrip("-")
+            self.assertEqual(slug_title(text, max_len), expected)
+
+    def test_empty_slug(self):
+        self.assertEqual(slug_title("!!!", 5), "")
+        self.assertEqual(slug_title("", 5), "")
+
+    def test_negative_max_len_raises(self):
+        with self.assertRaises(ValueError):
+            slug_title("hello", -1)
+
+    def test_negative_max_len_raises_for_empty_text(self):
+        with self.assertRaises(ValueError):
+            slug_title("", -1)
 
 
 if __name__ == "__main__":

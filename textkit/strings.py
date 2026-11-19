@@ -74,3 +74,22 @@ def strip_accents(text: str) -> str:
     # NFC again: NFD also splits characters that carry no accent (a Hangul syllable
     # becomes its jamo), and callers expect those back untouched.
     return unicodedata.normalize("NFC", stripped)
+
+
+def slug_title(text: str, max_len: int) -> str:
+    """Build a slug of ``text`` at most ``max_len`` characters long that never ends in ``-``.
+
+    Exactly ``truncate(slugify(text), max_len, suffix="")`` with trailing ``-`` stripped.
+    The cut is by character, not by word, so a word can be split
+    (``slug_title("Hello, World!", 8)`` -> ``"hello-wo"``); a cut that lands just after a
+    separator drops it (``slug_title("Hello, World!", 6)`` -> ``"hello"``). The result can
+    be ``""`` (``max_len == 0``, or input with no ASCII letters or digits).
+
+    Raises:
+        ValueError: if ``max_len < 0``.
+    """
+    # truncate would also raise here (width < len("")), but its message talks about a
+    # suffix the caller never passed; name the argument the caller actually gave.
+    if max_len < 0:
+        raise ValueError(f"max_len ({max_len}) must not be negative")
+    return truncate(slugify(text), max_len, suffix="").rstrip("-")
