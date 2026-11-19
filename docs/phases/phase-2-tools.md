@@ -15,7 +15,7 @@ Same rules as phase 1. Tasks with no "Depends on" can start at once.
 - [ ] **T2.5 API contract test**: `tests/test_api.py` checks that every public function of
       every `textkit` module has a docstring and type hints for all parameters and the
       return value, and fix any function that does not. Depends on T1.1 to T1.8.
-- [ ] **T2.6 command line**: `textkit/__main__.py` so that `python3 -m textkit <function>
+- [x] **T2.6 command line**: `textkit/__main__.py` so that `python3 -m textkit <function>
       <text>` prints the result of any public function of one text argument, and lists them
       with `--help`. Depends on T1.1 to T1.8.
 - [ ] **T2.7 `--version`**: `textkit.__version__ = "0.1.0"` and `python3 -m textkit
