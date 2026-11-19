@@ -51,7 +51,7 @@ anything else). Tasks with no "Depends on" can start at once.
       ends with a table of cases (input -> count), at least: a hyphenated word, a number, a
       word with an apostrophe, `""`, punctuation only, several spaces/newlines;
       `tests/test_counts.py` tests every row.
-- [ ] **T1.6 `char_freq`** in `textkit/counts.py`: `char_freq(text) -> dict[str, int]`,
+- [x] **T1.6 `char_freq`** in `textkit/counts.py`: `char_freq(text) -> dict[str, int]`,
       counts of each non-space character, case-sensitive. Characters for which
       `str.isspace()` is true are not counted; keys appear in order of first occurrence.
       Depends on T1.5 (it creates `textkit/counts.py` and `tests/test_counts.py`).
@@ -66,7 +66,7 @@ anything else). Tasks with no "Depends on" can start at once.
       word is lower-cased and the rest capitalized (`"HTTP_server"` -> `"httpServer"`); input
       with no separator is returned with only its first character lower-cased.
       Depends on T1.7 (it creates `textkit/cases.py` and `tests/test_cases.py`).
-- [ ] **T1.9 `slug_title`** in `textkit/strings.py`: `slug_title(text, max_len) -> str`, a
+- [x] **T1.9 `slug_title`** in `textkit/strings.py`: `slug_title(text, max_len) -> str`, a
       slug of at most `max_len` characters that never ends in `-`: exactly
       `truncate(slugify(text), max_len, suffix="")` with trailing `-` stripped (a character
       cut, not a word cut). `max_len < 0` raises `ValueError`; the result may be `""`.
