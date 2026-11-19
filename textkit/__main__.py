@@ -1,7 +1,8 @@
 """Command line for textkit: ``python3 -m textkit <function> <text>``.
 
-Prints the result of a textkit public function called on one text argument, and lists the
-available functions with ``--help``.
+Prints the result of a textkit public function called on one text argument, lists the
+available functions with ``--help``, and prints ``textkit <version>`` (from
+``textkit.__version__``, the only place the version string is written) with ``--version``.
 
 Commands are discovered at run time, never hard-coded, so a function added to any public
 module becomes a command with no edit here. A command is every public function (a top-level
@@ -19,8 +20,9 @@ Output: a ``str`` is printed as is; a ``dict`` or ``list`` as
 ``json.dumps(result, ensure_ascii=False, sort_keys=True)``; anything else (``bool``,
 ``int``) with ``print()``.
 
-Exit codes: 0 on success; 1 when the function, or printing its result, raises
-``ValueError``, ``KeyError`` or ``TypeError`` (``error: <message>`` on stderr, no traceback;
+Exit codes: 0 on success (``--help`` and ``--version`` included); 1 when the function, or
+printing its result, raises ``ValueError``, ``KeyError`` or ``TypeError`` (``error:
+<message>`` on stderr, no traceback;
 a ``UnicodeEncodeError`` from a terminal that cannot show the result is a ``ValueError``);
 2 on an unknown function, a wrong argument count, no arguments, or an ``int`` argument that
 is not an integer or that ``int()`` rejects (argparse's usage and message on stderr).
@@ -113,6 +115,9 @@ def _build_parser(commands: Dict[str, Callable[..., object]]) -> argparse.Argume
         prog="python3 -m textkit",
         description="Run a textkit function on one text argument and print the result.",
     )
+    # The version is read from the package, never written here (T2.7). argparse's "version"
+    # action prints to stdout and exits 0 before the required sub-command is checked.
+    parser.add_argument("--version", action="version", version=f"textkit {textkit.__version__}")
     # dest is mandatory with required=True on Python 3.9, or no arguments crashes.
     subparsers = parser.add_subparsers(dest="command", required=True, metavar="<function>")
     for name, function in sorted(commands.items()):

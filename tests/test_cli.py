@@ -1,4 +1,4 @@
-"""Tests for textkit/__main__.py, the ``python3 -m textkit`` command line (T2.6).
+"""Tests for textkit/__main__.py, the ``python3 -m textkit`` command line (T2.6, T2.7).
 
 Nothing here names a real textkit function: the expected command set is recomputed from the
 public-function definition (phase 1 "Rules for every task"), every command is run once with
@@ -313,6 +313,28 @@ class FunctionErrorTest(StubCommandsMixin, unittest.TestCase):
         # Only the three documented exceptions are user errors; anything else is a bug.
         with self.assertRaises(RuntimeError):
             _call("stub_raise", "other")
+
+
+class VersionTest(unittest.TestCase):
+    """``--version`` (T2.7): the version comes from ``textkit.__version__`` only."""
+
+    def test_version_option_prints_the_package_version(self):
+        result = _run("--version")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, f"textkit {textkit.__version__}\n")
+        self.assertEqual(result.stderr, "")
+
+    def test_package_version_is_0_1_0(self):
+        self.assertEqual(textkit.__version__, "0.1.0")
+
+    def test_version_string_is_written_only_in_init(self):
+        # __main__.py must read textkit.__version__, not repeat the literal.
+        files = [
+            path.relative_to(ROOT).as_posix()
+            for path in sorted((ROOT / "textkit").rglob("*.py"))
+            if textkit.__version__ in path.read_text(encoding="utf-8")
+        ]
+        self.assertEqual(files, ["textkit/__init__.py"])
 
 
 if __name__ == "__main__":

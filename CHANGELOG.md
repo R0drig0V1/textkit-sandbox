@@ -9,6 +9,7 @@
 - Added `reading_time`: whole minutes to read a text at `wpm` words per minute (default 200), rounded up, 0 for text with no words; raises `ValueError` when `wpm < 1` (rule: [docs/decisions/0004-reading-time-rounding.md](docs/decisions/0004-reading-time-rounding.md)).
 - Added `sentence_count`: counts sentences; a run of `.`, `!`, `?` or `…` ends one sentence, while decimals such as `3.14`, abbreviations such as `e.g.` and `Dr.`, and an ellipsis before a lowercase word do not (rule: [docs/decisions/0005-sentence-boundaries.md](docs/decisions/0005-sentence-boundaries.md)).
 - Added the `python3 -m textkit` command line.
+- Added `python3 -m textkit --version`.
 - Added `slug_title`: a slug of at most `max_len` characters that never ends in `-` (character cut); raises `ValueError` when `max_len` is negative.
 - Added `slugify`: turns text into a lower-case ASCII slug.
 - Added `squeeze`: collapses runs of whitespace into single spaces.
