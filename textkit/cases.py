@@ -2,7 +2,8 @@
 
 The word-splitting rules for `to_snake_case` (separators, runs of capitals, digits) are
 recorded in the ADR docs/decisions/NNNN-to-snake-case-capital-runs.md, which ends with the
-table of cases that tests/test_cases.py checks row by row.
+table of cases that tests/test_cases.py checks row by row. `to_camel_case` goes the other
+way (snake_case or kebab-case to camelCase); it splits on separators only.
 """
 
 import re
@@ -48,3 +49,38 @@ def to_snake_case(name: str) -> str:
         part = _LOWER_OR_DIGIT_THEN_UPPER.sub(r"\1_\2", part)
         words.extend(part.split("_"))
     return "_".join(words).lower()
+
+
+def to_camel_case(name: str) -> str:
+    """Convert a snake_case or kebab-case identifier to camelCase.
+
+    ``name`` is split at runs of ``_`` and/or ``-`` (a run counts as one separator; leading
+    and trailing ones are dropped). The first word is lower-cased and every other word is
+    capitalized with ``str.capitalize`` (first character upper-cased, the rest lower-cased),
+    then the words are joined: ``"user_id"`` -> ``"userId"``, ``"HTTP_server"`` ->
+    ``"httpServer"``, ``"kebab--case"`` -> ``"kebabCase"``. Separators only, or ``""``, give
+    ``""``.
+
+    Input with no separator at all is returned with only its first character lower-cased
+    (``"UserId"`` -> ``"userId"``, ``"HTTPServer"`` -> ``"hTTPServer"``), so camelCase input
+    is unchanged. Input that has a separator, even only a leading or trailing one, goes
+    through the word rule instead: ``"_UserId"`` -> ``"userid"``.
+
+    Capitals are not split, unlike ``to_snake_case`` (ADR
+    ``*-to-snake-case-capital-runs.md``); that conversion loses the original capitals, so
+    ``to_camel_case(to_snake_case(x))`` gives back ``x`` only for plain camelCase ``x``.
+
+    Raises:
+        TypeError: if ``name`` is not a ``str``.
+    """
+    if not isinstance(name, str):
+        raise TypeError(f"to_camel_case() expects a str, got {type(name).__name__}")
+    if not _SEPARATORS.search(name):
+        # No word boundaries to work with: keep the caller's capitals, lower only the first.
+        return name[:1].lower() + name[1:]
+    # Leading and trailing separators produce empty parts; runs never do, since the pattern
+    # consumes the whole run.
+    words = [part for part in _SEPARATORS.split(name) if part]
+    if not words:
+        return ""
+    return words[0].lower() + "".join(word.capitalize() for word in words[1:])
