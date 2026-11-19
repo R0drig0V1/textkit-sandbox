@@ -32,3 +32,42 @@ def slugify(text: str) -> str:
     ascii_text = text.encode("ascii", "ignore").decode("ascii").lower()
     # A regex on an explicit ASCII class, not str.isalnum, which also accepts non-ASCII.
     return _NON_SLUG_RUN.sub("-", ascii_text).strip("-")
+
+
+def wrap(text: str, width: int) -> list[str]:
+    """Split ``text`` into lines of at most ``width`` characters, breaking at spaces.
+
+    Words are packed greedily: each line takes as many words as fit, joined by one space.
+    Runs of spaces between words collapse to one, leading and trailing spaces are dropped,
+    and no line contains the space that separated it from the next. A word longer than
+    ``width`` is not split: it gets a line of its own, longer than ``width``.
+
+    Existing line breaks (``"\\n"``, ``"\\r\\n"``, ``"\\r"``) are treated like spaces, so the
+    text is reflowed and no returned line contains a newline (ADR 0001). Only spaces and
+    line breaks separate words; tabs and other whitespace stay inside the word. Widths are
+    counted in code points.
+
+    ``wrap("", width)`` and text made only of spaces and line breaks give ``[]``.
+
+    Raises:
+        ValueError: if ``width < 1``.
+    """
+    if width < 1:
+        raise ValueError(f"width must be at least 1, got {width}")
+    # Line breaks become spaces first (ADR 0001); "\r\n" before "\r" so it counts once.
+    flat = text.replace("\r\n", " ").replace("\r", " ").replace("\n", " ")
+    # split(" ") rather than split(): only spaces separate words, not tabs or NBSP.
+    words = [w for w in flat.split(" ") if w]
+    lines: list[str] = []
+    current = ""
+    for word in words:
+        if not current:
+            current = word
+        elif len(current) + 1 + len(word) <= width:
+            current = f"{current} {word}"
+        else:
+            lines.append(current)
+            current = word
+    if current:
+        lines.append(current)
+    return lines
