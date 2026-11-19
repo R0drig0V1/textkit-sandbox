@@ -1,58 +1,15 @@
 """Counting helpers. Every public function is listed in the README's function table.
 
-What counts as a word is decided in docs/decisions/0001-word-rule.md; `_words` implements
-that rule and nothing else, so later helpers (and the shared tokenizer of plan task T1.10)
-can reuse it without re-deciding it.
+What counts as a word is decided in docs/decisions/0001-word-rule.md and implemented once, in
+the shared tokenizer ``textkit._tokens.words`` (plan task T1.10); ``word_count`` only counts
+what it returns, so later helpers that need words reuse the same rule without re-deciding it.
 """
 
-import unicodedata
+from textkit._tokens import words
 
-# Characters that join two letters or digits into one word: "e-mail", "don't", "don’t".
-_JOINERS = frozenset("-'’")
-# Characters that join two decimal digits only: "3.14", "1,000". Between letters they split
-# ("e.g" is two words) so that sentence punctuation without a following space still splits.
-_NUMBER_JOINERS = frozenset(".,")
-
-
-def _is_mark(char: str) -> bool:
-    """Return True for a Unicode combining mark (category Mn, Mc or Me)."""
-    return unicodedata.category(char).startswith("M")
-
-
-def _words(text: str) -> list[str]:
-    """Split ``text`` into words following ADR 0001 (see the module docstring).
-
-    A word starts at a character for which ``str.isalnum()`` is true. It continues over
-    further such characters, over combining marks (so NFD input such as ``"nai\\u0308ve"``
-    stays one word), and over a single joiner that sits between the word and another
-    ``isalnum()`` character: ``-``, ``'`` or ``\\u2019`` always, ``.`` or ``,`` only when the
-    last letter-or-digit before it and the character after it are both decimal digits.
-    Anything else ends the word and is otherwise ignored.
-    """
-    words = []
-    start = None  # index where the current word began, None between words
-    last_base = ""  # last isalnum() character of the current word
-    length = len(text)
-    for i, char in enumerate(text):
-        if char.isalnum():
-            if start is None:
-                start = i
-            last_base = char
-            continue
-        if start is not None:
-            following = text[i + 1] if i + 1 < length else ""
-            if _is_mark(char):
-                continue
-            if following.isalnum() and (
-                char in _JOINERS
-                or (char in _NUMBER_JOINERS and last_base.isdecimal() and following.isdecimal())
-            ):
-                continue
-            words.append(text[start:i])
-            start = None
-    if start is not None:
-        words.append(text[start:])
-    return words
+# Kept under its old name because tests/test_counts.py (which T1.10 must not modify) imports
+# ``_words`` from here to check ADR 0001's Words column.
+_words = words
 
 
 def word_count(text: str) -> int:
@@ -72,7 +29,7 @@ def word_count(text: str) -> int:
     """
     if not isinstance(text, str):
         raise TypeError(f"word_count() expects str, got {type(text).__name__}")
-    return len(_words(text))
+    return len(words(text))
 
 
 def char_freq(text: str) -> dict[str, int]:
