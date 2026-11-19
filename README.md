@@ -4,6 +4,7 @@ Public, throwaway repository for testing the herdr-agent-pool workflow with real
 tiny synthetic project. Nothing here matters; it can be wiped at any time.
 
 `textkit` is a small Python package of text helpers (standard library only, Python 3.9+).
+Examples of every function and of the command line: [docs/usage.md](docs/usage.md).
 
 ## Functions
 
