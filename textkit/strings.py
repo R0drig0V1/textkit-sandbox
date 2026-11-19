@@ -38,3 +38,27 @@ def slugify(text: str) -> str:
     """
     ascii_only = text.encode("ascii", "ignore").decode("ascii")
     return _SLUG_SEPARATORS.sub("-", ascii_only.lower()).strip("-")
+
+
+def truncate(text: str, width: int, suffix: str = "...") -> str:
+    """Shorten ``text`` to at most ``width`` characters, marking the cut with ``suffix``.
+
+    If ``len(text) <= width`` the text is returned unchanged. Otherwise the text is cut and
+    ``suffix`` appended so that the result, suffix included, is exactly ``width`` characters
+    long. An empty ``suffix`` gives a plain cut.
+
+    Raises:
+        ValueError: if ``width`` is smaller than ``len(suffix)`` (this includes any negative
+            ``width``). The check runs before the length test, so it fails even when ``text``
+            would fit: the contract depends only on ``width`` and ``suffix``, never on the
+            input text.
+    """
+    if width < len(suffix):
+        raise ValueError(
+            f"width must be at least len(suffix) ({len(suffix)} for {suffix!r}), got {width}"
+        )
+    if len(text) <= width:
+        return text
+    # width - len(suffix) >= 0 here, so the slice never goes negative (which would count
+    # from the end of the text instead of the start).
+    return text[: width - len(suffix)] + suffix

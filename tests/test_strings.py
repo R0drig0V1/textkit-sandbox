@@ -2,7 +2,7 @@
 
 import unittest
 
-from textkit.strings import slugify, squeeze
+from textkit.strings import slugify, squeeze, truncate
 
 
 class SqueezeTest(unittest.TestCase):
@@ -54,6 +54,46 @@ class SlugifyTest(unittest.TestCase):
         # The Kelvin sign lower-cases to ASCII "k"; it is dropped before lower-casing.
         self.assertEqual(slugify("K"), "")
         self.assertEqual(slugify("5K run"), "5-run")
+
+
+class TruncateTest(unittest.TestCase):
+    def test_fits_exactly_is_unchanged(self):
+        self.assertEqual(truncate("hello", 5), "hello")
+
+    def test_shorter_than_width_is_unchanged(self):
+        self.assertEqual(truncate("hi", 5), "hi")
+
+    def test_one_over_is_cut_to_width(self):
+        result = truncate("hello!", 5)
+        self.assertEqual(result, "he...")
+        self.assertEqual(len(result), 5)
+
+    def test_empty_suffix_is_a_plain_cut(self):
+        self.assertEqual(truncate("hello world", 5, suffix=""), "hello")
+
+    def test_custom_suffix(self):
+        self.assertEqual(truncate("hello world", 6, suffix="~"), "hello~")
+
+    def test_width_equal_to_suffix_gives_only_suffix(self):
+        self.assertEqual(truncate("hello", 3), "...")
+
+    def test_width_smaller_than_suffix_raises(self):
+        with self.assertRaisesRegex(ValueError, "len\\(suffix\\)"):
+            truncate("hello", 2)
+
+    def test_width_smaller_than_suffix_raises_even_if_text_fits(self):
+        with self.assertRaises(ValueError):
+            truncate("ab", 2)
+
+    def test_negative_width_raises(self):
+        with self.assertRaises(ValueError):
+            truncate("hello", -1)
+        with self.assertRaises(ValueError):
+            truncate("hello", -1, suffix="")
+
+    def test_empty_text(self):
+        self.assertEqual(truncate("", 5), "")
+        self.assertEqual(truncate("", 0, suffix=""), "")
 
 
 if __name__ == "__main__":

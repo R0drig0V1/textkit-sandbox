@@ -14,6 +14,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
 | `slugify` | `textkit.strings` | Turns text into an ASCII lower-case slug joined by `-` |
 | `word_count` | `textkit.counts` | Counts words: hyphenated words, contractions and numbers count once, any script ([ADR 0001](docs/decisions/0001-what-counts-as-a-word.md)) |
+| `truncate` | `textkit.strings` | Shortens text to a width, ending in a suffix (`...` by default) |
 
 ## Commands
 
