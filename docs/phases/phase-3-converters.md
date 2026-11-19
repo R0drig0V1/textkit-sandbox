@@ -64,7 +64,7 @@ and 2.
       implement what it decides. Minimum case-table rows: `cat`, `bus`, `box`, `buzz`,
       `quiz`, `church`, `dish`, `city`, `day`, `potato`, `photo`, `knife`, `child`, `Child`,
       `CHILD`, `sheep`, `""`.
-- [ ] **T3.7 `soundex`** in `textkit/phonetic.py`: `soundex(name) -> str`, the American
+- [x] **T3.7 `soundex`** in `textkit/phonetic.py`: `soundex(name) -> str`, the American
       Soundex code. Rules: every character that is not an ASCII letter is removed first (it
       is transparent, not a separator); case is ignored; the first letter is kept,
       upper-cased; B F P V -> 1, C G J K Q S X Z -> 2, D T -> 3, L -> 4, M N -> 5, R -> 6;

@@ -34,7 +34,7 @@ anything else). Tasks with no "Depends on" can start at once.
       typed; no Unicode normalization is applied, so NFD input gives `"nandu"`: test both);
       then every run of characters outside `[a-z0-9]` after lower-casing (`_` included) becomes one `-`.
       `""` and `"!!!"` give `""`. Do not use `str.isalnum` (it accepts non-ASCII).
-- [ ] **T1.2 `truncate`** in `textkit/strings.py`: `truncate(text, width, suffix="...") -> str`
+- [x] **T1.2 `truncate`** in `textkit/strings.py`: `truncate(text, width, suffix="...") -> str`
       returns `text` unchanged when it fits in `width`, else cuts it so that the result,
       suffix included, is exactly `width` long. `width` smaller than the suffix raises
       `ValueError`, whenever `width < len(suffix)`, even if `text` fits. "Fits" means
@@ -55,7 +55,7 @@ anything else). Tasks with no "Depends on" can start at once.
       counts of each non-space character, case-sensitive. Characters for which
       `str.isspace()` is true are not counted; keys appear in order of first occurrence.
       Depends on T1.5 (it creates `textkit/counts.py` and `tests/test_counts.py`).
-- [ ] **T1.7 `to_snake_case`** in a new module `textkit/cases.py`:
+- [x] **T1.7 `to_snake_case`** in a new module `textkit/cases.py`:
       `to_snake_case(name) -> str` for camelCase, PascalCase and kebab-case input. Write an
       ADR on how runs of capitals are split (`HTTPServer`, `parseURL2`). The ADR ends with a
       table of cases (input -> output), at least: `HTTPServer`, `parseURL2`, `camelCase`,
