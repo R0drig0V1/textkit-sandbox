@@ -57,3 +57,32 @@ def to_snake_case(name: str) -> str:
         if chunk:  # empty chunks come from separators at either end
             words.extend(_split_capital_runs(chunk))
     return "_".join(word.lower() for word in words)
+
+
+def to_camel_case(name: str) -> str:
+    """Convert a snake_case or kebab-case identifier to camelCase.
+
+    ``_`` and ``-`` are separators: a run of them counts as one and separators at either end
+    are dropped (``"__a--b_"`` -> ``"aB"``). The first word is lower-cased and every other word
+    is capitalized with ``str.capitalize`` (first character upper-cased, the rest
+    lower-cased), so ``"HTTP_server"`` -> ``"httpServer"`` and ``"user_ID"`` -> ``"userId"``.
+    Unlike ``to_snake_case``, words are found only at separators, never at case boundaries:
+    input with no separator at all is returned with only its first character lower-cased
+    (``"PascalCase"`` -> ``"pascalCase"``, ``"HTTPServer"`` -> ``"hTTPServer"``), so
+    camelCase input comes back unchanged. A single word between separators is lower-cased
+    like any first word (``"_PascalCase"`` -> ``"pascalcase"``). ``""`` (or separators only)
+    gives ``""``. Other characters (spaces, punctuation) are neither separators nor
+    boundaries and are kept as they are, apart from the case changes above.
+
+    Raises ``TypeError`` if ``name`` is not a ``str``.
+    """
+    if not isinstance(name, str):
+        raise TypeError(f"name must be a str, not {type(name).__name__}")
+    if not _SEPARATORS.search(name):
+        # No separator means the caller already has an identifier in some cased form; the
+        # plan asks to keep it as is except for the first character, not to re-split it.
+        return name[:1].lower() + name[1:]
+    words = [word for word in _SEPARATORS.split(name) if word]  # ends give empty chunks
+    if not words:
+        return ""
+    return words[0].lower() + "".join(word.capitalize() for word in words[1:])

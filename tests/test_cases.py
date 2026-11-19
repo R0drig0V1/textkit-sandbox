@@ -2,7 +2,8 @@
 
 `CASES` is the table of cases at the end of the ADR "How `to_snake_case` splits runs of
 capitals" (docs/decisions/NNNN-snake-case-capital-runs.md); every row is tested, and a
-sync test keeps the ADR table and `CASES` identical.
+sync test keeps the ADR table and `CASES` identical. `CAMEL_CASES` pins the behaviour of
+`to_camel_case` described in plan task T1.8 and its docstring.
 """
 
 import ast
@@ -10,7 +11,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.cases import to_snake_case
+from textkit.cases import to_camel_case, to_snake_case
 
 _ROOT = pathlib.Path(__file__).resolve().parent.parent
 
@@ -78,6 +79,57 @@ class ToSnakeCaseTest(unittest.TestCase):
             to_snake_case(None)
         with self.assertRaises(TypeError):
             to_snake_case(b"camelCase")
+
+
+# (input, output) for to_camel_case: the plan's examples first, then the edge cases.
+CAMEL_CASES = [
+    ("user_id", "userId"),
+    ("HTTP_server", "httpServer"),
+    ("kebab-case", "kebabCase"),
+    ("kebab--case", "kebabCase"),
+    ("__leading_and_trailing__", "leadingAndTrailing"),
+    ("-a--b-", "aB"),
+    ("mixed-kebab_snake", "mixedKebabSnake"),
+    ("user_ID", "userId"),
+    ("SCREAMING_SNAKE_CASE", "screamingSnakeCase"),
+    ("ipv4_address", "ipv4Address"),
+    ("version_2", "version2"),
+    ("_private", "private"),
+    ("_PascalCase", "pascalcase"),
+    ("École_normale", "écoleNormale"),
+    ("PascalCase", "pascalCase"),
+    ("HTTPServer", "hTTPServer"),
+    ("camelCase", "camelCase"),
+    ("X", "x"),
+    ("x", "x"),
+    ("", ""),
+    ("---", ""),
+]
+
+
+class ToCamelCaseTest(unittest.TestCase):
+    def test_cases(self):
+        for name, expected in CAMEL_CASES:
+            with self.subTest(name=name):
+                self.assertEqual(to_camel_case(name), expected)
+
+    def test_no_separator_changes_only_first_character(self):
+        for name in ("HTTPServer", "already camel", "Ünïcode", "9Lives"):
+            with self.subTest(name=name):
+                result = to_camel_case(name)
+                self.assertEqual(result[1:], name[1:])
+                self.assertEqual(result[:1], name[:1].lower())
+
+    def test_idempotent(self):
+        for _, expected in CAMEL_CASES:
+            with self.subTest(name=expected):
+                self.assertEqual(to_camel_case(expected), expected)
+
+    def test_non_str_raises_type_error(self):
+        with self.assertRaises(TypeError):
+            to_camel_case(None)
+        with self.assertRaises(TypeError):
+            to_camel_case(b"user_id")
 
 
 if __name__ == "__main__":
