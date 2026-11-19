@@ -8,7 +8,10 @@ python3 -m unittest discover -s tests -t . -q
 
 python3 - <<'PY'
 import ast, pathlib, re, sys
+# Public function (docs/phases/phase-1-core-helpers.md): a top-level def not starting with
+# "_" in a module not starting with "_" (so _tokens.py and __main__.py hold none).
 funcs = sorted(n.name for p in pathlib.Path("textkit").glob("*.py")
+               if not p.name.startswith("_")
                for n in ast.parse(p.read_text()).body
                if isinstance(n, ast.FunctionDef) and not n.name.startswith("_"))
 errors = []
