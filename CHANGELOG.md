@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added `char_freq`: counts each non-whitespace character of a text (case-sensitive, keys in order of first occurrence).
+- Added `human_bytes`: a byte count in binary units (B, KiB, MiB, GiB, TiB), exact below 1024 and with one decimal from KiB up.
 - Added `initials`: the upper-cased first letter of each space- or hyphen-separated part of a name, with no separators.
 - Added `render`: fills `{name}` placeholders from a mapping, with `{{`/`}}` escapes and no format specs.
 - Added `levenshtein`: edit distance between two strings (insertions, deletions and substitutions of cost 1).
