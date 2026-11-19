@@ -1,7 +1,7 @@
 import unicodedata
 import unittest
 
-from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import is_palindrome, slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -234,6 +234,57 @@ class SlugTitleTest(unittest.TestCase):
             slug_title("Hello", -1)
         with self.assertRaises(ValueError):
             slug_title("", -1)
+
+
+class IsPalindromeTest(unittest.TestCase):
+    def test_simple_words(self):
+        self.assertTrue(is_palindrome("racecar"))
+        self.assertFalse(is_palindrome("hello"))
+
+    def test_ignores_case(self):
+        self.assertTrue(is_palindrome("RaceCar"))
+
+    def test_ignores_spaces_and_punctuation(self):
+        self.assertTrue(is_palindrome("A man, a plan, a canal: Panama!"))
+        self.assertTrue(is_palindrome("Was it a car or a cat I saw?"))
+        self.assertFalse(is_palindrome("A man, a plan, a canal: Suez!"))
+
+    def test_underscore_and_symbols_are_ignored(self):
+        self.assertTrue(is_palindrome("a_b-a"))
+        self.assertTrue(is_palindrome("ab\u20acba"))
+
+    def test_ignores_accents_nfc_and_nfd(self):
+        self.assertTrue(is_palindrome("\u00c1n\u00e0"))
+        self.assertTrue(is_palindrome(unicodedata.normalize("NFD", "\u00c1n\u00e0")))
+        self.assertTrue(is_palindrome("S\u00e9 es"))
+
+    def test_letters_without_decomposition_stay_distinct(self):
+        self.assertTrue(is_palindrome("\u00f8\u00d8"))
+        self.assertFalse(is_palindrome("\u00f8o"))
+
+    def test_casefold_not_lower(self):
+        # "\u00df".lower() is "\u00df" but casefold() is "ss": "s\u00df" -> "sss".
+        self.assertTrue(is_palindrome("s\u00df"))
+        self.assertTrue(is_palindrome("\u0130i"))
+
+    def test_digits_count(self):
+        self.assertTrue(is_palindrome("12321"))
+        self.assertFalse(is_palindrome("123"))
+        self.assertTrue(is_palindrome("a1a"))
+        self.assertFalse(is_palindrome("1a2"))
+
+    def test_non_latin_letters(self):
+        self.assertTrue(is_palindrome("\u0410\u0431\u0431\u0430"))
+        self.assertFalse(is_palindrome("\u0410\u0431\u0432"))
+
+    def test_empty_and_no_alphanumerics_are_true(self):
+        for text in ("", "   ", "!!!", ".,;-", "\u0301"):
+            with self.subTest(text=text):
+                self.assertTrue(is_palindrome(text))
+
+    def test_single_character(self):
+        self.assertTrue(is_palindrome("x"))
+        self.assertTrue(is_palindrome("7"))
 
 
 if __name__ == "__main__":

@@ -157,3 +157,32 @@ def slug_title(text: str, max_len: int) -> str:
     if max_len < 0:
         raise ValueError(f"max_len ({max_len}) must not be negative")
     return truncate(slugify(text), max_len, suffix="").rstrip("-")
+
+
+def is_palindrome(text: str) -> bool:
+    """Return ``True`` if ``text`` reads the same backwards, ignoring everything but letters
+    and digits.
+
+    ``"A man, a plan, a canal: Panama!"`` and ``"Ánà"`` are palindromes; ``"hello"`` is not.
+
+    ``text`` is normalized in this order, then compared with its reverse code point by code
+    point:
+
+    1. ``strip_accents`` removes combining marks, so ``"é"`` counts as ``"e"`` whether the
+       input is NFC or NFD. Letters with no canonical decomposition stay distinct
+       (``"ø"`` is not ``"o"``).
+    2. ``str.casefold`` ignores case; it is stronger than ``lower`` (``"ß"`` becomes
+       ``"ss"``, so ``"sß"`` is a palindrome).
+    3. Only characters for which ``str.isalnum`` is true are kept: spaces, punctuation,
+       ``_``, symbols and any marks left over are dropped. Digits count (``"12321"`` is a
+       palindrome), and so do non-Latin letters and digits.
+
+    Accents are stripped *before* casefolding because ``strip_accents`` is the documented
+    accent rule of this package. A combining mark that casefolding could still introduce is
+    not alphanumeric and is dropped in step 3, so no mark survives to the comparison.
+
+    Never raises for a ``str`` argument. ``""`` and text with no alphanumeric characters
+    (``"!!!"``, ``"   "``) return ``True``: an empty sequence equals its reverse.
+    """
+    kept = [c for c in strip_accents(text).casefold() if c.isalnum()]
+    return kept == kept[::-1]
