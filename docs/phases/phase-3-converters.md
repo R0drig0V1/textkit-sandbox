@@ -88,7 +88,7 @@ and 2.
       `111` -> `"111th"`, `112` -> `"112th"`, `113` -> `"113th"`, `1011` -> `"1011th"`,
       `1021` -> `"1021st"`); a negative `n` or a non-`int` (a `bool` included) raises
       `ValueError`.
-- [ ] **T3.10 `human_bytes`** in `textkit/sizes.py`: `human_bytes(n) -> str` in binary units.
+- [x] **T3.10 `human_bytes`** in `textkit/sizes.py`: `human_bytes(n) -> str` in binary units.
       The unit is the largest of B, KiB, MiB, GiB, TiB with `n >= 1024**k`, chosen before
       rounding. Below 1024 the result is `f"{n} B"`; from KiB up it is
       `f"{n / 1024**k:.1f} <unit>"`. A negative `n`, or a non-`int` (a `bool` included),
