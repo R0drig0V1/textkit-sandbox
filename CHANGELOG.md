@@ -8,6 +8,7 @@
 - Added `reading_time`: whole minutes to read a text at `wpm` words per minute (default 200), rounded up; rounding in ADR 0004.
 - Added the `python3 -m textkit` command line.
 - Added `python3 -m textkit --version`.
+- Added `sentence_count`: counts the sentences in a text; boundaries, abbreviations (`e.g.`, `Dr.`) and ellipses in ADR 0005.
 - Added `slugify`: turns text into a lower-case ASCII slug such as `hello-world`.
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (`"Ñandú"` -> `"Nandu"`).
