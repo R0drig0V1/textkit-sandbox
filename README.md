@@ -24,6 +24,26 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `slug_title` | `textkit.strings` | Slug of at most `max_len` characters, cut at a word boundary when possible, never ending in `-` |
 | `is_palindrome` | `textkit.strings` | Whether text reads the same both ways, ignoring case (`casefold`), accents and anything not a letter or digit |
 
+## Command line
+
+`python3 -m textkit <function> <text>` runs one function on one text and prints the result;
+`python3 -m textkit --help` lists the functions and `python3 -m textkit <function> --help`
+shows one function's docstring.
+
+```console
+$ python3 -m textkit slugify "Hello, World!"
+hello-world
+$ echo "well-known words" | python3 -m textkit word_count -
+2
+```
+
+Every public function of a public module that takes exactly one required `str` argument is a
+command, found at run time (functions with a second required argument, such as `truncate`,
+are not). The text is one argument (quote it), `-` reads it from standard input. Output: a
+`str` as is, a `bool` as `true`/`false`, a list one item per line, a dict one `key<TAB>value`
+line per entry. Exit codes: 0 success, 1 the function rejected the text, 2 usage error. The
+full rules are in the docstring of `textkit/__main__.py`.
+
 ## Commands
 
 - `scripts/check.sh`: unit tests, this table, the changelog, ADR numbering.

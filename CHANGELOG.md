@@ -14,3 +14,4 @@
 - Added `to_camel_case` in `textkit.cases`: converts snake_case and kebab-case names to camelCase; words are split as in `to_snake_case` (ADR 0002), so PascalCase and acronyms are normalised (`"HTTPServer"` -> `"httpServer"`).
 - Added `sentence_count` in `textkit.counts`: counts sentences by the rule of ADR 0004 (abbreviations, ellipses, decimals, quotes, CJK terminators).
 - Added `is_palindrome`: compares text with its reverse after `strip_accents`, `casefold` and keeping only `str.isalnum()` characters (digits count); `True` for empty text or text with no letters or digits; raises `TypeError` for a non-`str`.
+- Added the command line `python3 -m textkit <function> <text>` (`textkit/__main__.py`): every public one-text function is a command, found at run time; `--help` lists them; `-` reads the text from stdin; exit codes 0, 1 (the function rejected the text) and 2 (usage error).
