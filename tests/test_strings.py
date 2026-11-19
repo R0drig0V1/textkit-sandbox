@@ -1,7 +1,7 @@
 import unicodedata
 import unittest
 
-from textkit.strings import slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -197,6 +197,43 @@ class WrapTest(unittest.TestCase):
         for nbsp in ("\u00a0", "\u2007", "\u202f"):
             word = "10" + nbsp + "km"
             self.assertEqual(wrap("run " + word + " today", 6), ["run", word, "today"])
+
+
+class SlugTitleTest(unittest.TestCase):
+    # The four examples pinned by T1.9 in docs/phases/phase-1-core-helpers.md.
+    def test_cut_inside_a_word(self):
+        self.assertEqual(slug_title("Hello, World!", 8), "hello-wo")
+
+    def test_trailing_dash_after_cut_is_stripped(self):
+        self.assertEqual(slug_title("Hello, World!", 6), "hello")
+
+    def test_exact_fit_unchanged(self):
+        self.assertEqual(slug_title("Hello, World!", 11), "hello-world")
+
+    def test_zero_length(self):
+        self.assertEqual(slug_title("x", 0), "")
+
+    def test_longer_than_slug_unchanged(self):
+        self.assertEqual(slug_title("Hello, World!", 50), "hello-world")
+
+    def test_nothing_left_after_slugify(self):
+        self.assertEqual(slug_title("!!!", 5), "")
+        self.assertEqual(slug_title("", 0), "")
+
+    def test_never_ends_in_dash_and_respects_max_len(self):
+        text = "  A quick -- brown_fox, 2.0!  "
+        for max_len in range(0, 30):
+            with self.subTest(max_len=max_len):
+                result = slug_title(text, max_len)
+                self.assertLessEqual(len(result), max_len)
+                self.assertFalse(result.endswith("-"))
+                self.assertEqual(result, truncate(slugify(text), max_len, suffix="").rstrip("-"))
+
+    def test_negative_max_len_raises(self):
+        with self.assertRaises(ValueError):
+            slug_title("Hello", -1)
+        with self.assertRaises(ValueError):
+            slug_title("", -1)
 
 
 if __name__ == "__main__":
