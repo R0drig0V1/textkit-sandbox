@@ -26,7 +26,7 @@ start at once.
       fails), and asserts the discovered set equals the README function table.
       Depends on T1.1 to T1.8.
 - [ ] **T2.6 command line**: `textkit/__main__.py` so that `python3 -m textkit <function>
-      <text>` prints the result of any public function of one text argument, and lists them
+      <text>` prints the result of any public function of one required argument, and lists them
       with `--help`. Entry point `_main(argv: Optional[List[str]] = None) -> int`, called
       under `if __name__ == "__main__":` (importing the module has no side effects).
       Commands are discovered at run time, never hard-coded: every public function (phase 1
@@ -40,7 +40,16 @@ start at once.
       it. `--help` lists every command with the first line of its docstring. Acceptance: a
       test asserts the `--help` command list equals the set computed from the
       public-function definition, and runs every command once via `subprocess` with
-      `sys.executable -m textkit`. Add the CHANGELOG line "Added the `python3 -m textkit`
+      `sys.executable -m textkit`.
+      **Argument conversion**: when the required parameter is annotated `int`, the argument
+      must match `-?[0-9]+` (ASCII digits) and is converted with `int(arg)`; otherwise exit 2
+      with the message on stderr. A `ValueError`, `KeyError` or `TypeError` raised by the
+      function prints `error: <message>` on stderr (no traceback) and exits 1. The
+      per-command subprocess run passes `"1"` for an `int` parameter and `"a"` otherwise and
+      asserts exit code 0 or 1 with no `Traceback` in stderr. No per-function input is
+      hard-coded, so later functions (phase 3 included) need no change to `tests/test_cli.py`;
+      the conversion and the exit-1 path are tested with a stub function the test registers
+      itself (not a real textkit function). Add the CHANGELOG line "Added the `python3 -m textkit`
       command line." (no README row). Depends on T1.1 to T1.8.
 - [ ] **T2.7 `--version`**: `__version__ = "0.1.0"` in `textkit/__init__.py` (the only place
       in `textkit/` the version string appears; `__main__.py` reads `textkit.__version__`);
