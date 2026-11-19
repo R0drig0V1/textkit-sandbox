@@ -23,7 +23,7 @@ CHANGELOG line. Tasks with no "Depends on" can start at once.
 - [x] **T1.7 `to_snake_case`** in a new module `textkit/cases.py`:
       `to_snake_case(name) -> str` for camelCase, PascalCase and kebab-case input. Write an
       ADR on how runs of capitals are split (`HTTPServer`, `parseURL2`).
-- [ ] **T1.8 `to_camel_case`** in `textkit/cases.py`: `to_camel_case(name) -> str` for
+- [x] **T1.8 `to_camel_case`** in `textkit/cases.py`: `to_camel_case(name) -> str` for
       snake_case and kebab-case input (`"user_id"` -> `"userId"`).
 - [x] **T1.9 `slug_title`** in `textkit/strings.py`: `slug_title(text, max_len) -> str`, a
       slug of at most `max_len` characters that never ends in `-`, built from `slugify`
