@@ -1,6 +1,7 @@
+import unicodedata
 import unittest
 
-from textkit.strings import slugify, squeeze
+from textkit.strings import slugify, squeeze, strip_accents
 
 
 class SqueezeTest(unittest.TestCase):
@@ -36,6 +37,29 @@ class SlugifyTest(unittest.TestCase):
     def test_non_ascii_digits_and_letters_removed(self):
         # Arabic-Indic digit, superscript two and the Kelvin sign are non-ASCII.
         self.assertEqual(slugify("a\u0661b\u00b2c\u212a"), "abc")
+
+
+class StripAccentsTest(unittest.TestCase):
+    def test_removes_accents_from_nfc_input(self):
+        self.assertEqual(strip_accents("Ñandú"), "Nandu")
+
+    def test_removes_accents_from_nfd_input(self):
+        self.assertEqual(strip_accents(unicodedata.normalize("NFD", "Ñandú")), "Nandu")
+
+    def test_several_marks_on_one_letter(self):
+        self.assertEqual(strip_accents("ệ"), "e")
+
+    def test_plain_ascii_unchanged(self):
+        self.assertEqual(strip_accents("Hello, World!"), "Hello, World!")
+
+    def test_empty_string(self):
+        self.assertEqual(strip_accents(""), "")
+
+    def test_letters_without_decomposition_are_kept(self):
+        self.assertEqual(strip_accents("øłß"), "øłß")
+
+    def test_non_latin_text_is_recomposed(self):
+        self.assertEqual(strip_accents("한국어"), "한국어")
 
 
 if __name__ == "__main__":
