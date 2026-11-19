@@ -8,7 +8,8 @@ tiny synthetic project. Nothing here matters; it can be wiped at any time.
 ## Functions
 
 Every public function is listed here, once (checked by `scripts/check.sh` and by
-`tests/test_api.py`, which also requires a docstring and type hints on each).
+`tests/test_api.py`, which also requires a docstring and type hints on each). The
+[usage guide](docs/usage.md) has a runnable example of each one (`tests/test_usage.py`).
 
 | Function | Module | What it does |
 |----------|--------|--------------|
