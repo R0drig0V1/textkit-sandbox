@@ -12,7 +12,7 @@ Same rules as phase 1. Tasks with no "Depends on" can start at once.
       `to_snake_case`. Depends on T1.7.
 - [x] **T2.4 `is_palindrome`** in `textkit/strings.py`: `is_palindrome(text) -> bool`,
       ignoring case, spaces, punctuation and accents (use `strip_accents`). Depends on T1.3.
-- [ ] **T2.5 API contract test**: `tests/test_api.py` checks that every public function of
+- [x] **T2.5 API contract test**: `tests/test_api.py` checks that every public function of
       every `textkit` module has a docstring and type hints for all parameters and the
       return value, and fix any function that does not. Depends on T1.1 to T1.8.
 - [x] **T2.6 command line**: `textkit/__main__.py` so that `python3 -m textkit <function>
