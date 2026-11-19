@@ -4,6 +4,7 @@
 
 - Added `slugify`: turns text into a lower-case ASCII slug.
 - Added `squeeze`: collapses runs of whitespace into single spaces.
+- Added `strip_accents`: removes combining marks (`"Ñandú"` -> `"Nandu"`).
 - Added `truncate`: shortens text to a width, ending with a suffix when cut; raises `ValueError` when the width is smaller than the suffix.
 - Added `to_snake_case`: converts camelCase, PascalCase and kebab-case identifiers to snake_case ([ADR](docs/decisions/0003-snake-case-capital-runs.md)).
 - Added `wrap`: splits text into lines of at most `width` characters at spaces; existing newlines are reflowed (ADR 0001).
