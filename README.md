@@ -11,6 +11,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 
 | Function | Module | What it does |
 |----------|--------|--------------|
+| `slug_title` | `textkit.strings` | Slug cut to at most `max_len` characters, never ending in `-` |
 | `slugify` | `textkit.strings` | Lower-case ASCII slug with runs of other characters turned into `-` |
 | `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive, in order of first occurrence |
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |

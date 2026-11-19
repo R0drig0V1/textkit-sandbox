@@ -5,6 +5,7 @@ from textkit.strings import squeeze, truncate
 from textkit.strings import strip_accents
 from textkit.strings import slugify
 from textkit.strings import wrap
+from textkit.strings import slug_title
 
 
 class SqueezeTest(unittest.TestCase):
@@ -185,6 +186,43 @@ class WrapTest(unittest.TestCase):
 
     def test_counts_code_points(self):
         self.assertEqual(wrap("ñandú ñu", 8), ["ñandú ñu"])
+
+
+class SlugTitleTest(unittest.TestCase):
+    def test_cut_inside_a_word(self):
+        self.assertEqual(slug_title("Hello, World!", 8), "hello-wo")
+
+    def test_trailing_dash_after_cut_is_stripped(self):
+        self.assertEqual(slug_title("Hello, World!", 6), "hello")
+
+    def test_slug_that_fits_is_unchanged(self):
+        self.assertEqual(slug_title("Hello, World!", 11), "hello-world")
+
+    def test_zero_length_gives_empty(self):
+        self.assertEqual(slug_title("x", 0), "")
+
+    def test_max_len_larger_than_slug(self):
+        self.assertEqual(slug_title("Hello, World!", 100), "hello-world")
+
+    def test_input_with_no_slug_characters_gives_empty(self):
+        self.assertEqual(slug_title("!!!", 5), "")
+
+    def test_never_ends_in_dash(self):
+        text = "a-b c_d e.f"
+        for max_len in range(len(text) + 2):
+            with self.subTest(max_len=max_len):
+                result = slug_title(text, max_len)
+                self.assertLessEqual(len(result), max_len)
+                self.assertFalse(result.endswith("-"))
+                self.assertEqual(result, truncate(slugify(text), max_len, suffix="").rstrip("-"))
+
+    def test_negative_max_len_raises(self):
+        with self.assertRaises(ValueError):
+            slug_title("Hello", -1)
+
+    def test_negative_max_len_raises_even_for_empty_text(self):
+        with self.assertRaises(ValueError):
+            slug_title("", -1)
 
 
 if __name__ == "__main__":
