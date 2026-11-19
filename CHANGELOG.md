@@ -11,6 +11,7 @@
 - Added the `python3 -m textkit` command line.
 - Added `slug_title`: a slug of at most `max_len` characters that never ends in `-` (character cut); raises `ValueError` when `max_len` is negative.
 - Added `slugify`: turns text into a lower-case ASCII slug.
+- Added `soundex` in the new module `textkit.phonetic`: the American Soundex code (`"Robert"` -> `"R163"`, `"Ashcraft"` -> `"A261"`); non-ASCII-letters are removed first, H and W are transparent, the first letter takes part in de-duplication; raises `ValueError` for a name with no ASCII letter.
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (`"Ñandú"` -> `"Nandu"`).
 - Added `truncate`: shortens text to a width, ending with a suffix when cut; raises `ValueError` when the width is smaller than the suffix.
