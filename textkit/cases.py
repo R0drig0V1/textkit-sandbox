@@ -5,9 +5,14 @@ recorded in the ADR docs/decisions/NNNN-to-snake-case-capital-runs.md, which end
 table of cases that tests/test_cases.py checks row by row. `to_camel_case` goes the other
 way (snake_case or kebab-case to camelCase); it splits on separators only.
 `to_kebab_case` is `to_snake_case` with `-` in place of `_`, so it follows the same ADR.
+
+`to_snake_case` takes its `_` boundaries from the shared tokenizer `textkit._tokens.words`
+(ADR 0001) for the names on which the two ADRs split the same way; see `_SHARED_RULE_NAME`.
 """
 
 import re
+
+from textkit import _tokens
 
 # A run of `-` or `_` is one word boundary; splitting on it also drops leading and trailing
 # separators (they produce empty parts, which are discarded).
@@ -18,6 +23,15 @@ _ACRONYM_END = re.compile(r"([A-Z]+)([A-Z][a-z])")
 # A capital after a lower-case letter or a digit starts a new word: "camelCase", "utf8Encode".
 # Digits never start a word themselves, so they stay with the word before them.
 _LOWER_OR_DIGIT_THEN_UPPER = re.compile(r"([a-z0-9])([A-Z])")
+# Names on which ADR 0001's word rule (`_tokens.words`) and rule 1 of the snake_case ADR split
+# the same way: only ASCII letters, digits and `_`. On them `words` yields the maximal runs of
+# letters and digits between runs of `_`, with leading and trailing `_` dropped, which is
+# exactly that rule 1. Anything else keeps the separator regex, because the rules disagree:
+# a single `-` between letters joins in ADR 0001 (rule 3) but is a boundary here
+# ("kebab-case"), and other characters are separators in ADR 0001 but are kept here
+# ("a.bC" -> "a.b_c"). Splits at capitals (rules 2 to 4) have no counterpart in ADR 0001, so
+# they always stay the regexes above.
+_SHARED_RULE_NAME = re.compile(r"[A-Za-z0-9_]*")
 
 
 def to_snake_case(name: str) -> str:
@@ -41,8 +55,12 @@ def to_snake_case(name: str) -> str:
     """
     if not isinstance(name, str):
         raise TypeError(f"to_snake_case() expects a str, got {type(name).__name__}")
+    if _SHARED_RULE_NAME.fullmatch(name):
+        parts = _tokens.words(name)
+    else:
+        parts = _SEPARATORS.split(name)
     words: list[str] = []
-    for part in _SEPARATORS.split(name):
+    for part in parts:
         if not part:
             continue
         # `part` has no `_` left (it was a separator), so `_` can mark the inner boundaries.

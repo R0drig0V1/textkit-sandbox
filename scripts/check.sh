@@ -8,7 +8,11 @@ python3 -m unittest discover -s tests -t . -q
 
 python3 - <<'PY'
 import ast, pathlib, re, sys
+# Public function (phase 1 rules): a top-level def not starting with `_`, in a module not
+# starting with `_`. Private modules (`_tokens.py`, `__main__.py`, `__init__.py`) are skipped,
+# so their helpers need no README row or CHANGELOG line.
 funcs = sorted(n.name for p in pathlib.Path("textkit").glob("*.py")
+               if not p.name.startswith("_")
                for n in ast.parse(p.read_text()).body
                if isinstance(n, ast.FunctionDef) and not n.name.startswith("_"))
 errors = []
