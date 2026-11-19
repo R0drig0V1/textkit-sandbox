@@ -1,7 +1,9 @@
 """Command line for textkit: ``python3 -m textkit <function> <text>`` (plan task T2.6).
 
 Prints the result of any public function of one text argument, and lists them with
-``--help``. Commands are discovered at run time, never hard-coded, so a function added to a
+``--help``; ``--version`` prints ``textkit <version>`` (plan task T2.7), with the version
+read from ``textkit.__version__`` so the string is written only in ``textkit/__init__.py``.
+Commands are discovered at run time, never hard-coded, so a function added to a
 public module becomes a command with no change here. A command is every *public function*
 (phase 1 definition: a top-level ``def`` whose name does not start with ``_``, in a module of
 ``textkit/`` whose name does not start with ``_``) that has exactly one parameter without a
@@ -9,10 +11,11 @@ default; parameters with a default keep it (``reading_time(text, wpm=200)`` runs
 
 Output: a ``str`` is printed as is; ``bool`` and ``int`` with ``print()``; ``dict`` and
 ``list`` as ``json.dumps(result, ensure_ascii=False, sort_keys=True)``. Exit status: 0 on
-success; 2 on an unknown function, a wrong argument count or no arguments at all (argparse
-prints the usage and the message on stderr); 1 when the function itself rejects the text
-with ``ValueError`` (the message goes to stderr). The plan fixes 0 and 2; 1 keeps a rejected
-input apart from a usage error. Any other exception is a bug and propagates as a traceback.
+success (``--help`` and ``--version`` included); 2 on an unknown function, a wrong argument
+count or no arguments at all (argparse prints the usage and the message on stderr); 1 when
+the function itself rejects the text with ``ValueError`` (the message goes to stderr). The
+plan fixes 0 and 2; 1 keeps a rejected input apart from a usage error. Any other exception
+is a bug and propagates as a traceback.
 
 This module defines no public function (its name starts with ``_``), and importing it has
 no side effects: the command line only runs under ``if __name__ == "__main__":``.
@@ -106,6 +109,11 @@ def _parser(commands: Dict[str, Callable[..., Any]]) -> argparse.ArgumentParser:
         # one "name  summary" row per command (long names still put the summary below).
         formatter_class=argparse.RawTextHelpFormatter,
     )
+    # The name is "textkit", not _PROG: the plan fixes the output to "textkit <version>".
+    # argparse prints it on stdout and exits 0 before the required sub-command is checked.
+    parser.add_argument(
+        "--version", action="version", version=f"textkit {textkit.__version__}"
+    )
     # dest is mandatory with required=True on Python 3.9: without it, running with no
     # arguments crashes inside argparse instead of printing the usage and exiting 2.
     subparsers = parser.add_subparsers(
@@ -125,9 +133,10 @@ def _parser(commands: Dict[str, Callable[..., Any]]) -> argparse.ArgumentParser:
 def _main(argv: Optional[List[str]] = None) -> int:
     """Run the command line on ``argv`` (default ``sys.argv[1:]``) and return the exit status.
 
-    Returns 0 on success (``--help`` included), 2 on a usage error and 1 when the function
-    raises ``ValueError``; see the module docstring. argparse reports usage errors by raising
-    ``SystemExit``; it is caught here so that callers (and tests) always get an ``int``.
+    Returns 0 on success (``--help`` and ``--version`` included), 2 on a usage error and 1
+    when the function raises ``ValueError``; see the module docstring. argparse reports usage
+    errors (and ends ``--help`` and ``--version``) by raising ``SystemExit``; it is caught
+    here so that callers (and tests) always get an ``int``.
     """
     commands = _commands()
     try:
