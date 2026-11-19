@@ -34,7 +34,7 @@ and 2.
 
 ## Tasks
 
-- [ ] **T3.1 `levenshtein`** in `textkit/distance.py`: `levenshtein(a, b) -> int`, the edit
+- [x] **T3.1 `levenshtein`** in `textkit/distance.py`: `levenshtein(a, b) -> int`, the edit
       distance with insertions, deletions and substitutions of cost 1. `levenshtein("", "")`
       is 0; `levenshtein("kitten", "sitting")` is 3.
 - [ ] **T3.2 `rot13`** in `textkit/ciphers.py`: `rot13(text) -> str`; ASCII letters rotate
