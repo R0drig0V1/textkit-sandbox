@@ -74,3 +74,24 @@ def strip_accents(text: str) -> str:
     decomposed = unicodedata.normalize("NFD", text)
     kept = "".join(c for c in decomposed if not unicodedata.combining(c))
     return unicodedata.normalize("NFC", kept)
+
+
+def is_palindrome(text: str) -> bool:
+    """Tell whether ``text`` is a palindrome, ignoring case, accents and punctuation.
+
+    ``text`` is normalized in this order, then compared with its reverse:
+
+    1. :func:`strip_accents` removes combining marks (``"é"`` -> ``"e"``), so accented and
+       unaccented spellings match.
+    2. ``str.casefold()`` folds case more aggressively than ``lower()`` (``"ß"`` -> ``"ss"``).
+    3. Only characters for which ``str.isalnum()`` is true are kept: spaces and punctuation
+       are ignored, while digits and non-ASCII letters count.
+
+    ``"A man, a plan, a canal: Panamá"`` and ``"12321"`` give ``True``. Text with nothing
+    left after step 3, such as ``""`` or ``"!?"``, is a palindrome (the empty string equals
+    its reverse). Never raises for a ``str`` argument.
+    """
+    # Accents go first so that casefold() sees base letters; the alphanumeric filter goes
+    # last because casefold() can itself produce combining marks (e.g. "İ" -> "i̇").
+    kept = [c for c in strip_accents(text).casefold() if c.isalnum()]
+    return kept == kept[::-1]
