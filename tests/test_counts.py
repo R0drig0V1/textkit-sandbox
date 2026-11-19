@@ -5,7 +5,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.counts import word_count
+from textkit.counts import char_freq, word_count
 
 # The case table of docs/decisions/0002-what-counts-as-a-word.md, as (input, count). The ADR
 # is the specification; WordCountTest.test_adr_table_matches keeps the two in sync.
@@ -63,6 +63,43 @@ class WordCountTest(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(TypeError):
                     word_count(value)
+
+
+class CharFreqTest(unittest.TestCase):
+    def test_counts_each_character(self):
+        self.assertEqual(char_freq("banana"), {"b": 1, "a": 3, "n": 2})
+
+    def test_case_sensitive(self):
+        self.assertEqual(char_freq("aAa"), {"a": 2, "A": 1})
+
+    def test_whitespace_not_counted(self):
+        # Ordinary, control and Unicode whitespace (NBSP, em space, line separator).
+        self.assertEqual(char_freq("a b\tc\nd\r\x0b\x0c   e"),
+                         {"a": 1, "b": 1, "c": 1, "d": 1, "e": 1})
+
+    def test_keys_in_order_of_first_occurrence(self):
+        self.assertEqual(list(char_freq("hello world")), ["h", "e", "l", "o", "w", "r", "d"])
+
+    def test_empty_and_whitespace_only(self):
+        for text in ("", "   \n\t  "):
+            with self.subTest(text=text):
+                self.assertEqual(char_freq(text), {})
+
+    def test_punctuation_and_digits_counted(self):
+        self.assertEqual(char_freq("a1!1!"), {"a": 1, "1": 2, "!": 2})
+
+    def test_code_points_without_normalization(self):
+        self.assertEqual(char_freq("é"), {"é": 1})
+        self.assertEqual(char_freq("é"), {"e": 1, "́": 1})
+
+    def test_returns_plain_dict(self):
+        self.assertIs(type(char_freq("ab")), dict)
+
+    def test_non_str_raises_type_error(self):
+        for value in (None, 42, b"bytes", ["a"]):
+            with self.subTest(value=value):
+                with self.assertRaises(TypeError):
+                    char_freq(value)
 
 
 if __name__ == "__main__":

@@ -11,6 +11,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 
 | Function | Module | What it does |
 |----------|--------|--------------|
+| `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive, in order of first occurrence |
 | `render` | `textkit.templates` | Fills `{name}` placeholders from a mapping; `{{` and `}}` are literal braces |
 | `levenshtein` | `textkit.distance` | Edit distance with insertions, deletions and substitutions of cost 1 |
 | `pluralize` | `textkit.plural` | English plural of a singular noun, with a few irregulars |
