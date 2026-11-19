@@ -16,7 +16,7 @@ start at once.
       ignoring case, spaces, punctuation and accents (use `strip_accents`). Only characters
       with `str.isalnum()` are kept after `strip_accents` and `casefold()`; digits count; `""`
       and text with no alphanumerics return `True`. Depends on T1.3.
-- [ ] **T2.5 API contract test**: `tests/test_api.py` checks that every public function of
+- [x] **T2.5 API contract test**: `tests/test_api.py` checks that every public function of
       every `textkit` module has a docstring and type hints for all parameters and the
       return value, and fix any function that does not. No hard-coded lists: the test
       discovers modules with `pkgutil.iter_modules(textkit.__path__)` and functions with
