@@ -12,6 +12,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | Function | Module | What it does |
 |----------|--------|--------------|
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
+| `word_count` | `textkit.counts` | Counts the words in a text (rule: ADR 0001) |
 
 ## Commands
 
