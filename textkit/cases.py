@@ -70,3 +70,22 @@ def to_camel_case(name: str) -> str:
     if not words:
         return ""
     return words[0].lower() + "".join(word.capitalize() for word in words[1:])
+
+
+def to_kebab_case(name: str) -> str:
+    """Convert a camelCase, PascalCase or snake_case identifier to kebab-case.
+
+    ``name`` is converted with ``to_snake_case`` and every ``_`` of the result is replaced by
+    ``-``, so the word boundaries are exactly those of ADR 0001 (``"HTTPServer"`` ->
+    ``"http-server"``, ``"parseURL2"`` -> ``"parse-url2"``, ``"already_snake"`` ->
+    ``"already-snake"``). Runs of ``-`` and ``_`` count as one separator and separators at the
+    start or end are dropped (``"__init__"`` -> ``"init"``); input that is already kebab-case
+    is returned unchanged and ``""`` gives ``""``. Non-ASCII characters are kept in place and
+    only lower-cased (``"Ñandú"`` -> ``"ñandú"``).
+
+    Raises:
+        TypeError: if ``name`` is not a ``str`` (raised by ``to_snake_case``).
+    """
+    # Every "_" in to_snake_case's output is a word separator (runs are already collapsed),
+    # so a plain replace keeps ADR 0001's rules in one place.
+    return to_snake_case(name).replace("_", "-")

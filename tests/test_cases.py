@@ -1,12 +1,13 @@
 """Tests for textkit.cases, one TestCase per function.
 
 ToSnakeCaseTest asserts every row of ADR 0001's table of cases; ToCamelCaseTest covers the
-T1.8 rules for to_camel_case.
+T1.8 rules for to_camel_case; ToKebabCaseTest asserts the same ADR 0001 rows with ``_``
+replaced by ``-`` (T2.3).
 """
 
 import unittest
 
-from textkit.cases import to_camel_case, to_snake_case
+from textkit.cases import to_camel_case, to_kebab_case, to_snake_case
 
 
 class ToSnakeCaseTest(unittest.TestCase):
@@ -109,6 +110,35 @@ class ToCamelCaseTest(unittest.TestCase):
     def test_rejects_non_str(self):
         with self.assertRaises(TypeError):
             to_camel_case(None)
+
+
+
+class ToKebabCaseTest(unittest.TestCase):
+    def test_adr_table(self):
+        # ADR 0001, Consequences: to_kebab_case inherits every row with "_" replaced by "-".
+        for name, snake in ToSnakeCaseTest.ADR_TABLE:
+            with self.subTest(name=name):
+                self.assertEqual(to_kebab_case(name), snake.replace("_", "-"))
+
+    def test_kebab_case_is_a_fixed_point(self):
+        for name, _ in ToSnakeCaseTest.ADR_TABLE:
+            with self.subTest(name=name):
+                once = to_kebab_case(name)
+                self.assertEqual(to_kebab_case(once), once)
+
+    def test_snake_and_kebab_input(self):
+        for name, expected in [
+            ("already_snake", "already-snake"),
+            ("already-kebab", "already-kebab"),
+            ("mixed_-sep", "mixed-sep"),
+            ("-user-id-", "user-id"),
+        ]:
+            with self.subTest(name=name):
+                self.assertEqual(to_kebab_case(name), expected)
+
+    def test_rejects_non_str(self):
+        with self.assertRaises(TypeError):
+            to_kebab_case(None)
 
 
 if __name__ == "__main__":
