@@ -5,7 +5,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.counts import char_freq, reading_time, word_count
+from textkit.counts import char_freq, reading_time, sentence_count, word_count
 
 ADR = pathlib.Path(__file__).resolve().parent.parent / "docs" / "decisions" / (
     "0001-what-counts-as-a-word.md"
@@ -171,6 +171,81 @@ class ReadingTimeTest(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(TypeError):
                     reading_time(value)
+
+
+SENTENCE_ADR = ADR.parent / "0005-sentence-ends-abbreviations-and-ellipses.md"
+
+# The case table of ADR 0005, row by row, in the same order.
+SENTENCE_COUNT_CASES = [
+    ("", 0),
+    ("   \n\t ", 0),
+    ("!!! ... ?", 0),
+    ("?!", 0),
+    ("hello world", 1),
+    ("Hello world.", 1),
+    ("Hi. Bye.", 2),
+    ("Hello.\nWorld", 2),
+    ("Is it?! Yes.", 2),
+    ("Wait!!! Stop.", 2),
+    ("Really? yes.", 2),
+    ("Pi is 3.14 today.", 1),
+    ("See example.com now.", 1),
+    ("Hi.Bye.", 1),
+    ("e.g.", 1),
+    ("Use a tool, e.g. a hammer.", 1),
+    ("e.g. Paris is big.", 2),
+    ("I saw Dr. Smith. He waved.", 2),
+    ("Mr. Lee met Ms. Ada.", 1),
+    ("Wait... what?", 1),
+    ("Wait... What?", 2),
+    ("Wait\u2026 What?", 2),
+    ("And so\u2026", 1),
+    ("He said 'Stop.' Then he left.", 2),
+    ("'Done.' she said.", 1),
+    ("(Really?) Yes.", 2),
+    ("¿Qué? Sí.", 2),
+    ("日本語。日本語。", 1),
+]
+
+
+def _sentence_adr_cases() -> list[tuple[str, int]]:
+    """Parse the "Cases" table of ADR 0005 into (input, count) pairs."""
+    section = SENTENCE_ADR.read_text(encoding="utf-8").split("## Cases", 1)[1]
+    rows = re.findall(r"^\| `(\".*\")` \| (\d+) \|", section, re.M)
+    return [(ast.literal_eval(literal), int(count)) for literal, count in rows]
+
+
+class SentenceCountTest(unittest.TestCase):
+    def test_every_case_of_the_adr(self):
+        for text, expected in SENTENCE_COUNT_CASES:
+            with self.subTest(text=text):
+                self.assertEqual(sentence_count(text), expected)
+
+    def test_cases_match_the_adr_table(self):
+        # Keeps the ADR and this list from drifting apart: the ADR is the specification.
+        self.assertEqual(_sentence_adr_cases(), SENTENCE_COUNT_CASES)
+
+    def test_limitations_stated_in_the_adr(self):
+        # The "Consequences" section of ADR 0005 states these results; keep them true.
+        self.assertEqual(sentence_count("I said... no."), 1)
+        self.assertEqual(sentence_count("I called the Dr. He came."), 1)
+
+    def test_every_listed_abbreviation(self):
+        for abbreviation in ("Dr", "Mr", "Mrs", "Ms", "Prof", "vs"):
+            with self.subTest(abbreviation=abbreviation):
+                self.assertEqual(sentence_count(f"Ask {abbreviation}. Lee now."), 1)
+
+    def test_abbreviations_are_case_sensitive_and_whole_words(self):
+        # "DR", "Dr.." and "XDr" do not match the list, so the dot ends a sentence before a capital.
+        self.assertEqual(sentence_count("Ask DR. Lee now."), 2)
+        self.assertEqual(sentence_count("Ask Dr.. Lee now."), 2)
+        self.assertEqual(sentence_count("Ask XDr. Lee now."), 2)
+
+    def test_rejects_non_str(self):
+        for value in (None, b"Hi. Bye.", 42, ["a", "b"]):
+            with self.subTest(value=value):
+                with self.assertRaises(TypeError):
+                    sentence_count(value)
 
 
 if __name__ == "__main__":

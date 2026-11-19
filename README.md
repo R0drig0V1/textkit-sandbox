@@ -15,6 +15,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `is_palindrome` | `textkit.strings` | Tells whether text reads the same backwards, ignoring case, accents, spaces and punctuation |
 | `reading_time` | `textkit.counts` | Estimates whole minutes to read a text, rounded up (rule: ADR 0004) |
 | `slug_title` | `textkit.strings` | Slug cut to at most a length, never ending in `-` (`("Hello, World!", 8)` -> `"hello-wo"`) |
+| `sentence_count` | `textkit.counts` | Counts the sentences in a text, handling abbreviations and ellipses (rule: ADR 0005) |
 | `slugify` | `textkit.strings` | Turns text into a lower-case ASCII slug (`"Hello, World!"` -> `"hello-world"`) |
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
 | `strip_accents` | `textkit.strings` | Removes combining marks (accents), as in `"Ñandú"` -> `"Nandu"` |
