@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `slug_title`: `slugify` output cut to at most `max_len` characters, with trailing `-` stripped; raises `ValueError` when `max_len < 0`.
 - Added `slugify`: lower-case ASCII slug (non-ASCII removed, other runs become `-`).
 - Added `char_freq`: counts each non-whitespace character of a text, case-sensitive, keys in order of first occurrence.
 - Added `squeeze`: collapses runs of whitespace into single spaces.
