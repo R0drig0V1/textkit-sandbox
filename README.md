@@ -16,6 +16,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
 | `strip_accents` | `textkit.strings` | Removes combining marks (accents) from text |
 | `to_camel_case` | `textkit.cases` | Converts snake_case or kebab-case to camelCase (`"user_id"` -> `"userId"`) |
+| `to_kebab_case` | `textkit.cases` | Converts camelCase, PascalCase or snake_case to kebab-case (`"HTTPServer"` -> `"http-server"`, ADR 0002) |
 | `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase or kebab-case to snake_case (ADR 0002) |
 | `truncate` | `textkit.strings` | Shortens text to a width, ending in a suffix when cut |
 | `word_count` | `textkit.counts` | Counts the words in a text (rule: ADR 0001) |

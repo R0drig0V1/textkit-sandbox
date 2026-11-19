@@ -7,6 +7,7 @@
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (`"Ñandú"` -> `"Nandu"`).
 - Added `to_camel_case`: converts snake_case or kebab-case identifiers to camelCase (`"user_id"` -> `"userId"`), splitting only on the separators of ADR 0002.
+- Added `to_kebab_case`: converts camelCase, PascalCase or snake_case identifiers to kebab-case (`"HTTPServer"` -> `"http-server"`), built on `to_snake_case` and its ADR 0002 split.
 - Added `to_snake_case`: converts camelCase, PascalCase or kebab-case identifiers to snake_case, splitting runs of capitals as in ADR 0002.
 - Added `truncate`: shortens text to a width, ending in a suffix when cut.
 - Added `word_count`: counts the words in a text, following the word rule of ADR 0001.
