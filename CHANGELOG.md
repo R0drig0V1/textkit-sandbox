@@ -4,17 +4,17 @@
 
 - Added `char_freq`: counts each non-whitespace character (case-sensitive), keys in order of first occurrence.
 - Added `is_palindrome`: tells whether text reads the same backwards, ignoring case, accents, spaces and punctuation; digits count.
-- Added `slug_title`: a slug of at most `max_len` characters that never ends in `-`.
 - Added `reading_time`: whole minutes to read a text at `wpm` words per minute (default 200), rounded up; rounding in ADR 0004.
-- Added the `python3 -m textkit` command line.
-- Added `python3 -m textkit --version`.
 - Added `sentence_count`: counts the sentences in a text; boundaries, abbreviations (`e.g.`, `Dr.`) and ellipses in ADR 0005.
+- Added `slug_title`: a slug of at most `max_len` characters that never ends in `-`.
 - Added `slugify`: turns text into a lower-case ASCII slug such as `hello-world`.
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (`"Ñandú"` -> `"Nandu"`).
 - Added `to_camel_case`: converts snake_case or kebab-case identifiers to camelCase (`user_id` -> `userId`).
 - Added `to_kebab_case`: converts camelCase, PascalCase or snake_case identifiers to kebab-case, built on `to_snake_case` (ADR 0001).
 - Added `to_snake_case`: converts camelCase, PascalCase or kebab-case identifiers to snake_case (word boundaries in ADR 0001).
-- Added `word_count`: counts the words in a text; the word rule is ADR 0002.
 - Added `truncate`: shortens text to a width, ending with a suffix when cut.
+- Added `word_count`: counts the words in a text; the word rule is ADR 0002.
 - Added `wrap`: splits text into lines of at most `width` characters at spaces (ADR 0003).
+- Added the `python3 -m textkit` command line.
+- Added `python3 -m textkit --version`.
