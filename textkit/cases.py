@@ -2,10 +2,14 @@
 
 Every public function is listed in the README's function table. How words are split out of
 an identifier, runs of capitals included, is decided in ADR 0001
-(docs/decisions/0001-to-snake-case-word-boundaries.md).
+(docs/decisions/0001-to-snake-case-word-boundaries.md). Where that rule and the prose word
+rule of ADR 0002 split the same way, `to_snake_case` splits with the shared tokenizer
+`textkit._tokens.words` (plan task T1.10).
 """
 
 import re
+
+from textkit._tokens import words
 
 # A run of capitals followed by a capitalized word: the last capital starts the new word
 # ("HTTPServer" -> "HTTP" + "Server"). ASCII only, see ADR 0001.
@@ -15,6 +19,23 @@ _ACRONYM_BOUNDARY = re.compile(r"([A-Z]+)([A-Z][a-z])")
 _LOWER_UPPER_BOUNDARY = re.compile(r"([a-z0-9])([A-Z])")
 # Runs of separators count as one; shared by `to_snake_case` and `to_camel_case` (ADR 0001, rule 4).
 _SEPARATORS = re.compile(r"[-_]+")
+
+
+def _split_case(text: str) -> str:
+    """Insert ``_`` at the case boundaries of ADR 0001, rules 1 to 3 (ASCII only)."""
+    return _LOWER_UPPER_BOUNDARY.sub(r"\1_\2", _ACRONYM_BOUNDARY.sub(r"\1_\2", text))
+
+
+def _splits_like_prose(name: str) -> bool:
+    """Return True when ADR 0001 and ADR 0002 split ``name`` at exactly the same places.
+
+    That is the case when every character is alphanumeric (``str.isalnum()``) or ``_``: both
+    rules then cut at every run of ``_``, drop the ``_`` and keep each run of alphanumerics
+    whole. Any other character makes them disagree: a single ``-`` joins in ADR 0002 but
+    separates in ADR 0001 (``"kebab-case"``), and spaces, punctuation, symbols and combining
+    marks are dropped as separators by ADR 0002 but kept in place by ADR 0001, rule 5.
+    """
+    return all(char.isalnum() or char == "_" for char in name)
 
 
 def to_snake_case(name: str) -> str:
@@ -37,9 +58,15 @@ def to_snake_case(name: str) -> str:
     """
     if not isinstance(name, str):
         raise TypeError(f"name must be a str, not {type(name).__name__}")
-    split = _ACRONYM_BOUNDARY.sub(r"\1_\2", name)
-    split = _LOWER_UPPER_BOUNDARY.sub(r"\1_\2", split)
-    return _SEPARATORS.sub("_", split).strip("_").lower()
+    if _splits_like_prose(name):
+        # The separators (rule 4) go through the shared tokenizer; the case boundaries
+        # (rules 1 to 3) are specific to identifiers and still apply within each word. The
+        # regexes only insert "_" between two ASCII alphanumerics, so applying them word by
+        # word gives the same string as the fallback below.
+        return "_".join(_split_case(word) for word in words(name)).lower()
+    # Input with "-", spaces, punctuation or marks: ADR 0002 would split it differently, so
+    # it keeps the identifier-only path (T1.10, see _splits_like_prose).
+    return _SEPARATORS.sub("_", _split_case(name)).strip("_").lower()
 
 
 def to_camel_case(name: str) -> str:
