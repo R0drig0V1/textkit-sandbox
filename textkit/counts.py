@@ -49,3 +49,29 @@ def char_freq(text: str) -> dict[str, int]:
         if not char.isspace():
             counts[char] = counts.get(char, 0) + 1
     return counts
+
+
+def reading_time(text: str, wpm: int = 200) -> int:
+    """Return the minutes needed to read ``text`` at ``wpm`` words per minute (ADR 0004).
+
+    Words are counted with ``word_count`` (ADR 0001). The result is whole minutes rounded
+    **up**: any text with at least one word takes at least 1 minute, and only text with no
+    words (``""``, whitespace or punctuation only) gives 0. So with the default 200 wpm,
+    1 to 200 words give 1, 201 words give 2. The division is done on integers, so there is
+    no floating-point rounding at exact multiples of ``wpm``.
+
+    Raises:
+        TypeError: if ``text`` is not a ``str``, or ``wpm`` is not an ``int`` (``bool`` is
+            rejected too, although it is a subclass of ``int``).
+        ValueError: if ``wpm < 1``.
+    """
+    if not isinstance(text, str):
+        raise TypeError(f"reading_time() expects a str, got {type(text).__name__}")
+    # bool is checked explicitly because isinstance(True, int) is True, and reading_time(t,
+    # True) is almost certainly a bug rather than a request for 1 word per minute.
+    if isinstance(wpm, bool) or not isinstance(wpm, int):
+        raise TypeError(f"reading_time() expects an int wpm, got {type(wpm).__name__}")
+    if wpm < 1:
+        raise ValueError(f"wpm must be at least 1, got {wpm}")
+    # Ceiling division on integers: -(-a // b) == ceil(a / b) for b > 0, exact for any size.
+    return -(-word_count(text) // wpm)

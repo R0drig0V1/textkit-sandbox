@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `reading_time`: whole minutes to read a text from `word_count`, rounded up so any text with a word takes at least 1 minute (ADR 0004); raises `ValueError` when `wpm < 1`.
 - Added `slug_title`: `slugify` output cut to at most `max_len` characters, with trailing `-` stripped; raises `ValueError` when `max_len < 0`.
 - Added `slugify`: lower-case ASCII slug (non-ASCII removed, other runs become `-`).
 - Added `char_freq`: counts each non-whitespace character of a text, case-sensitive, keys in order of first occurrence.
