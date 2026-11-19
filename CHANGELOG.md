@@ -8,6 +8,7 @@
 - Added `parse_duration` in the new module `textkit.durations`: seconds from `h`, `m` and `s` parts in that order (`"1h30m"` -> 5400); ASCII digits and lower-case units only, no whitespace; raises `ValueError` otherwise.
 - Added `number_to_words` in the new module `textkit.numwords`: spells `0 <= n <= 999` in lower-case English words with hyphenated tens and no "and" (`105` -> `"one hundred five"`); raises `ValueError` outside the range or for a non-`int`, `bool` included.
 - Added `reading_time`: whole minutes to read a text at `wpm` words per minute (default 200), rounded up, 0 for text with no words; raises `ValueError` when `wpm < 1` (rule: [docs/decisions/0004-reading-time-rounding.md](docs/decisions/0004-reading-time-rounding.md)).
+- Added `render` in the new module `textkit.templates`: replaces `{name}` placeholders with `str(values[name])`; `{{` and `}}` are literal braces, any other brace content or an unmatched brace raises `ValueError` (checked before any lookup), a missing name raises `KeyError`; no format specs.
 - Added `sentence_count`: counts sentences; a run of `.`, `!`, `?` or `…` ends one sentence, while decimals such as `3.14`, abbreviations such as `e.g.` and `Dr.`, and an ellipsis before a lowercase word do not (rule: [docs/decisions/0005-sentence-boundaries.md](docs/decisions/0005-sentence-boundaries.md)).
 - Added the `python3 -m textkit` command line.
 - Added `slug_title`: a slug of at most `max_len` characters that never ends in `-` (character cut); raises `ValueError` when `max_len` is negative.
