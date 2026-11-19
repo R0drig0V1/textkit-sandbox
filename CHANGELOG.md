@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added `slug_title`: a slug cut to at most `max_len` characters, never ending in `-`, built on
+  `slugify` and `truncate`.
 - Added `slugify`: turns text into a lower-case ASCII slug.
 - Added `char_freq` in `textkit.counts`: counts each non-whitespace character, case-sensitive, keys in order of first occurrence.
 - Added `reading_time` in `textkit.counts`: whole minutes to read a text, from `word_count`, rounded up (ADR "Reading time rounding").
