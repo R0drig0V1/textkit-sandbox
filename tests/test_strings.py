@@ -2,7 +2,7 @@
 
 import unittest
 
-from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import is_palindrome, slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -200,6 +200,50 @@ class SlugTitleTest(unittest.TestCase):
             slug_title("Hello, World!", -1)
         with self.assertRaises(ValueError):
             slug_title("", -1)
+
+
+class IsPalindromeTest(unittest.TestCase):
+    def test_simple_palindrome(self):
+        self.assertTrue(is_palindrome("level"))
+
+    def test_not_a_palindrome(self):
+        self.assertFalse(is_palindrome("hello"))
+
+    def test_ignores_case_spaces_and_punctuation(self):
+        self.assertTrue(is_palindrome("A man, a plan, a canal: Panama!"))
+
+    def test_ignores_accents_in_nfc_input(self):
+        self.assertTrue(is_palindrome("Ésé"))
+        self.assertTrue(is_palindrome("A man, a plan, a canal: Panamá"))
+
+    def test_ignores_accents_in_nfd_input(self):
+        self.assertTrue(is_palindrome("E\u0301se\u0301"))
+
+    def test_accented_non_palindrome(self):
+        self.assertFalse(is_palindrome("Ñandú"))
+
+    def test_digits_count(self):
+        self.assertTrue(is_palindrome("12321"))
+        self.assertFalse(is_palindrome("123"))
+        self.assertFalse(is_palindrome("1a2"))
+
+    def test_casefold_expands_sharp_s(self):
+        # casefold turns "ß" into "ss"; lower() would leave it as one character.
+        self.assertTrue(is_palindrome("Straße ssarts"))
+
+    def test_mark_added_by_casefold_is_ignored(self):
+        # "İ" casefolds to "i" + U+0307 after strip_accents has run.
+        self.assertTrue(is_palindrome("İi"))
+
+    def test_non_ascii_letters_count(self):
+        self.assertTrue(is_palindrome("øaø"))
+        self.assertFalse(is_palindrome("øa"))
+
+    def test_empty_string(self):
+        self.assertTrue(is_palindrome(""))
+
+    def test_no_alphanumerics(self):
+        self.assertTrue(is_palindrome("!!! ,. ?"))
 
 
 if __name__ == "__main__":

@@ -11,6 +11,7 @@
 - Added `slugify`: lower-case ASCII slug of a text, runs of other characters become one `-`.
 - Added `soundex`: the four-character American Soundex code of a name.
 - Added `is_email`: tells whether a string is a syntactically valid e-mail address, offline.
+- Added `is_palindrome`: tells whether text reads the same backwards, ignoring case, spaces, punctuation and accents.
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (accents) from text.
 - Added `to_camel_case`: converts snake_case or kebab-case to camelCase; input with no separator only has its first character lower-cased.

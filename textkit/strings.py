@@ -122,3 +122,27 @@ def slug_title(text: str, max_len: int) -> str:
     # Only trailing `-` can appear: slugify already strips both ends, and the cut keeps the
     # start, so the leading end is untouched.
     return truncate(slugify(text), max_len, suffix="").rstrip("-")
+
+
+def is_palindrome(text: str) -> bool:
+    """Tell whether ``text`` reads the same backwards, ignoring case, punctuation and accents.
+
+    Steps, in order:
+
+    1. Accents are removed with ``strip_accents`` (``"é"`` -> ``"e"``).
+    2. The text is case-folded with ``str.casefold`` (stronger than ``lower``: ``"ß"``
+       becomes ``"ss"``).
+    3. Only characters for which ``str.isalnum()`` is true are kept, so spaces and
+       punctuation are ignored while digits and non-ASCII letters count.
+
+    The remaining sequence is compared with its reverse:
+    ``is_palindrome("A man, a plan, a canal: Panamá") is True``. ``""`` and text with no
+    alphanumeric characters (``"!!!"``) give ``True``: an empty sequence equals its reverse.
+    Never raises for a ``str``.
+    """
+    # casefold runs after strip_accents and can add a combining mark of its own ("İ" folds
+    # to "i" + U+0307). The isalnum filter drops it, since combining marks are not
+    # alphanumeric, so accents are ignored whichever step produces them.
+    folded = strip_accents(text).casefold()
+    kept = [ch for ch in folded if ch.isalnum()]
+    return kept == kept[::-1]

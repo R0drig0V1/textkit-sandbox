@@ -20,6 +20,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `slugify` | `textkit.strings` | Lower-case ASCII slug, runs of other characters become one `-` |
 | `soundex` | `textkit.phonetic` | Returns the four-character American Soundex code of a name |
 | `is_email` | `textkit.emails` | Tells whether a string is a syntactically valid e-mail address (offline) |
+| `is_palindrome` | `textkit.strings` | Tells whether text reads the same backwards, ignoring case, punctuation and accents |
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
 | `strip_accents` | `textkit.strings` | Removes combining marks (accents) from text |
 | `to_camel_case` | `textkit.cases` | Converts snake_case or kebab-case to camelCase |
