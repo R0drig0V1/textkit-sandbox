@@ -13,6 +13,7 @@
 - Added `pluralize`: English plural of a singular noun (rules in docs/decisions/0004-pluralize-rules.md).
 - Added `reading_time`: whole minutes to read a text at `wpm` words per minute (default 200), from `word_count`, rounded up (docs/decisions/0006-reading-time-rounding.md).
 - Added the `python3 -m textkit` command line.
+- Added `sentence_count`: counts the sentences in a text; abbreviations, initials and mid-sentence ellipses do not end one (docs/decisions/0007-sentence-count-abbreviations-and-ellipses.md).
 - Added `slug_title`: the slug of a text cut to at most `max_len` characters, never ending in `-`.
 - Added `rot13`: rotates ASCII letters by 13 places keeping their case; its own inverse.
 - Added `slugify`: lower-case ASCII slug of a text, runs of other characters become one `-`.

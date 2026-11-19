@@ -3,9 +3,11 @@
 import ast
 import pathlib
 import re
+import time
 import unittest
 
 from textkit.counts import char_freq, reading_time, word_count
+from textkit.counts import sentence_count
 
 # The case table of docs/decisions/0002-what-counts-as-a-word.md, as (input, count). The ADR
 # is the specification; WordCountTest.test_adr_table_matches keeps the two in sync.
@@ -150,6 +152,85 @@ class ReadingTimeTest(unittest.TestCase):
                 with self.assertRaises(TypeError):
                     reading_time(value)
 
+
+# The case table of docs/decisions/0007-sentence-count-abbreviations-and-ellipses.md, as
+# (input, count). SentenceCountTest.test_adr_table_matches keeps the two in sync.
+SENTENCE_COUNT_CASES = [
+    ("", 0),
+    ("   \n\t ", 0),
+    ("...", 0),
+    ("!?!", 0),
+    ("Hello", 1),
+    ("Hello world.", 1),
+    ("One. Two. Three.", 3),
+    ("Really?! Yes!!!", 2),
+    ("Hi! !!", 1),
+    ("Line one\nline two", 1),
+    ("Pi is 3.14 exactly. Yes.", 2),
+    ("Version 2. Next step.", 2),
+    ("See Dr. Smith. He is in.", 2),
+    ("Mr. and Mrs. Brown left.", 1),
+    ("DR. NO. Fine.", 2),
+    ("Use a tool, e.g. a hammer. Then stop.", 2),
+    ("Fruit (i.e. apples) is good.", 1),
+    ("It was 5 p.m. when we met.", 1),
+    ("J. R. R. Tolkien wrote it.", 1),
+    ("Bring pens, paper, etc. Then we start.", 1),
+    ('He said "Stop." Then he left.', 2),
+    ("She said “Go.” He went.", 2),
+    ("Wait... what? No.", 2),
+    ("I don't know... Maybe tomorrow.", 2),
+    ("Well… fine.", 1),
+    ("It ends with an ellipsis...", 1),
+]
+
+
+def _sentence_adr_cases() -> list:
+    """Parse the case table of the sentence ADR into (input, count) pairs.
+
+    Found by title rather than number, since the integrator may renumber the ADR at merge.
+    """
+    (adr,) = _DECISIONS.glob("*-sentence-count-abbreviations-and-ellipses.md")
+    table = adr.read_text(encoding="utf-8").split("## Cases", 1)[1]
+    rows = re.findall(r"^\| `(.*)` \| (\d+) \|$", table, re.M)
+    return [(ast.literal_eval(literal), int(count)) for literal, count in rows]
+
+
+class SentenceCountTest(unittest.TestCase):
+    def test_adr_cases(self):
+        for text, expected in SENTENCE_COUNT_CASES:
+            with self.subTest(text=text):
+                self.assertEqual(sentence_count(text), expected)
+
+    def test_adr_table_matches(self):
+        self.assertEqual(_sentence_adr_cases(), SENTENCE_COUNT_CASES)
+
+    def test_prose(self):
+        text = (
+            "Dr. Brown arrived at 3 p.m. today. Did he bring the files, e.g. the 2.5 MB "
+            "report? He did! Then... nothing happened."
+        )
+        self.assertEqual(sentence_count(text), 4)
+
+    def test_closing_bracket_after_terminator(self):
+        self.assertEqual(sentence_count("It worked (mostly.) Next one."), 2)
+
+    def test_non_str_raises_type_error(self):
+        for value in (None, 42, b"bytes"):
+            with self.subTest(value=value):
+                with self.assertRaises(TypeError):
+                    sentence_count(value)
+
+
+    def test_long_terminator_runs_are_linear(self):
+        # Regression: before the run in _SENTENCE_END was anchored to be maximal, these took
+        # seconds (quadratic backtracking: 2.9 s at 8000 characters). They now take
+        # milliseconds; the 1 s bound leaves a wide margin on a loaded machine.
+        for text in ("." * 20000 + "x", "a.. " + "!" * 20000 + "x"):
+            with self.subTest(text=text[:6]):
+                start = time.perf_counter()
+                sentence_count(text)
+                self.assertLess(time.perf_counter() - start, 1.0)
 
 if __name__ == "__main__":
     unittest.main()
