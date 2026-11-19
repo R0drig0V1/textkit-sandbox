@@ -18,3 +18,4 @@
 - Added `word_count`: counts the words in a text, following the word rule of ADR 0001.
 - Added `wrap`: splits text into lines of at most `width` characters at spaces; existing newlines are reflowed (ADR 0003).
 - Added the `python3 -m textkit` command line.
+- Added the usage guide `docs/usage.md`: one example per public function, run as doctests by `tests/test_usage.py`.
