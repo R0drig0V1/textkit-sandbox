@@ -73,7 +73,7 @@ anything else). Tasks with no "Depends on" can start at once.
       Examples to test: `("Hello, World!", 8)` -> `"hello-wo"`, `("Hello, World!", 6)` ->
       `"hello"`, `("Hello, World!", 11)` -> `"hello-world"`, `("x", 0)` -> `""`.
       Depends on T1.1 and T1.2.
-- [ ] **T1.10 shared tokenizer**: add `textkit/_tokens.py` (a private module: no README row,
+- [x] **T1.10 shared tokenizer**: add `textkit/_tokens.py` (a private module: no README row,
       no CHANGELOG line) with `words(text) -> list[str]` implementing exactly the word rule of
       T1.5's ADR, and make `word_count` return `len(words(text))`. Make `to_snake_case` use
       `words` only for the parts where T1.5's rule and T1.7's ADR split the same way;
