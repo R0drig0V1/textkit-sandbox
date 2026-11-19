@@ -2,6 +2,8 @@
 docs/decisions/0001-pluralize-rules.md; every public function is listed in the README's
 function table."""
 
+import string
+
 # All the tables are keyed by the lower-cased singular. They are deliberately short: a
 # rule-based pluralizer cannot be complete, and the ADR names exactly what is covered.
 
@@ -39,6 +41,10 @@ _SIBILANT_ENDINGS = ("s", "x", "z", "ch", "sh")
 
 _VOWELS = "aeiou"
 
+# Rule 8 only applies after an ASCII consonant: str.isalpha() would also accept "ñ" or "é",
+# which the ADR leaves to the default rule.
+_ASCII_CONSONANTS = frozenset(set(string.ascii_lowercase) - set(_VOWELS))
+
 
 def _recase(plural: str, word: str) -> str:
     """Give a table plural (lower case) the case pattern of the singular ``word``."""
@@ -64,7 +70,7 @@ def pluralize(word: str) -> str:
     6. Listed ``-o`` nouns take ``-es`` (``potato`` -> ``potatoes``); other ``-o`` nouns
        take ``-s`` (``photo`` -> ``photos``).
     7. Nouns ending in ``s``, ``x``, ``z``, ``ch`` or ``sh`` take ``-es``.
-    8. A consonant followed by ``y`` becomes ``-ies`` (``city`` -> ``cities``); a vowel
+    8. An ASCII consonant followed by ``y`` becomes ``-ies`` (``city`` -> ``cities``); a vowel
        followed by ``y`` takes ``-s`` (``day`` -> ``days``).
     9. Everything else takes ``-s``.
 
@@ -100,6 +106,6 @@ def pluralize(word: str) -> str:
         return word + ending("es")
     if lower.endswith(_SIBILANT_ENDINGS):
         return word + ending("es")
-    if len(lower) >= 2 and lower[-1] == "y" and lower[-2].isalpha() and lower[-2] not in _VOWELS:
+    if len(lower) >= 2 and lower[-1] == "y" and lower[-2] in _ASCII_CONSONANTS:
         return word[:-1] + ending("ies")
     return word + ending("s")

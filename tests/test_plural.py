@@ -31,6 +31,7 @@ ADR_CASES = [
     ("CITY", "CITIES"),
     ("Knife", "Knives"),
     ("iPhone", "iPhones"),
+    ("ñy", "ñys"),
     ("y", "ys"),
     ("a", "as"),
     ("", ""),

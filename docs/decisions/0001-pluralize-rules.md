@@ -31,7 +31,8 @@ lower-cased word.
 7. **Sibilants**: a word ending in `s`, `x`, `z`, `ch` or `sh` takes `-es` (`bus` ->
    `buses`, not `busses`).
 8. **`-y`**: an ASCII consonant letter followed by `y` becomes `-ies` (`city` -> `cities`);
-   a vowel (`a e i o u`) followed by `y` takes `-s` (`day` -> `days`).
+   a vowel (`a e i o u`) followed by `y` takes `-s` (`day` -> `days`). A non-ASCII letter
+   before `y` is not a consonant for this rule, so `"ñy"` takes `-s` by rule 9.
 9. **Default**: `-s`.
 
 Words are compared to the lists exactly (after lower-casing), not by suffix, so compounds
@@ -91,6 +92,7 @@ T2.6 CLI rules trivially satisfied. A non-`str` raises `TypeError`.
 | `"CITY"` | `"CITIES"` | 8 |
 | `"Knife"` | `"Knives"` | 4 |
 | `"iPhone"` | `"iPhones"` | 9 |
+| `"ñy"` | `"ñys"` | 9 |
 | `"y"` | `"ys"` | 9 |
 | `"a"` | `"as"` | 9 |
 | `""` | `""` | 1 |
