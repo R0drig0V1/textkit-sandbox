@@ -7,7 +7,9 @@ tiny synthetic project. Nothing here matters; it can be wiped at any time.
 
 ## Functions
 
-Every public function is listed here, once (checked by `scripts/check.sh`).
+Every public function is listed here, once (checked by `scripts/check.sh`). For a runnable
+example of each one, see the [usage guide](docs/usage.md); its examples are doctests that
+`scripts/check.sh` runs.
 
 | Function | Module | What it does |
 |----------|--------|--------------|
@@ -28,7 +30,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 
 ## Commands
 
-- `scripts/check.sh`: unit tests, this table, the changelog, ADR numbering.
+- `scripts/check.sh`: unit tests (the usage guide examples included), this table, the changelog, ADR numbering.
 - `python3 -m textkit <function> "<text>"`: prints the result of any public function that
   takes one text argument (other parameters keep their defaults); `python3 -m textkit --help`
   lists them with the first line of each docstring. The commands are discovered at run time.
