@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added `char_freq` in `textkit.counts`: counts each character that is not `str.isspace()`, case-sensitive, keys in order of first occurrence.
+- Added `is_email` in the new module `textkit.emails`: tells whether text is a syntactically valid email address (one `@`, a dot-atom local part of at most 64 characters, a host-name domain of two or more labels, ASCII only, at most 254 characters); no network or DNS (rule: [docs/decisions/0006-what-is-an-email-address.md](docs/decisions/0006-what-is-an-email-address.md)).
 - Added `is_palindrome`: tells whether text reads the same backwards, ignoring case, spaces, punctuation and accents; digits count, and `""` or text with no letters or digits gives `True`.
 - Added `reading_time`: whole minutes to read a text at `wpm` words per minute (default 200), rounded up, 0 for text with no words; raises `ValueError` when `wpm < 1` (rule: [docs/decisions/0004-reading-time-rounding.md](docs/decisions/0004-reading-time-rounding.md)).
 - Added `sentence_count`: counts sentences; a run of `.`, `!`, `?` or `…` ends one sentence, while decimals such as `3.14`, abbreviations such as `e.g.` and `Dr.`, and an ellipsis before a lowercase word do not (rule: [docs/decisions/0005-sentence-boundaries.md](docs/decisions/0005-sentence-boundaries.md)).
