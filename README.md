@@ -20,6 +20,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase or kebab-case identifiers to snake_case |
 | `strip_accents` | `textkit.strings` | Removes combining marks (`"Ñandú"` -> `"Nandu"`) |
 | `word_count` | `textkit.counts` | Counts the words in a text (rule: ADR 0002) |
+| `wrap` | `textkit.strings` | Splits text into lines of at most `width` characters at spaces |
 
 ## Commands
 
