@@ -22,6 +22,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `sentence_count` | `textkit.counts` | Counts sentences: `"?!"` ends one, `"Dr."`, `"e.g."` and `"3.14"` do not, `"..."` only before a capital ([ADR 0004](docs/decisions/0004-where-a-sentence-ends.md)) |
 | `wrap` | `textkit.strings` | Splits text into lines of at most `width` characters, keeping line breaks |
 | `slug_title` | `textkit.strings` | Slug of at most `max_len` characters, cut at a word boundary when possible, never ending in `-` |
+| `is_palindrome` | `textkit.strings` | Whether text reads the same both ways, ignoring case (`casefold`), accents and anything not a letter or digit |
 
 ## Commands
 

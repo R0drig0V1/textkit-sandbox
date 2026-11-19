@@ -3,7 +3,15 @@
 import unicodedata
 import unittest
 
-from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import (
+    is_palindrome,
+    slug_title,
+    slugify,
+    squeeze,
+    strip_accents,
+    truncate,
+    wrap,
+)
 
 
 class SqueezeTest(unittest.TestCase):
@@ -300,6 +308,98 @@ class SlugTitleTest(unittest.TestCase):
                     result = slug_title(text, max_len)
                     self.assertWellFormed(result, max_len)
                     self.assertTrue(slug.startswith(result))
+
+
+class IsPalindromeTest(unittest.TestCase):
+    def test_classic_examples(self):
+        self.assertTrue(is_palindrome("A man, a plan, a canal: Panama"))
+        self.assertTrue(is_palindrome("Anilina"))
+        self.assertTrue(is_palindrome("Dábale arroz a la zorra el abad"))
+
+    def test_nandu_is_not_a_palindrome(self):
+        # "Ñandú" -> "nandu", whose reverse is "udnan".
+        self.assertFalse(is_palindrome("Ñandú"))
+
+    def test_plain_non_palindromes(self):
+        self.assertFalse(is_palindrome("hello"))
+        self.assertFalse(is_palindrome("ab"))
+
+    def test_ignores_case(self):
+        self.assertTrue(is_palindrome("RaceCar"))
+
+    def test_ignores_spaces_and_punctuation(self):
+        self.assertTrue(is_palindrome("No 'x' in Nixon"))
+        self.assertTrue(is_palindrome("ab_ba"))
+        self.assertTrue(is_palindrome("a\tb\n-b...a!"))
+
+    def test_ignores_accents(self):
+        self.assertTrue(is_palindrome("Ánà"))
+        self.assertTrue(is_palindrome("añna"))
+
+    def test_casefold_not_lower(self):
+        # casefold("ß") == "ss"; lower() would keep "ß" and say False.
+        self.assertTrue(is_palindrome("sß"))
+        self.assertTrue(is_palindrome("ẞss"))
+
+    def test_dotted_capital_i_folds_to_plain_i(self):
+        self.assertTrue(is_palindrome("İi"))
+
+    def test_digits_count(self):
+        self.assertTrue(is_palindrome("12321"))
+        self.assertTrue(is_palindrome("1a1"))
+        self.assertFalse(is_palindrome("12"))
+        self.assertFalse(is_palindrome("a1"))
+
+    def test_no_compatibility_mapping(self):
+        self.assertFalse(is_palindrome("²2"))
+
+    def test_empty_and_no_letters_are_palindromes(self):
+        for text in ["", " ", "!?", "...,;:", "\n\t"]:
+            with self.subTest(text=text):
+                self.assertTrue(is_palindrome(text))
+
+    def test_ignored_characters_never_change_the_answer(self):
+        for core in ["", "a", "ab", "aba"]:
+            with self.subTest(core=core):
+                self.assertEqual(is_palindrome(core + "!"), is_palindrome(core))
+                self.assertEqual(is_palindrome("  " + core + "?"), is_palindrome(core))
+
+    def test_single_character(self):
+        for text in ["a", "Z", "7", "é", "日"]:
+            with self.subTest(text=text):
+                self.assertTrue(is_palindrome(text))
+
+    def test_non_latin_scripts(self):
+        self.assertTrue(is_palindrome("А роза упала на лапу Азора"))  # Cyrillic
+        self.assertTrue(is_palindrome("שמש"))  # Hebrew
+        self.assertTrue(is_palindrome("たけやぶやけた"))  # Japanese kana
+        self.assertTrue(is_palindrome("기러기"))  # Hangul syllables
+        self.assertFalse(is_palindrome("日本"))
+
+    def test_dakuten_is_stripped_like_an_accent(self):
+        # strip_accents removes the dakuten (Mn), so "が" compares as "か".
+        self.assertTrue(is_palindrome("かが"))
+
+    def test_nfd_input_equals_nfc_input(self):
+        texts = ["Dábale arroz a la zorra el abad", "Ñandú", "Ánà", "añna", "기러기", "かが"]
+        for text in texts:
+            nfc = unicodedata.normalize("NFC", text)
+            nfd = unicodedata.normalize("NFD", text)
+            with self.subTest(text=text):
+                self.assertNotEqual(nfc, nfd)
+                self.assertEqual(is_palindrome(nfd), is_palindrome(nfc))
+
+    def test_str_subclass_is_accepted(self):
+        class MyStr(str):
+            pass
+
+        self.assertTrue(is_palindrome(MyStr("Anilina")))
+
+    def test_non_str_raises_type_error(self):
+        for value in [None, b"aba", 121, ["a"]]:
+            with self.subTest(value=value):
+                with self.assertRaises(TypeError):
+                    is_palindrome(value)
 
 
 if __name__ == "__main__":
