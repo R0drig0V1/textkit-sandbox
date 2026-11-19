@@ -2,7 +2,7 @@ import unittest
 
 import unicodedata
 
-from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import is_palindrome, slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -190,6 +190,38 @@ class SlugTitleTest(unittest.TestCase):
             slug_title("x", -1)
         with self.assertRaises(ValueError):
             slug_title("", -1)
+
+
+class IsPalindromeTest(unittest.TestCase):
+    def test_ignores_case_spaces_and_punctuation(self):
+        self.assertTrue(is_palindrome("A man, a plan, a canal: Panama!"))
+
+    def test_ignores_accents(self):
+        self.assertTrue(is_palindrome("\u00c9s\u00e9"))
+        self.assertTrue(is_palindrome("Ana l\u00e1va lana"))
+
+    def test_nfd_input_matches_nfc(self):
+        text = unicodedata.normalize("NFD", "\u00c9s\u00e9")
+        self.assertTrue(is_palindrome(text))
+
+    def test_digits_count(self):
+        self.assertTrue(is_palindrome("12321"))
+        self.assertFalse(is_palindrome("123"))
+        self.assertFalse(is_palindrome("a1a2"))
+
+    def test_casefold_not_lower(self):
+        # casefold("\u00df") is "ss", so "\u00dfS" folds to "sss".
+        self.assertTrue(is_palindrome("\u00dfS"))
+
+    def test_not_a_palindrome(self):
+        self.assertFalse(is_palindrome("hello"))
+
+    def test_empty_and_no_alphanumerics_are_true(self):
+        self.assertTrue(is_palindrome(""))
+        self.assertTrue(is_palindrome("!!! ,.  "))
+
+    def test_single_character(self):
+        self.assertTrue(is_palindrome("x"))
 
 
 if __name__ == "__main__":

@@ -128,3 +128,21 @@ def slug_title(text: str, max_len: int) -> str:
     if max_len < 0:
         raise ValueError(f"max_len must be at least 0, got {max_len}")
     return truncate(slugify(text), max_len, suffix="").rstrip("-")
+
+
+def is_palindrome(text: str) -> bool:
+    """Tell whether ``text`` reads the same backwards, ignoring case, punctuation and accents.
+
+    ``text`` is normalized in three steps: ``strip_accents``, then ``str.casefold``, then
+    only characters for which ``str.isalnum()`` is true are kept. The result is compared
+    with its reverse. Digits count (``"12321"`` is a palindrome, ``"123"`` is not), accents
+    do not (``"Ésé"`` is one), and letters with no decomposition stay as they are
+    (``"øxø"`` is one, ``"øxo"`` is not).
+
+    ``""`` and text with no alphanumeric characters (``"!!!"``, ``"  "``) give ``True``:
+    the empty string reads the same both ways. Never raises for a ``str``.
+    """
+    # casefold, not lower: it also folds letters such as "ß" -> "ss", so case-insensitive
+    # comparison holds for every script. Accents are stripped before folding, as planned.
+    kept = [c for c in strip_accents(text).casefold() if c.isalnum()]
+    return kept == kept[::-1]
