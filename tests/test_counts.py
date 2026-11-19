@@ -6,6 +6,8 @@ identical, so neither can drift from the other. CharFreqTest pins the T1.6 contr
 case-sensitive, str.isspace() characters skipped, keys in order of first occurrence.
 ReadingTimeTest tests every row of the case table of the rounding ADR
 (docs/decisions/*-reading-time-rounding.md) and checks it against READING_TIME_CASES.
+SentenceCountTest does the same as WordCountTest with the sentence ADR
+(docs/decisions/*-sentence-boundaries.md).
 """
 
 import ast
@@ -14,7 +16,7 @@ import re
 import unicodedata
 import unittest
 
-from textkit.counts import char_freq, reading_time, word_count
+from textkit.counts import char_freq, reading_time, sentence_count, word_count
 
 # Mirror of the case table in docs/decisions/*-what-counts-as-a-word.md: (input, count).
 CASES = [
@@ -169,6 +171,70 @@ class ReadingTimeTest(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(TypeError):
                     reading_time(value)
+
+
+# Mirror of the case table in docs/decisions/*-sentence-boundaries.md: (input, count).
+SENTENCE_CASES = [
+    ("", 0),
+    ("   \n\t  ", 0),
+    ("...", 0),
+    ("?!", 0),
+    ("Hello world", 1),
+    ("Hello world.", 1),
+    ("One. Two. Three.", 3),
+    ("Hi! How are you?", 2),
+    ("What?! No way.", 2),
+    ("Really?!?! Yes!!!", 2),
+    ("Pi is 3.14 exactly.", 1),
+    ("Version v2.0 is out. Get it!", 2),
+    ("e.g.", 1),
+    ("Dr.", 1),
+    ("Use fruit, e.g. apples, daily.", 1),
+    ("Ask Dr. Smith. He knows.", 2),
+    ("Mr. and Mrs. Smith arrived.", 1),
+    ("(Dr. Who is here.) Next.", 2),
+    ("I.e. it works.", 1),
+    ("We bought apples, etc. Then we left.", 2),
+    ("Wait... what?", 1),
+    ("He left... Then she came.", 2),
+    ("Wait… what?", 1),
+    ("The end…", 1),
+    ("So...?", 1),
+    ("He said \"Stop!\" Then he left.", 2),
+    ("'Stop!' he said.", 2),
+    ("Ready? . Go", 2),
+    ("Hello.World", 1),
+    ("Line one\nLine two", 1),
+    ("Ñandú. Café.", 2),
+]
+
+
+def _sentence_adr_cases() -> list:
+    """Parse the case table of the sentence ADR. Glob on the slug: the number may change at merge."""
+    (adr,) = sorted((_ROOT / "docs" / "decisions").glob("*-sentence-boundaries.md"))
+    rows = re.findall(r"^\| `(.*)` \| (\d+) \|", adr.read_text(encoding="utf-8"), re.M)
+    return [(ast.literal_eval(literal), int(count)) for literal, count in rows]
+
+
+class SentenceCountTest(unittest.TestCase):
+    def test_adr_table(self):
+        for text, expected in SENTENCE_CASES:
+            with self.subTest(text=text):
+                self.assertEqual(sentence_count(text), expected)
+
+    def test_cases_match_adr_table(self):
+        self.assertEqual(_sentence_adr_cases(), SENTENCE_CASES)
+
+    def test_nfc_and_nfd_agree(self):
+        text = "Ñandú corre. ¿Café? Sí… naïve."
+        self.assertEqual(sentence_count(unicodedata.normalize("NFC", text)), 3)
+        self.assertEqual(sentence_count(unicodedata.normalize("NFD", text)), 3)
+
+    def test_rejects_non_str(self):
+        for value in (None, 42, b"bytes", ["a", "b"]):
+            with self.subTest(value=value):
+                with self.assertRaises(TypeError):
+                    sentence_count(value)
 
 
 if __name__ == "__main__":
