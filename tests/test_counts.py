@@ -2,7 +2,7 @@
 
 import unittest
 
-from textkit.counts import char_freq, word_count
+from textkit.counts import char_freq, reading_time, word_count
 
 # Every row of the case table in docs/decisions/0001-what-counts-as-a-word.md, in the same
 # order and with the same literals. Keep the two in sync: T1.10 tests its tokenizer against
@@ -89,6 +89,61 @@ class CharFreqTest(unittest.TestCase):
             char_freq(None)  # type: ignore[arg-type]
         with self.assertRaises(TypeError):
             char_freq(["a"])  # type: ignore[arg-type]
+
+
+class ReadingTimeTest(unittest.TestCase):
+    # Cases of docs/decisions/0004-reading-time-rounds-up.md: (text, wpm, minutes).
+    CASES = [
+        ("", 200, 0),
+        ("  \n\t ", 200, 0),
+        ("... !!! ?", 200, 0),
+        ("hello", 200, 1),
+        (" ".join(["w"] * 199), 200, 1),
+        (" ".join(["w"] * 200), 200, 1),
+        (" ".join(["w"] * 201), 200, 2),
+        (" ".join(["w"] * 400), 200, 2),
+        (" ".join(["w"] * 401), 200, 3),
+        ("one two three", 1, 3),
+        ("one two three", 2, 2),
+    ]
+
+    def test_adr_0004_cases(self):
+        for text, wpm, expected in self.CASES:
+            with self.subTest(words=word_count(text), wpm=wpm):
+                self.assertEqual(reading_time(text, wpm), expected)
+
+    def test_default_wpm_is_200(self):
+        self.assertEqual(reading_time(" ".join(["w"] * 200)), 1)
+        self.assertEqual(reading_time(" ".join(["w"] * 201)), 2)
+
+    def test_counts_words_with_word_count(self):
+        # "well-known" and "3.14" are one word each under ADR 0001: 2 words at 1 wpm.
+        self.assertEqual(reading_time("well-known 3.14", wpm=1), 2)
+
+    def test_large_counts_are_exact(self):
+        # Integer ceiling division: no float error at an exact multiple of wpm.
+        text = " ".join(["w"] * 10_000)
+        self.assertEqual(reading_time(text, wpm=3), 3334)
+        self.assertEqual(reading_time(text, wpm=10_000), 1)
+
+    def test_wpm_below_one_raises(self):
+        for wpm in (0, -1, -200):
+            with self.subTest(wpm=wpm), self.assertRaises(ValueError):
+                reading_time("hello", wpm)
+        # Even for text with no words: the argument is invalid either way.
+        with self.assertRaises(ValueError):
+            reading_time("", 0)
+
+    def test_rejects_non_int_wpm(self):
+        for wpm in (200.0, "200", None, True):
+            with self.subTest(wpm=wpm), self.assertRaises(TypeError):
+                reading_time("hello", wpm)  # type: ignore[arg-type]
+
+    def test_rejects_non_str(self):
+        with self.assertRaises(TypeError):
+            reading_time(None)  # type: ignore[arg-type]
+        with self.assertRaises(TypeError):
+            reading_time(["a", "b"])  # type: ignore[arg-type]
 
 
 if __name__ == "__main__":
