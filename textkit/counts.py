@@ -1,53 +1,10 @@
 """Counting helpers. Every public function is listed in the README's function table.
 
-The word rule is the word-rule ADR, docs/decisions/0002-what-counts-as-a-word.md.
+The word rule is the word-rule ADR, docs/decisions/0002-what-counts-as-a-word.md, implemented
+once in the shared tokenizer ``textkit._tokens.words``.
 """
 
-import unicodedata
-
-# Joiners that keep a word together when a word character is on both sides (word-rule ADR, rule 2).
-_JOINERS = frozenset("-'’")
-# Joiners only between two decimal digits, so "3.14" and "1,000" are one word.
-_DIGIT_JOINERS = frozenset(".,")
-
-
-def _is_mark(char: str) -> bool:
-    """True for a combining mark (Unicode category M*), which extends the word before it."""
-    return unicodedata.category(char).startswith("M")
-
-
-def _word_spans(text: str) -> list[tuple[int, int]]:
-    """Return the (start, end) index pairs of the words of ``text`` under the word-rule ADR.
-
-    A hand-written scanner rather than a regex: ``re`` has no class for combining marks and
-    the digit-only joiners need to look at both neighbours.
-    """
-    spans = []
-    i, n = 0, len(text)
-    while i < n:
-        if not text[i].isalnum():
-            # Separators, and combining marks with no word character before them.
-            i += 1
-            continue
-        start = i
-        i += 1
-        while i < n:
-            char = text[i]
-            if char.isalnum() or _is_mark(char):
-                i += 1
-                continue
-            # A joiner needs a word character right after it; the one before it is text[i - 1]
-            # (a letter, digit or mark, since we are inside a word).
-            if i + 1 < n and text[i + 1].isalnum():
-                if char in _JOINERS:
-                    i += 2
-                    continue
-                if char in _DIGIT_JOINERS and text[i - 1].isdecimal() and text[i + 1].isdecimal():
-                    i += 2
-                    continue
-            break
-        spans.append((start, i))
-    return spans
+from textkit._tokens import words
 
 
 def word_count(text: str) -> int:
@@ -63,9 +20,10 @@ def word_count(text: str) -> int:
 
     Raises ``TypeError`` if ``text`` is not a ``str``.
     """
+    # Checked here too so the error names the public function the caller used.
     if not isinstance(text, str):
         raise TypeError(f"word_count() expects a str, got {type(text).__name__}")
-    return len(_word_spans(text))
+    return len(words(text))
 
 
 def char_freq(text: str) -> dict[str, int]:
