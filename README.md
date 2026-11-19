@@ -20,6 +20,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
 | `strip_accents` | `textkit.strings` | Removes combining marks (accents) from text |
 | `truncate` | `textkit.strings` | Cuts text to a width, ending with a suffix when cut |
+| `to_kebab_case` | `textkit.cases` | Converts camelCase, PascalCase or snake_case to kebab-case |
 | `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase or kebab-case to snake_case |
 | `word_count` | `textkit.counts` | Counts the words in a text |
 
