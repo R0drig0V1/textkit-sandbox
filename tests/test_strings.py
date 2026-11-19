@@ -1,7 +1,7 @@
 import unicodedata
 import unittest
 
-from textkit.strings import slugify, squeeze, truncate
+from textkit.strings import slugify, squeeze, strip_accents, truncate
 
 
 class SqueezeTest(unittest.TestCase):
@@ -94,6 +94,50 @@ class TruncateTest(unittest.TestCase):
 
     def test_counts_code_points(self):
         self.assertEqual(truncate("\u00f1and\u00fa!", 5), "\u00f1a...")
+
+
+class StripAccentsTest(unittest.TestCase):
+    def test_removes_accents_from_nfc_input(self):
+        self.assertEqual(strip_accents("\u00d1and\u00fa"), "Nandu")
+
+    def test_removes_accents_from_nfd_input(self):
+        nfd = unicodedata.normalize("NFD", "\u00d1and\u00fa")
+        self.assertNotEqual(nfd, "\u00d1and\u00fa")
+        self.assertEqual(strip_accents(nfd), "Nandu")
+
+    def test_sentence(self):
+        self.assertEqual(strip_accents("Cr\u00e8me br\u00fbl\u00e9e"), "Creme brulee")
+
+    def test_letters_without_decomposition_are_kept(self):
+        for letter in ("\u00f8", "\u00d8", "\u00df", "\u0142", "\u0111", "\u00e6"):
+            with self.subTest(letter=letter):
+                self.assertEqual(strip_accents(letter), letter)
+        self.assertEqual(strip_accents("stra\u00dfe"), "stra\u00dfe")
+
+    def test_mixed_letters(self):
+        self.assertEqual(strip_accents("S\u00f8ren \u00c5ngstr\u00f6m"), "S\u00f8ren Angstrom")
+
+    def test_compatibility_characters_are_kept(self):
+        self.assertEqual(strip_accents("\ufb01"), "\ufb01")
+
+    def test_multiple_marks_on_one_letter(self):
+        self.assertEqual(strip_accents("\u1ec7"), "e")
+        self.assertEqual(strip_accents("a\u0301\u0308"), "a")
+
+    def test_only_nonzero_combining_class_is_removed(self):
+        self.assertEqual(strip_accents("\u0915\u094d"), "\u0915")
+        self.assertEqual(strip_accents("\u0915\u093f"), "\u0915\u093f")
+        self.assertEqual(strip_accents("a\u20dd"), "a\u20dd")
+
+    def test_lone_combining_mark(self):
+        self.assertEqual(strip_accents("\u0301"), "")
+
+    def test_result_is_nfc(self):
+        self.assertEqual(strip_accents("\ud55c\uad6d\uc5b4"), "\ud55c\uad6d\uc5b4")
+
+    def test_plain_ascii_and_empty_unchanged(self):
+        self.assertEqual(strip_accents("Hello, World! 123"), "Hello, World! 123")
+        self.assertEqual(strip_accents(""), "")
 
 
 if __name__ == "__main__":

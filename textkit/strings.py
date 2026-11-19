@@ -1,6 +1,7 @@
 """String helpers. Every public function is listed in the README's function table."""
 
 import re
+import unicodedata
 
 
 def squeeze(text: str) -> str:
@@ -58,3 +59,34 @@ def truncate(text: str, width: int, suffix: str = "...") -> str:
     if len(text) <= width:
         return text
     return text[: width - len(suffix)] + suffix
+
+
+def strip_accents(text: str) -> str:
+    """Remove combining marks (accents, diacritics) from ``text``.
+
+    ``"Ñandú"`` -> ``"Nandu"``, ``"Crème brûlée"`` -> ``"Creme brulee"``.
+
+    The text is decomposed with canonical decomposition (NFD), every character whose
+    ``unicodedata.combining`` class is non-zero is dropped, and the rest is recomposed
+    with NFC. Consequences:
+
+    - NFC and NFD input give the same result, and the result is always NFC.
+    - Base letters with no canonical decomposition are left as they are: ``"ø"``,
+      ``"ł"``, ``"đ"`` and ``"ß"`` are distinct letters, not accented ones, so
+      ``"Søren Kierkegaard"`` stays ``"Søren Kierkegaard"`` and ``"straße"`` stays
+      ``"straße"``. No transliteration is attempted.
+    - Compatibility characters are not touched (NFD, not NFKD): ``"ﬁ"`` stays ``"ﬁ"``.
+    - "Combining mark" means a non-zero canonical combining class, so the rule is about
+      marks, not about accents: non-accent marks such as the Devanagari virama (U+094D) are
+      removed too, while marks of class 0 such as spacing vowel signs (U+093F) and the
+      combining enclosing circle (U+20DD) are kept.
+    - Text without combining marks is returned unchanged apart from NFC normalization;
+      Hangul syllables are decomposed and recomposed, so they come back intact.
+
+    Never raises for a ``str`` argument; ``""`` gives ``""``.
+    """
+    # Decompose first so precomposed letters ("ñ" as U+00F1) expose their mark; recompose
+    # at the end so that what is left (e.g. Hangul jamo) returns to its usual NFC form.
+    decomposed = unicodedata.normalize("NFD", text)
+    kept = "".join(c for c in decomposed if not unicodedata.combining(c))
+    return unicodedata.normalize("NFC", kept)
