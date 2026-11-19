@@ -2,7 +2,7 @@
 
 import unittest
 
-from textkit.strings import slugify, squeeze, strip_accents, truncate
+from textkit.strings import slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -115,6 +115,60 @@ class StripAccentsTest(unittest.TestCase):
 
     def test_empty_string(self):
         self.assertEqual(strip_accents(""), "")
+
+
+class WrapTest(unittest.TestCase):
+    def test_packs_words_greedily(self):
+        self.assertEqual(wrap("the quick brown fox", 10), ["the quick", "brown fox"])
+
+    def test_line_may_be_exactly_width(self):
+        self.assertEqual(wrap("abc def", 7), ["abc def"])
+        self.assertEqual(wrap("abc def", 6), ["abc", "def"])
+
+    def test_long_word_gets_its_own_line(self):
+        self.assertEqual(wrap("a extraordinary b", 5), ["a", "extraordinary", "b"])
+
+    def test_long_word_alone(self):
+        self.assertEqual(wrap("extraordinary", 3), ["extraordinary"])
+
+    def test_runs_of_spaces_collapse(self):
+        self.assertEqual(wrap("a    b     c", 80), ["a b c"])
+
+    def test_leading_and_trailing_spaces_dropped(self):
+        self.assertEqual(wrap("   a b   ", 80), ["a b"])
+
+    def test_empty_and_blank_text(self):
+        self.assertEqual(wrap("", 5), [])
+        self.assertEqual(wrap("     ", 5), [])
+
+    def test_width_below_one_raises(self):
+        for width in (0, -1):
+            with self.subTest(width=width):
+                with self.assertRaises(ValueError):
+                    wrap("abc", width)
+        with self.assertRaises(ValueError):
+            wrap("", 0)
+
+    def test_width_one(self):
+        self.assertEqual(wrap("a b cd", 1), ["a", "b", "cd"])
+
+    def test_lines_never_contain_the_separating_space(self):
+        for line in wrap("one two three four five six", 7):
+            self.assertFalse(line.startswith(" ") or line.endswith(" "), line)
+            self.assertLessEqual(len(line), 7)
+
+    def test_newlines_are_separators(self):
+        # docs/decisions/0005-wrap-existing-newlines.md: newlines are reflowed like spaces.
+        self.assertEqual(wrap("one\ntwo three", 80), ["one two three"])
+        self.assertEqual(wrap("one\n\ntwo", 3), ["one", "two"])
+        self.assertEqual(wrap("a\r\nb\rc", 80), ["a b c"])
+
+    def test_other_whitespace_is_a_separator(self):
+        self.assertEqual(wrap("a\tb\u00a0c", 80), ["a b c"])
+
+    def test_no_line_contains_a_newline(self):
+        for line in wrap("para one\n\npara two\n", 4):
+            self.assertNotIn("\n", line)
 
 
 if __name__ == "__main__":
