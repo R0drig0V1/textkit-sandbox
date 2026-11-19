@@ -15,6 +15,9 @@ Output: a ``str`` result is printed as is, ``bool`` and ``int`` with ``print()``
 success; 2 (with the usage and the message on stderr, from argparse) for an unknown function,
 a wrong argument count or no arguments at all. A text that starts with ``-`` goes after
 ``--``: ``python3 -m textkit slugify -- "-x-"``.
+
+``python3 -m textkit --version`` prints ``textkit <version>`` and exits 0 (plan task T2.7);
+the version is ``textkit.__version__``, never repeated here.
 """
 
 import argparse
@@ -79,13 +82,18 @@ def _parser(commands: Dict[str, Callable[..., Any]]) -> argparse.ArgumentParser:
         description="Run a textkit function on one text and print the result.",
         epilog='Quote the text; put it after "--" when it starts with "-".',
     )
+    parser.add_argument(
+        "--version", action="version", version=f"textkit {textkit.__version__}"
+    )
     # dest is mandatory with required=True on Python 3.9: without it, a missing command makes
     # argparse fail with a TypeError while building the error message instead of exiting 2.
     subparsers = parser.add_subparsers(
         dest="command", required=True, metavar="function", title="functions"
     )
     for name in sorted(commands):
-        summary = _summary(commands[name])
+        # argparse %-formats help and description strings (for "%(prog)s" and the like), so
+        # a literal "%" in a docstring would raise or garble --help unless it is doubled.
+        summary = _summary(commands[name]).replace("%", "%%")
         sub = subparsers.add_parser(name, help=summary, description=summary)
         sub.add_argument("text", help="the text to pass to the function")
     return parser
@@ -94,7 +102,7 @@ def _parser(commands: Dict[str, Callable[..., Any]]) -> argparse.ArgumentParser:
 def _main(argv: Optional[List[str]] = None) -> int:
     """Parse ``argv`` (``sys.argv[1:]`` when ``None``), run the command and print its result.
 
-    Returns the exit code: 0 on success (``--help`` included), 2 when argparse rejects the
+    Returns the exit code: 0 on success (``--help`` and ``--version`` included), 2 when argparse rejects the
     arguments (it prints the usage and the message on stderr). An exception raised by the
     function itself is not caught.
     """
