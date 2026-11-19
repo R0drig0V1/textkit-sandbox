@@ -17,6 +17,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `truncate` | `textkit.strings` | Shortens text to a width, ending in a suffix (`...` by default) |
 | `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase and kebab-case names to snake_case (ADR 0002) |
 | `strip_accents` | `textkit.strings` | Removes combining marks (`"Ñandú"` -> `"Nandu"`) |
+| `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive, no Unicode normalisation |
 
 ## Commands
 
