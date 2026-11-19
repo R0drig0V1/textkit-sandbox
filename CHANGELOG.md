@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `char_freq`: counts each non-whitespace character of a text, case-sensitive, keys in order of first occurrence.
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (`"Ñandú"` -> `"Nandu"`).
 - Added `truncate`: cuts text to an exact width, suffix included; raises `ValueError` when the width is smaller than the suffix.
