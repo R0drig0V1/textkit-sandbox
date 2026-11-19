@@ -7,7 +7,8 @@ tiny synthetic project. Nothing here matters; it can be wiped at any time.
 
 ## Functions
 
-Every public function is listed here, once (checked by `scripts/check.sh`).
+Every public function is listed here, once (checked by `scripts/check.sh`). Runnable
+examples of each one are in the [usage guide](docs/usage.md).
 
 | Function | Module | What it does |
 |----------|--------|--------------|
