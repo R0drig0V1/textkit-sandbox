@@ -12,6 +12,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | Function | Module | What it does |
 |----------|--------|--------------|
 | `slugify` | `textkit.strings` | Lower-case ASCII slug, runs of other characters become one `-` |
+| `soundex` | `textkit.phonetic` | Returns the four-character American Soundex code of a name |
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
 
 ## Commands
