@@ -1,5 +1,7 @@
 """String helpers. Every public function is listed in the README's function table."""
 
+import unicodedata
+
 
 def squeeze(text: str) -> str:
     """Collapse runs of whitespace into single spaces and strip both ends."""
@@ -23,3 +25,24 @@ def truncate(text: str, width: int, suffix: str = "...") -> str:
     if len(text) <= width:
         return text
     return text[: width - len(suffix)] + suffix
+
+
+def strip_accents(text: str) -> str:
+    """Remove combining marks (accents, diacritics) from ``text``.
+
+    The text is decomposed with Unicode canonical decomposition (NFD), every nonspacing
+    combining mark (category ``Mn``) is dropped, and what remains is recomposed (NFC), so
+    ``"Ñandú"`` gives ``"Nandu"`` whether the input is NFC or NFD.
+
+    Only marks are removed: letters with no canonical decomposition stay as they are
+    (``"ø"``, ``"ł"``, ``"ß"``, ``"æ"``), and the result is not ASCII-only. Nonspacing marks
+    of every script are dropped, which also alters text in scripts that write vowels or
+    other meaningful signs as marks (Devanagari, Hebrew points, Arabic harakat). Empty
+    input gives ``""``. Never raises for a ``str``.
+    """
+    # NFD, not NFKD: compatibility characters (ligatures, superscripts, full-width forms)
+    # are not accents and keep their identity. The final NFC re-joins what NFD split but
+    # is not a mark, such as Hangul syllables decomposed into jamo.
+    decomposed = unicodedata.normalize("NFD", text)
+    kept = "".join(c for c in decomposed if unicodedata.category(c) != "Mn")
+    return unicodedata.normalize("NFC", kept)
