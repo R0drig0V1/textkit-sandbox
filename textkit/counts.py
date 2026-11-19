@@ -31,3 +31,27 @@ def word_count(text: str) -> int:
         # re would accept some non-str objects with a confusing message; be explicit.
         raise TypeError(f"word_count() expects str, got {type(text).__name__}")
     return sum(1 for _ in _WORD.finditer(text))
+
+
+def char_freq(text: str) -> dict[str, int]:
+    """Return how many times each non-whitespace character occurs in ``text``.
+
+    Counting is case-sensitive (``"a"`` and ``"A"`` are different keys) and works on code
+    points: no Unicode normalization is applied, so a decomposed (NFD) ``"é"`` counts as
+    ``"e"`` plus a combining accent. Characters for which ``str.isspace()`` is true (spaces,
+    tabs, newlines, non-breaking spaces and other Unicode whitespace) are not counted. Keys
+    appear in order of first occurrence; ``char_freq("")`` and whitespace-only text give
+    ``{}``.
+
+    Raises ``TypeError`` if ``text`` is not a ``str``.
+    """
+    if not isinstance(text, str):
+        # Iterating bytes or a list would "work" and return nonsense keys; be explicit.
+        raise TypeError(f"char_freq() expects str, got {type(text).__name__}")
+    # A plain dict rather than collections.Counter: the return type is promised as dict, and
+    # dicts keep insertion order, which gives "order of first occurrence" for free.
+    counts: dict[str, int] = {}
+    for char in text:
+        if not char.isspace():
+            counts[char] = counts.get(char, 0) + 1
+    return counts
