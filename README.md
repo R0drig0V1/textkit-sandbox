@@ -14,6 +14,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `slugify` | `textkit.strings` | Lower-cases text into an ASCII slug joined by `-` |
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
 | `strip_accents` | `textkit.strings` | Removes combining marks (`"Ñandú"` -> `"Nandu"`) |
+| `to_camel_case` | `textkit.cases` | Converts snake_case or kebab-case identifiers to camelCase |
 | `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase or kebab-case identifiers to snake_case |
 | `word_count` | `textkit.counts` | Counts the words in a text (rule in ADR 0002) |
 | `truncate` | `textkit.strings` | Shortens text to a width, ending with a suffix when cut |
