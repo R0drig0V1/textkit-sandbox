@@ -1,7 +1,7 @@
 import unicodedata
 import unittest
 
-from textkit.strings import slugify, squeeze
+from textkit.strings import slugify, squeeze, truncate
 
 
 class SqueezeTest(unittest.TestCase):
@@ -42,6 +42,58 @@ class SlugifyTest(unittest.TestCase):
 
     def test_only_non_ascii(self):
         self.assertEqual(slugify("日本語"), "")
+
+
+class TruncateTest(unittest.TestCase):
+    def test_short_text_unchanged(self):
+        self.assertEqual(truncate("abc", 10), "abc")
+
+    def test_exact_fit_unchanged(self):
+        self.assertEqual(truncate("abcdef", 6), "abcdef")
+
+    def test_cut_keeps_start_and_has_exact_width(self):
+        result = truncate("Hello, World!", 8)
+        self.assertEqual(result, "Hello...")
+        self.assertEqual(len(result), 8)
+
+    def test_one_over_width(self):
+        self.assertEqual(truncate("abcdefg", 6), "abc...")
+
+    def test_custom_suffix(self):
+        self.assertEqual(truncate("abcdefghij", 5, suffix="~"), "abcd~")
+
+    def test_width_equal_to_suffix_gives_suffix_only(self):
+        self.assertEqual(truncate("abcdef", 3), "...")
+
+    def test_width_equal_to_suffix_text_fits(self):
+        self.assertEqual(truncate("ab", 3), "ab")
+
+    def test_empty_suffix_is_plain_cut(self):
+        self.assertEqual(truncate("abcdef", 4, suffix=""), "abcd")
+
+    def test_empty_suffix_width_zero(self):
+        self.assertEqual(truncate("abc", 0, suffix=""), "")
+        self.assertEqual(truncate("", 0, suffix=""), "")
+
+    def test_empty_text(self):
+        self.assertEqual(truncate("", 3), "")
+
+    def test_width_below_suffix_raises(self):
+        with self.assertRaises(ValueError):
+            truncate("abcdef", 2)
+
+    def test_width_below_suffix_raises_even_if_text_fits(self):
+        with self.assertRaises(ValueError):
+            truncate("ab", 2)
+        with self.assertRaises(ValueError):
+            truncate("", 0)
+
+    def test_negative_width_with_empty_suffix_raises(self):
+        with self.assertRaises(ValueError):
+            truncate("abc", -1, suffix="")
+
+    def test_counts_code_points(self):
+        self.assertEqual(truncate("\u00f1and\u00fa!", 5), "\u00f1a...")
 
 
 if __name__ == "__main__":
