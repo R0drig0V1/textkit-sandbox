@@ -30,13 +30,16 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 
 `python3 -m textkit <function> <text>` runs one function on one text and prints the result;
 `python3 -m textkit --help` lists the functions and `python3 -m textkit <function> --help`
-shows one function's docstring.
+shows one function's docstring. `python3 -m textkit --version` prints `textkit <version>`
+(the value of `textkit.__version__`) and exits 0; it needs no function.
 
 ```console
 $ python3 -m textkit slugify "Hello, World!"
 hello-world
 $ echo "well-known words" | python3 -m textkit word_count -
 2
+$ python3 -m textkit --version
+textkit 0.1.0
 ```
 
 Every public function of a public module that takes exactly one required `str` argument is a

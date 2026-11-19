@@ -4,12 +4,14 @@ Most tests run ``_main(argv)`` in process with stdout, stderr (and stdin, for ``
 replaced by ``io.StringIO``. The output formats and error paths that no real command
 reaches yet (list, float, ``ValueError``) use small fake commands passed through the
 ``commands`` argument, and command discovery is tested on fake modules registered in
-``sys.modules``. One subprocess run of ``python3 -m textkit --help`` proves that the entry
-point itself works.
+``sys.modules``. Subprocess runs of ``python3 -m textkit --help`` and ``--version`` prove
+that the entry point itself works. ``VersionTest`` covers ``--version`` and
+``textkit.__version__`` (plan task T2.7).
 """
 
 import contextlib
 import io
+import re
 import subprocess
 import sys
 import types
@@ -17,9 +19,16 @@ import unittest
 from pathlib import Path
 from typing import List, Optional
 
+import textkit
 from textkit.__main__ import _discover, _main
 
 ROOT = Path(__file__).resolve().parent.parent
+
+# The canonical form of a PEP 440 version (the regex of PEP 440, Appendix B).
+PEP440_CANONICAL = re.compile(
+    r"^([1-9][0-9]*!)?(0|[1-9][0-9]*)(\.(0|[1-9][0-9]*))*((a|b|rc)(0|[1-9][0-9]*))?"
+    r"(\.post(0|[1-9][0-9]*))?(\.dev(0|[1-9][0-9]*))?$"
+)
 
 
 def run(argv: List[str], commands=None, stdin: Optional[str] = None):
@@ -228,6 +237,33 @@ def _private(text: str) -> str: return text
         self.assertIn("fake_textkit_d", str(ctx.exception))
 
 
+class VersionTest(unittest.TestCase):
+    def test_version_is_pep440_str(self):
+        self.assertIsInstance(textkit.__version__, str)
+        self.assertRegex(textkit.__version__, PEP440_CANONICAL)
+
+    def test_version_option(self):
+        self.assertEqual(run(["--version"]), (0, f"textkit {textkit.__version__}\n", ""))
+
+    def test_version_needs_no_function(self):
+        # The function is required, but argparse runs --version before that check, also
+        # when no command exists at all.
+        self.assertEqual(run(["--version"], {}), (0, f"textkit {textkit.__version__}\n", ""))
+
+    def test_version_wins_over_a_following_function(self):
+        self.assertEqual(run(["--version", "squeeze"])[:2], (0, f"textkit {textkit.__version__}\n"))
+
+    def test_version_after_the_function_is_a_usage_error(self):
+        code, out, err = run(["squeeze", "x", "--version"])
+        self.assertEqual((code, out), (2, ""))
+        self.assertIn("unrecognized arguments: --version", err)
+
+    def test_single_source(self):
+        # __main__ must read textkit.__version__, never repeat the literal.
+        source = (ROOT / "textkit" / "__main__.py").read_text(encoding="utf-8")
+        self.assertNotIn(textkit.__version__, source)
+
+
 class EntryPointTest(unittest.TestCase):
     def test_python_m_textkit_help(self):
         proc = subprocess.run(
@@ -237,6 +273,15 @@ class EntryPointTest(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertIn("usage: python3 -m textkit", proc.stdout)
         self.assertIn("squeeze", proc.stdout)
+
+    def test_python_m_textkit_version(self):
+        proc = subprocess.run(
+            [sys.executable, "-m", "textkit", "--version"],
+            cwd=ROOT, capture_output=True, text=True, timeout=60,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual(proc.stdout, f"textkit {textkit.__version__}\n")
+        self.assertEqual(proc.stderr, "")
 
 
 if __name__ == "__main__":
