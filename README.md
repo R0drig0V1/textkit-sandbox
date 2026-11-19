@@ -16,6 +16,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `word_count` | `textkit.counts` | Counts words: hyphenated words, contractions and numbers count once, any script ([ADR 0001](docs/decisions/0001-what-counts-as-a-word.md)) |
 | `truncate` | `textkit.strings` | Shortens text to a width, ending in a suffix (`...` by default) |
 | `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase and kebab-case names to snake_case (ADR 0002) |
+| `strip_accents` | `textkit.strings` | Removes combining marks (`"Ñandú"` -> `"Nandu"`) |
 
 ## Commands
 

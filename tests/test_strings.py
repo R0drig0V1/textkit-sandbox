@@ -1,8 +1,9 @@
 """Tests for textkit.strings."""
 
+import unicodedata
 import unittest
 
-from textkit.strings import slugify, squeeze, truncate
+from textkit.strings import slugify, squeeze, strip_accents, truncate
 
 
 class SqueezeTest(unittest.TestCase):
@@ -94,6 +95,40 @@ class TruncateTest(unittest.TestCase):
     def test_empty_text(self):
         self.assertEqual(truncate("", 5), "")
         self.assertEqual(truncate("", 0, suffix=""), "")
+
+
+class StripAccentsTest(unittest.TestCase):
+    def test_precomposed(self):
+        self.assertEqual(strip_accents("Ñandú"), "Nandu")
+        self.assertEqual(strip_accents("crème brûlée, façade"), "creme brulee, facade")
+
+    def test_already_decomposed(self):
+        decomposed = unicodedata.normalize("NFD", "Ñandú")
+        self.assertNotEqual(decomposed, "Ñandú")  # guard: the input really is decomposed
+        self.assertEqual(strip_accents(decomposed), "Nandu")
+        # A stray combining mark on its own is removed too.
+        self.assertEqual(strip_accents("á̈b"), "ab")
+
+    def test_empty(self):
+        self.assertEqual(strip_accents(""), "")
+
+    def test_no_accents_unchanged(self):
+        for text in ("Hello, World! 123", "  spaces\tand\nlines ", "ø ł đ ß"):
+            with self.subTest(text=text):
+                self.assertEqual(strip_accents(text), text)
+
+    def test_compatibility_characters_kept(self):
+        # NFD, not NFKD: ligatures, superscripts and full-width letters are not accents.
+        self.assertEqual(strip_accents("ﬁ²Ａ"), "ﬁ²Ａ")
+
+    def test_non_latin(self):
+        self.assertEqual(strip_accents("Ελλάδα"), "Ελλαδα")
+        self.assertEqual(strip_accents("йод"), "иод")
+        # Scripts with no combining marks come back unchanged, Hangul included
+        # (NFD splits it into jamo; the NFC step puts it back together).
+        for text in ("Москва", "東京", "한국어", "مرحبا"):
+            with self.subTest(text=text):
+                self.assertEqual(strip_accents(text), text)
 
 
 if __name__ == "__main__":
