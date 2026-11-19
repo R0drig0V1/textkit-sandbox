@@ -22,6 +22,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `pluralize` | `textkit.plural` | Returns the plural of an English noun, keeping the input's case (rules: [0007-pluralize-rules](docs/decisions/0007-pluralize-rules.md)) |
 | `reading_time` | `textkit.counts` | Estimates the whole minutes needed to read a text (rounding: [0004-reading-time-rounding](docs/decisions/0004-reading-time-rounding.md)) |
 | `render` | `textkit.templates` | Fills `{name}` placeholders from a mapping with `str()` only; `{{` and `}}` are literal braces |
+| `rot13` | `textkit.ciphers` | Rotates ASCII letters by 13 places keeping their case; other characters are unchanged (`"Hello"` -> `"Uryyb"`) |
 | `sentence_count` | `textkit.counts` | Counts the sentences of a text (rule: [0005-sentence-boundaries](docs/decisions/0005-sentence-boundaries.md)) |
 | `slug_title` | `textkit.strings` | Makes a slug of at most `max_len` characters that never ends in `-` |
 | `slugify` | `textkit.strings` | Turns text into a lower-case ASCII slug (`"Hello, World!"` -> `"hello-world"`) |
