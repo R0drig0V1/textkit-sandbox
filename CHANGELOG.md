@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added `char_freq`: counts each non-whitespace character of a text, case-sensitive, in order of first occurrence.
+- Added `slug_title`: a slug cut to at most `max_len` characters that never ends in `-` (`slug_title("Hello, World!", 8)` -> `"hello-wo"`).
 - Added `slugify`: turns text into a lower-case ASCII slug (`"Hello, World!"` -> `"hello-world"`).
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (`"Ñandú"` -> `"Nandu"`).
