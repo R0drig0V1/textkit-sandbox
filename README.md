@@ -19,6 +19,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `is_email` | `textkit.emails` | Tells whether a string is a syntactically valid e-mail address (offline) |
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
 | `strip_accents` | `textkit.strings` | Removes combining marks (accents) from text |
+| `to_camel_case` | `textkit.cases` | Converts snake_case or kebab-case to camelCase |
 | `truncate` | `textkit.strings` | Cuts text to a width, ending with a suffix when cut |
 | `to_kebab_case` | `textkit.cases` | Converts camelCase, PascalCase or snake_case to kebab-case |
 | `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase or kebab-case to snake_case |

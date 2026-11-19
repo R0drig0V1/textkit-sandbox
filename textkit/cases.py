@@ -1,6 +1,8 @@
 """Identifier case conversion helpers. Every public function is listed in the README's table.
 
-The word-boundary rules are recorded in docs/decisions/0001-snake-case-capital-runs.md.
+The word-boundary rules of ``to_snake_case``, which ``to_kebab_case`` reuses, are recorded in
+docs/decisions/0001-snake-case-capital-runs.md. ``to_camel_case`` splits only at separators
+(plan task T1.8), so it does not apply those capital-run rules.
 """
 
 import re
@@ -51,3 +53,28 @@ def to_kebab_case(name: str) -> str:
     # to_snake_case already collapses every separator run to a single "_", so a plain
     # replace is enough; re-deriving the boundaries here would risk the two drifting apart.
     return to_snake_case(name).replace("_", "-")
+
+
+def to_camel_case(name: str) -> str:
+    """Convert a snake_case or kebab-case identifier to camelCase.
+
+    ``-`` and ``_`` are separators; a run of them (``"a__b"``, ``"a-_b"``) counts as one and
+    separators at either end are dropped. The first word is lower-cased with ``str.lower``
+    and every following word is capitalized with ``str.capitalize`` (first character upper,
+    the rest lower), so ``"user_id"`` -> ``"userId"`` and ``"HTTP_server"`` ->
+    ``"httpServer"``. Capitals inside a word are not word boundaries.
+
+    Input with no separator at all is returned with only its first character lower-cased
+    (``"UserId"`` -> ``"userId"``, ``"HTTP"`` -> ``"hTTP"``), so camelCase input is left
+    unchanged. ``""`` and separators only (``"__"``) give ``""``. Never raises for a ``str``;
+    other characters (spaces, punctuation, digits, non-ASCII letters) are kept inside their
+    word. Converting with ``to_snake_case`` and back is lossy for acronyms (ADR 0001).
+    """
+    if not _SEPARATORS.search(name):
+        return name[:1].lower() + name[1:]
+    # Splitting "-a__b-" gives empty strings at the ends: those are the dropped separators.
+    words = [word for word in _SEPARATORS.split(name) if word]
+    if not words:
+        return ""
+    first, *rest = words
+    return first.lower() + "".join(word.capitalize() for word in rest)
