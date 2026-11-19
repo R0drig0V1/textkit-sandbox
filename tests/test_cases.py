@@ -2,7 +2,7 @@
 
 import unittest
 
-from textkit.cases import to_snake_case
+from textkit.cases import to_camel_case, to_snake_case
 
 # The table of cases of ADR 0001 (docs/decisions/0001-to-snake-case-capital-runs.md), row by
 # row and in the same order: keep both in sync.
@@ -47,6 +47,74 @@ class ToSnakeCaseTest(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(TypeError):
                     to_snake_case(value)
+
+
+class ToCamelCaseTest(unittest.TestCase):
+    def test_snake_and_kebab_case(self):
+        cases = [
+            ("user_id", "userId"),
+            ("user-id", "userId"),
+            ("first_name_last", "firstNameLast"),
+            ("mixed-styles_here", "mixedStylesHere"),
+        ]
+        for name, expected in cases:
+            with self.subTest(name=name):
+                self.assertEqual(to_camel_case(name), expected)
+
+    def test_first_word_lowered_rest_capitalized(self):
+        cases = [
+            ("HTTP_server", "httpServer"),
+            ("user_ID", "userId"),
+            ("Kebab-Case-Name", "kebabCaseName"),
+            ("SCREAMING_SNAKE", "screamingSnake"),
+        ]
+        for name, expected in cases:
+            with self.subTest(name=name):
+                self.assertEqual(to_camel_case(name), expected)
+
+    def test_runs_of_separators_count_as_one(self):
+        cases = [("a--b__c", "aBC"), ("user_-_id", "userId"), ("a_-b", "aB")]
+        for name, expected in cases:
+            with self.subTest(name=name):
+                self.assertEqual(to_camel_case(name), expected)
+
+    def test_leading_and_trailing_separators_dropped(self):
+        cases = [("_private", "private"), ("__init__", "init"), ("-user-id-", "userId"),
+                 ("_Private_Name", "privateName")]
+        for name, expected in cases:
+            with self.subTest(name=name):
+                self.assertEqual(to_camel_case(name), expected)
+
+    def test_no_separator_lowers_only_first_character(self):
+        cases = [
+            ("PascalCase", "pascalCase"),
+            ("camelCase", "camelCase"),
+            ("HTTPServer", "hTTPServer"),
+            ("HTTP", "hTTP"),
+            ("user", "user"),
+            ("X", "x"),
+            ("Été", "été"),
+        ]
+        for name, expected in cases:
+            with self.subTest(name=name):
+                self.assertEqual(to_camel_case(name), expected)
+
+    def test_empty_and_separators_only(self):
+        for name in ("", "_", "-", "__", "-_-"):
+            with self.subTest(name=name):
+                self.assertEqual(to_camel_case(name), "")
+
+    def test_digits_and_other_characters_are_kept(self):
+        cases = [("user_2fa", "user2fa"), ("vector_3d", "vector3d"), ("a b_c", "a bC")]
+        for name, expected in cases:
+            with self.subTest(name=name):
+                self.assertEqual(to_camel_case(name), expected)
+
+    def test_rejects_non_str(self):
+        for value in (None, 42, b"user_id"):
+            with self.subTest(value=value):
+                with self.assertRaises(TypeError):
+                    to_camel_case(value)
 
 
 if __name__ == "__main__":

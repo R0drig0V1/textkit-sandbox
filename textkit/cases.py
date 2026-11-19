@@ -1,8 +1,8 @@
-"""Identifier case conversions (snake_case and friends).
+"""Identifier case conversions (snake_case, camelCase and friends).
 
 Every public function is listed in the README's function table. How words are split out of
 an identifier, runs of capitals included, is decided in ADR 0001
-(docs/decisions/0001-to-snake-case-capital-runs.md).
+(docs/decisions/0001-to-snake-case-capital-runs.md); `to_camel_case` uses its separator rule.
 """
 
 import re
@@ -54,3 +54,30 @@ def to_snake_case(name: str) -> str:
         raise TypeError(f"name must be a str, not {type(name).__name__}")
     words = [word for chunk in _SEPARATORS.split(name) for word in _split_camel(chunk) if word]
     return "_".join(word.lower() for word in words)
+
+
+def to_camel_case(name: str) -> str:
+    """Convert a snake_case or kebab-case identifier to camelCase.
+
+    The name is cut into words at `_` and `-` (a run of them counts as one, ADR 0001), and
+    separators at either end are dropped. The first word is lower-cased and every other word
+    capitalized with `str.capitalize`, so the rest of each word is lower-cased too
+    (`"user_id"` -> `"userId"`, `"HTTP_server"` -> `"httpServer"`). A name with no separator
+    at all is not split: only its first character is lower-cased (`"PascalCase"` ->
+    `"pascalCase"`, `"userId"` -> `"userId"`), so camelCase input comes back unchanged. Other
+    characters, spaces and digits included, are not separators and are kept. A name made only
+    of separators gives `""`.
+
+    Raises:
+        TypeError: if `name` is not a `str`.
+    """
+    if not isinstance(name, str):
+        raise TypeError(f"name must be a str, not {type(name).__name__}")
+    if not _SEPARATORS.search(name):
+        # No separator: the name may already be camelCase or PascalCase, whose inner
+        # capitals carry the word boundaries, so only the first character changes.
+        return name[:1].lower() + name[1:]
+    words = [word for word in _SEPARATORS.split(name) if word]
+    if not words:
+        return ""
+    return words[0].lower() + "".join(word.capitalize() for word in words[1:])
