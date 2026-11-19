@@ -17,6 +17,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `levenshtein` | `textkit.distance` | Edit distance with insertions, deletions and substitutions of cost 1 |
 | `number_to_words` | `textkit.numwords` | Writes a whole number from 0 to 999 in English words (`42` -> `forty-two`) |
 | `ordinal` | `textkit.ordinals` | Appends the English ordinal suffix to a non-negative integer (`21` -> `21st`) |
+| `parse_duration` | `textkit.durations` | Seconds in a duration written as `1h30m`, `45s` or `2h5s` (ASCII digits, lower-case units) |
 | `pluralize` | `textkit.plural` | English plural of a singular noun, with a few irregulars |
 | `reading_time` | `textkit.counts` | Whole minutes to read a text at `wpm` words per minute, rounded up |
 | `slug_title` | `textkit.strings` | Slug cut to a maximum length, never ending in `-` |

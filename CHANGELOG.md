@@ -8,6 +8,7 @@
 - Added `levenshtein`: edit distance between two strings (insertions, deletions and substitutions of cost 1).
 - Added `number_to_words`: writes a whole number from 0 to 999 in English words, lower case, hyphenated tens, no "and".
 - Added `ordinal`: appends the English ordinal suffix to a non-negative integer (`1` -> `1st`, `11` -> `11th`, `1021` -> `1021st`).
+- Added `parse_duration`: seconds in a duration made of optional `h`, `m` and `s` parts in that order (`1h30m` -> 5400); anything else raises `ValueError`.
 - Added `pluralize`: English plural of a singular noun (rules in docs/decisions/0004-pluralize-rules.md).
 - Added `reading_time`: whole minutes to read a text at `wpm` words per minute (default 200), from `word_count`, rounded up (docs/decisions/0006-reading-time-rounding.md).
 - Added `slug_title`: the slug of a text cut to at most `max_len` characters, never ending in `-`.
