@@ -4,7 +4,7 @@
 Each task is one pull request: code, tests, docstrings, its README table row and its
 CHANGELOG line. Tasks with no "Depends on" can start at once.
 
-- [ ] **T1.1 `slugify`** in `textkit/strings.py`: `slugify(text) -> str` lower-cases, turns
+- [x] **T1.1 `slugify`** in `textkit/strings.py`: `slugify(text) -> str` lower-cases, turns
       every run of non-alphanumeric characters into one `-` and strips `-` at both ends
       (`"Hello, World!"` -> `"hello-world"`). ASCII only: other characters are dropped.
 - [ ] **T1.2 `truncate`** in `textkit/strings.py`: `truncate(text, width, suffix="...") -> str`
