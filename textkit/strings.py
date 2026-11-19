@@ -67,3 +67,41 @@ def slugify(text: str) -> str:
     # (KELVIN SIGN -> "k", "İ" -> "i" plus a combining dot), which would leak into the slug.
     ascii_text = text.encode("ascii", "ignore").decode("ascii")
     return _NON_SLUG_RUN.sub("-", ascii_text.lower()).strip("-")
+
+
+def wrap(text: str, width: int) -> list[str]:
+    """Split ``text`` into lines of at most ``width`` code points, breaking at spaces.
+
+    Words are separated by the space character ``" "`` and by line breaks. Existing line
+    breaks (every boundary ``str.splitlines`` recognizes: ``\\n``, ``\\r\\n``, ``\\r`` and
+    the rest) are not kept: they separate words exactly like a space, so the text is
+    reflowed (ADR "`wrap` reflows text"). Runs of separators collapse to one, leading and
+    trailing ones are dropped, and no returned line contains a separating space or a line
+    break. Tabs, no-break spaces and other whitespace are not separators: they are part of
+    a word.
+
+    Lines are filled greedily: each word goes on the current line if it fits with one space
+    before it, otherwise it starts a new line. A word longer than ``width`` gets a line of
+    its own and is not split, so that line is longer than ``width``. Text with no words
+    (``""``, only spaces or only line breaks) gives ``[]``.
+
+    Raises:
+        ValueError: if ``width < 1``. Checked first, so it raises even for ``""``.
+    """
+    if width < 1:
+        raise ValueError(f"width must be at least 1, got {width}")
+    # splitlines() first so every kind of line break acts as a separator; split(" ") (not
+    # split()) so that tabs and no-break spaces stay inside words, as the plan says "at spaces".
+    words = [word for line in text.splitlines() for word in line.split(" ") if word]
+    lines: list[str] = []
+    current = ""
+    for word in words:
+        if current and len(current) + 1 + len(word) <= width:
+            current += " " + word
+        else:
+            if current:
+                lines.append(current)
+            current = word
+    if current:
+        lines.append(current)
+    return lines
