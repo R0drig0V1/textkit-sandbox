@@ -32,7 +32,7 @@ A **word** is a maximal run of word characters, where:
    spaces or newlines change nothing.
 
 The rule is a single left-to-right scan with one character of lookahead, implemented in
-`textkit.counts._words`; `word_count(text)` is `len(_words(text))`.
+`textkit._tokens.words`; `word_count(text)` is `len(words(text))`.
 
 ## Consequences
 
