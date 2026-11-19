@@ -6,3 +6,4 @@ One file per decision, `NNNN-title.md`, with Context / Decision / Consequences.
 | # | Decision |
 |---|----------|
 | [0001](0001-wrap-reflows-existing-newlines.md) | `wrap` treats existing newlines as spaces and reflows the text |
+| [0002](0002-snake-case-capital-runs.md) | How `to_snake_case` splits runs of capitals, digits and separators |
