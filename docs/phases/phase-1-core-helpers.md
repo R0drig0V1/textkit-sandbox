@@ -27,7 +27,7 @@ anything else). Tasks with no "Depends on" can start at once.
 
 ## Tasks
 
-- [ ] **T1.1 `slugify`** in `textkit/strings.py`: `slugify(text) -> str` lower-cases, turns
+- [x] **T1.1 `slugify`** in `textkit/strings.py`: `slugify(text) -> str` lower-cases, turns
       every run of non-alphanumeric characters into one `-` and strips `-` at both ends
       (`"Hello, World!"` -> `"hello-world"`). ASCII only: characters outside ASCII are removed
       first, with no separator (`"naïve"` -> `"nave"`, `"Ñandú"` -> `"and"` for NFC input as
@@ -39,14 +39,14 @@ anything else). Tasks with no "Depends on" can start at once.
       suffix included, is exactly `width` long. `width` smaller than the suffix raises
       `ValueError`, whenever `width < len(suffix)`, even if `text` fits. "Fits" means
       `len(text) <= width` (code points); the cut keeps the start of `text`.
-- [ ] **T1.3 `strip_accents`** in `textkit/strings.py`: `strip_accents(text) -> str` removes
+- [x] **T1.3 `strip_accents`** in `textkit/strings.py`: `strip_accents(text) -> str` removes
       combining marks (`"Ñandú"` -> `"Nandu"`) with `unicodedata`.
 - [ ] **T1.4 `wrap`** in `textkit/strings.py`: `wrap(text, width) -> list[str]` splits text
       into lines of at most `width` characters at spaces; a word longer than `width` gets a
       line of its own. Runs of spaces between words collapse to one; leading and trailing
       spaces are dropped; `wrap("", w) == []`; `width < 1` raises `ValueError`; lines never
       contain the separating space. Write an ADR on what happens to existing newlines.
-- [ ] **T1.5 `word_count`** in a new module `textkit/counts.py`: `word_count(text) -> int`.
+- [x] **T1.5 `word_count`** in a new module `textkit/counts.py`: `word_count(text) -> int`.
       Write an ADR on what counts as a word (hyphenated words, numbers, apostrophes). The ADR
       ends with a table of cases (input -> count), at least: a hyphenated word, a number, a
       word with an apostrophe, `""`, punctuation only, several spaces/newlines;
@@ -55,7 +55,7 @@ anything else). Tasks with no "Depends on" can start at once.
       counts of each non-space character, case-sensitive. Characters for which
       `str.isspace()` is true are not counted; keys appear in order of first occurrence.
       Depends on T1.5 (it creates `textkit/counts.py` and `tests/test_counts.py`).
-- [ ] **T1.7 `to_snake_case`** in a new module `textkit/cases.py`:
+- [x] **T1.7 `to_snake_case`** in a new module `textkit/cases.py`:
       `to_snake_case(name) -> str` for camelCase, PascalCase and kebab-case input. Write an
       ADR on how runs of capitals are split (`HTTPServer`, `parseURL2`). The ADR ends with a
       table of cases (input -> output), at least: `HTTPServer`, `parseURL2`, `camelCase`,
