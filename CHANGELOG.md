@@ -7,3 +7,4 @@
 - Added `truncate`: shortens text to a given width, ending in a suffix (`...` by default).
 - Added `to_snake_case`: converts camelCase, PascalCase or kebab-case identifiers to snake_case (ADR 0001).
 - Added `strip_accents`: removes combining marks (`"Ñandú"` -> `"Nandu"`).
+- Added `word_count` in the new module `textkit.counts`: counts words; hyphenated words, contractions and numbers such as `3.14` count once (ADR 0001).
