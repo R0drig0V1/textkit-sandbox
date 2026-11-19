@@ -81,3 +81,21 @@ def to_camel_case(name: str) -> str:
     if not words:
         return ""
     return words[0].lower() + "".join(word.capitalize() for word in words[1:])
+
+
+def to_kebab_case(name: str) -> str:
+    """Convert a camelCase, PascalCase or snake_case identifier to kebab-case.
+
+    Built on `to_snake_case`, so words are split exactly as ADR 0001 says: at `_` and `-` (a
+    run of them counts as one, leading and trailing ones dropped) and at case boundaries, a run
+    of capitals staying one word (`"HTTPServer"` -> `"http-server"`) and digits staying with
+    the word before them (`"parseURL2"` -> `"parse-url2"`). The words are lower-cased and
+    joined with `-`; kebab-case input comes back unchanged. Other characters, spaces included,
+    are not separators and are kept (lower-cased).
+
+    Raises:
+        TypeError: if `name` is not a `str`.
+    """
+    # `to_snake_case` consumes every `_` and `-` of the input as a separator, so each `_` in
+    # its result is a word boundary and nothing else: swapping them is the whole conversion.
+    return to_snake_case(name).replace("_", "-")
