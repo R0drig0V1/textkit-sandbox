@@ -7,7 +7,7 @@ start at once.
 - [x] **T2.1 `reading_time`** in `textkit/counts.py`: `reading_time(text, wpm=200) -> int`,
       whole minutes, from `word_count`. Write an ADR on rounding (an empty text, under one
       minute). `wpm < 1` raises `ValueError`. Depends on T1.5.
-- [ ] **T2.2 `sentence_count`** in `textkit/counts.py`: `sentence_count(text) -> int`.
+- [x] **T2.2 `sentence_count`** in `textkit/counts.py`: `sentence_count(text) -> int`.
       Write an ADR on abbreviations (`"e.g."`, `"Dr."`) and ellipses. Depends on T1.5 (it
       creates `textkit/counts.py`).
 - [x] **T2.3 `to_kebab_case`** in `textkit/cases.py`: `to_kebab_case(name) -> str`, built on
@@ -42,7 +42,7 @@ start at once.
       public-function definition, and runs every command once via `subprocess` with
       `sys.executable -m textkit`. Add the CHANGELOG line "Added the `python3 -m textkit`
       command line." (no README row). Depends on T1.1 to T1.8.
-- [ ] **T2.7 `--version`**: `__version__ = "0.1.0"` in `textkit/__init__.py` (the only place
+- [x] **T2.7 `--version`**: `__version__ = "0.1.0"` in `textkit/__init__.py` (the only place
       in `textkit/` the version string appears; `__main__.py` reads `textkit.__version__`);
       `python3 -m textkit --version` prints exactly `textkit 0.1.0` and exits 0. Test via
       `subprocess` with `sys.executable`: the output equals `f"textkit {textkit.__version__}\n"`
