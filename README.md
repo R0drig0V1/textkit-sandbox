@@ -16,6 +16,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `render` | `textkit.templates` | Fills `{name}` placeholders from a mapping; `{{` and `}}` are literal braces |
 | `levenshtein` | `textkit.distance` | Edit distance with insertions, deletions and substitutions of cost 1 |
 | `number_to_words` | `textkit.numwords` | Writes a whole number from 0 to 999 in English words (`42` -> `forty-two`) |
+| `parse_duration` | `textkit.durations` | Seconds in a duration written as `1h30m`, `45s` or `2h5s` (ASCII digits, lower-case units) |
 | `pluralize` | `textkit.plural` | English plural of a singular noun, with a few irregulars |
 | `reading_time` | `textkit.counts` | Whole minutes to read a text at `wpm` words per minute, rounded up |
 | `slug_title` | `textkit.strings` | Slug cut to a maximum length, never ending in `-` |
