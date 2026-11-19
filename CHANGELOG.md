@@ -8,3 +8,4 @@
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `truncate`: cuts text to a width, ending with a suffix when cut.
 - Added `to_snake_case`: converts camelCase, PascalCase or kebab-case to snake_case, keeping acronyms whole (ADR 0001).
+- Added `word_count`: counts the words in a text (hyphenated words, contractions and numbers count as one).
