@@ -2,7 +2,7 @@
 
 `WordCountTest` checks every row of the case table that ends ADR 0001
 (docs/decisions/0001-word-rule.md), read from the ADR itself so the table and the code cannot
-drift apart.
+drift apart. `CharFreqTest` checks `char_freq` (plan task T1.6).
 """
 
 import ast
@@ -10,7 +10,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.counts import _words, word_count
+from textkit.counts import _words, char_freq, word_count
 
 _ADR = pathlib.Path(__file__).resolve().parents[1] / "docs" / "decisions" / "0001-word-rule.md"
 # A table row: | `input literal` | count | `words literal` | description |
@@ -48,6 +48,39 @@ class WordCountTest(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(TypeError):
                     word_count(value)
+
+
+class CharFreqTest(unittest.TestCase):
+    def test_counts_each_character(self):
+        self.assertEqual(char_freq("banana"), {"b": 1, "a": 3, "n": 2})
+
+    def test_is_case_sensitive(self):
+        self.assertEqual(char_freq("aAa"), {"a": 2, "A": 1})
+
+    def test_skips_every_isspace_character(self):
+        # Space, tab, newline, carriage return, form feed, no-break space, ideographic space.
+        self.assertEqual(char_freq("a b\tc\nd\re\ff\u00a0g\u3000h"),
+                         {c: 1 for c in "abcdefgh"})
+
+    def test_keys_in_order_of_first_occurrence(self):
+        self.assertEqual(list(char_freq("cabbac")), ["c", "a", "b"])
+
+    def test_counts_punctuation_digits_and_non_ascii(self):
+        self.assertEqual(char_freq("¡Sí! 1,1"), {"¡": 1, "S": 1, "í": 1, "!": 1, "1": 2, ",": 1})
+
+    def test_counts_code_points_without_normalization(self):
+        # NFD "é" is "e" plus a combining acute accent: two keys.
+        self.assertEqual(char_freq("e\u0301"), {"e": 1, "\u0301": 1})
+
+    def test_empty_and_whitespace_only(self):
+        self.assertEqual(char_freq(""), {})
+        self.assertEqual(char_freq(" \t\n "), {})
+
+    def test_rejects_non_str(self):
+        for value in [None, b"abc", ["a", "b"], 3]:
+            with self.subTest(value=value):
+                with self.assertRaises(TypeError):
+                    char_freq(value)
 
 
 if __name__ == "__main__":
