@@ -4,7 +4,7 @@
 Same rules as phase 1 (its "Rules for every task" section). Tasks with no "Depends on" can
 start at once.
 
-- [ ] **T2.1 `reading_time`** in `textkit/counts.py`: `reading_time(text, wpm=200) -> int`,
+- [x] **T2.1 `reading_time`** in `textkit/counts.py`: `reading_time(text, wpm=200) -> int`,
       whole minutes, from `word_count`. Write an ADR on rounding (an empty text, under one
       minute). `wpm < 1` raises `ValueError`. Depends on T1.5.
 - [ ] **T2.2 `sentence_count`** in `textkit/counts.py`: `sentence_count(text) -> int`.
