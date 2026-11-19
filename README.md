@@ -22,6 +22,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `to_camel_case` | `textkit.cases` | Converts snake_case or kebab-case to camelCase |
 | `truncate` | `textkit.strings` | Cuts text to a width, ending with a suffix when cut |
 | `to_kebab_case` | `textkit.cases` | Converts camelCase, PascalCase or snake_case to kebab-case |
+| `to_roman` | `textkit.roman` | Converts an integer from 1 to 3999 to an upper-case Roman numeral |
 | `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase or kebab-case to snake_case |
 | `word_count` | `textkit.counts` | Counts the words in a text |
 | `wrap` | `textkit.strings` | Splits text into lines of at most `width` characters at whitespace |
