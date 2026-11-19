@@ -82,7 +82,8 @@ def to_camel_case(name: str) -> str:
     (``"UserId"`` -> ``"userId"``, ``"HTTP"`` -> ``"hTTP"``), so camelCase input is left
     unchanged. ``""`` and separators only (``"__"``) give ``""``. Never raises for a ``str``;
     other characters (spaces, punctuation, digits, non-ASCII letters) are kept inside their
-    word. Converting with ``to_snake_case`` and back is lossy for acronyms (ADR 0001).
+    word. Converting with ``to_snake_case`` and back is lossy for acronyms
+    (0001-snake-case-capital-runs).
     """
     if not _SEPARATORS.search(name):
         return name[:1].lower() + name[1:]
