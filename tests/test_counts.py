@@ -5,7 +5,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.counts import word_count
+from textkit.counts import char_freq, word_count
 
 # The table of cases that ends the ADR "What counts as a word", row by row, in order.
 # test_cases_match_the_adr_table keeps the two in sync.
@@ -73,6 +73,38 @@ class WordCountTest(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(TypeError):
                     word_count(value)  # type: ignore[arg-type]
+
+
+class CharFreqTest(unittest.TestCase):
+    def test_empty_and_whitespace_only(self):
+        self.assertEqual(char_freq(""), {})
+        self.assertEqual(char_freq(" \t\n\r\f\v\u00a0\u2003\u3000"), {})
+
+    def test_counts_each_character(self):
+        self.assertEqual(char_freq("banana"), {"b": 1, "a": 3, "n": 2})
+
+    def test_case_sensitive(self):
+        self.assertEqual(char_freq("aAa"), {"a": 2, "A": 1})
+
+    def test_whitespace_skipped_punctuation_counted(self):
+        self.assertEqual(
+            char_freq("a b,\tb!\n"), {"a": 1, "b": 2, ",": 1, "!": 1}
+        )
+
+    def test_keys_in_order_of_first_occurrence(self):
+        self.assertEqual(list(char_freq("cabbage")), ["c", "a", "b", "g", "e"])
+
+    def test_non_ascii_per_code_point(self):
+        self.assertEqual(char_freq("日本日"), {"日": 2, "本": 1})
+        # No normalization: NFD "é" is "e" plus U+0301, counted separately.
+        self.assertEqual(char_freq("\u00e9"), {"\u00e9": 1})
+        self.assertEqual(char_freq("e\u0301"), {"e": 1, "\u0301": 1})
+
+    def test_rejects_non_str(self):
+        for value in (b"abc", ["a", "b"], None):
+            with self.subTest(value=value):
+                with self.assertRaises(TypeError):
+                    char_freq(value)  # type: ignore[arg-type]
 
 
 if __name__ == "__main__":

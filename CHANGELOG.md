@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added `slugify`: turns text into a lower-case ASCII slug.
+- Added `char_freq` in `textkit.counts`: counts each non-whitespace character, case-sensitive, keys in order of first occurrence.
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (`"Ñandú"` -> `"Nandu"`).
 - Added `to_snake_case` (new module `textkit.cases`): camelCase, PascalCase and kebab-case to
