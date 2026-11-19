@@ -41,7 +41,7 @@ def word_count(text: str) -> int:
     between two alphanumerics joins them into one word (``"well-known"``, ``"don't"``), and
     a single ``.`` or ``,`` between two decimal digits joins them into one number
     (``"3.14"``, ``"1,000"``). Everything else, ``_`` included, separates words; leading
-    and trailing joiners are not part of a word. See ADR 0001 for the reasons and the table
+    and trailing joiners are not part of a word. See ADR 0002 for the reasons and the table
     of cases.
 
     Never raises for a ``str``; ``""``, whitespace-only and punctuation-only text give 0.

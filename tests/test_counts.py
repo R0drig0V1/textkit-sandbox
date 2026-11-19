@@ -6,7 +6,7 @@ from textkit.counts import word_count
 
 # The table of cases at the end of docs/decisions/0002-what-counts-as-a-word.md, row by row
 # and in the same order. Keep the two in sync.
-ADR_0001_CASES = [
+ADR_0002_CASES = [
     ("well-known", 1),
     ("42", 1),
     ("3.14", 1),
@@ -29,8 +29,8 @@ ADR_0001_CASES = [
 
 
 class WordCountTest(unittest.TestCase):
-    def test_adr_0001_table(self):
-        for text, expected in ADR_0001_CASES:
+    def test_adr_0002_table(self):
+        for text, expected in ADR_0002_CASES:
             with self.subTest(text=text):
                 self.assertEqual(word_count(text), expected)
 
