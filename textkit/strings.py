@@ -31,3 +31,24 @@ def slugify(text: str) -> str:
     """
     ascii_only = _NON_ASCII.sub("", text)
     return _NON_SLUG.sub("-", ascii_only.lower()).strip("-")
+
+
+def truncate(text: str, width: int, suffix: str = "...") -> str:
+    """Shorten ``text`` to at most ``width`` code points, marking the cut with ``suffix``.
+
+    If ``len(text) <= width`` the text is returned unchanged. Otherwise the start of
+    ``text`` is kept and ``suffix`` appended so that the result, suffix included, is exactly
+    ``width`` code points long.
+
+    Raises:
+        ValueError: if ``width < len(suffix)``. This is checked before anything else, so it
+            raises even when ``text`` would fit: the caller asked for a width the suffix can
+            never fit in, which is a bug at the call site whatever the input.
+    """
+    if width < len(suffix):
+        raise ValueError(
+            f"width ({width}) is smaller than the suffix length ({len(suffix)})"
+        )
+    if len(text) <= width:
+        return text
+    return text[: width - len(suffix)] + suffix
