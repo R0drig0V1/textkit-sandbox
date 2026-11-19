@@ -3,7 +3,15 @@
 import unicodedata
 import unittest
 
-from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import (
+    is_palindrome,
+    slug_title,
+    slugify,
+    squeeze,
+    strip_accents,
+    truncate,
+    wrap,
+)
 
 
 class SqueezeTest(unittest.TestCase):
@@ -234,6 +242,56 @@ class WrapTest(unittest.TestCase):
     def test_width_below_one_raises_for_empty_text(self):
         with self.assertRaises(ValueError):
             wrap("", 0)
+
+
+class IsPalindromeTest(unittest.TestCase):
+    def test_simple_palindrome(self):
+        self.assertTrue(is_palindrome("racecar"))
+        self.assertTrue(is_palindrome("abba"))
+
+    def test_not_a_palindrome(self):
+        self.assertFalse(is_palindrome("hello"))
+        self.assertFalse(is_palindrome("ab"))
+
+    def test_ignores_case(self):
+        self.assertTrue(is_palindrome("RaceCar"))
+
+    def test_ignores_spaces_and_punctuation(self):
+        self.assertTrue(is_palindrome("A man, a plan, a canal: Panama"))
+        self.assertTrue(is_palindrome("Was it a car or a cat I saw?"))
+
+    def test_ignores_accents(self):
+        self.assertTrue(is_palindrome("Dábale arroz a la zorra el abad"))
+        self.assertTrue(is_palindrome("Ánà"))
+
+    def test_nfc_and_nfd_input_agree(self):
+        text = "Dábale arroz a la zorra el abad"
+        nfd = unicodedata.normalize("NFD", text)
+        self.assertNotEqual(text, nfd)
+        self.assertTrue(is_palindrome(nfd))
+
+    def test_digits_count(self):
+        self.assertTrue(is_palindrome("12321"))
+        self.assertTrue(is_palindrome("1a1"))
+        self.assertFalse(is_palindrome("123"))
+        self.assertFalse(is_palindrome("a1"))
+
+    def test_casefold_not_lower(self):
+        # "ß".casefold() == "ss", so "ßs" compares as "sss".
+        self.assertTrue(is_palindrome("ßs"))
+        self.assertTrue(is_palindrome("SSß"))
+
+    def test_non_ascii_letters_without_decomposition_are_kept(self):
+        self.assertTrue(is_palindrome("øaø"))
+        self.assertFalse(is_palindrome("øo"))
+
+    def test_empty_and_no_alphanumerics_are_true(self):
+        self.assertTrue(is_palindrome(""))
+        self.assertTrue(is_palindrome("!!!"))
+        self.assertTrue(is_palindrome("  ,.-  "))
+
+    def test_single_character(self):
+        self.assertTrue(is_palindrome("x"))
 
 
 if __name__ == "__main__":
