@@ -48,7 +48,7 @@ start at once.
       `subprocess` with `sys.executable`: the output equals `f"textkit {textkit.__version__}\n"`
       and, separately, `textkit.__version__ == "0.1.0"`. CHANGELOG line: "Added
       `python3 -m textkit --version`." Depends on T2.6.
-- [ ] **T2.8 usage guide**: `docs/usage.md` with one short example per public function, and
+- [x] **T2.8 usage guide**: `docs/usage.md` with one short example per public function, and
       a test that runs every example. The examples are doctest blocks
       (`>>> from textkit.<module> import <f>`); `tests/test_usage.py` loads
       `pathlib.Path(__file__).resolve().parents[1] / "docs" / "usage.md"` as
