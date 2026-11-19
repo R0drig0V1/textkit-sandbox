@@ -8,3 +8,4 @@ sessions list completed tasks in their PR body instead of ticking them here.
 |-------|------|--------|
 | 1. Core helpers | [phase-1-core-helpers.md](phase-1-core-helpers.md) | in progress |
 | 2. Tools | [phase-2-tools.md](phase-2-tools.md) | in progress |
+| 3. Converters | [phase-3-converters.md](phase-3-converters.md) | in progress |

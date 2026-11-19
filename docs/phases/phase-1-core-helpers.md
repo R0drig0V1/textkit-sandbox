@@ -5,7 +5,7 @@ Each task is one pull request: code, tests, docstrings and, for each public func
 or changes, its README table row and CHANGELOG line (`scripts/check.sh` rejects rows for
 anything else). Tasks with no "Depends on" can start at once.
 
-## Rules for every task (phases 1 and 2)
+## Rules for every task (phases 1, 2 and 3)
 
 - **Public function** (one definition for `scripts/check.sh`, the README table, the
   CHANGELOG, T2.5, T2.6 and T2.8): a top-level `def` whose name does not start with `_`, in a

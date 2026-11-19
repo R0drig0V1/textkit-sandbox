@@ -56,4 +56,4 @@ start at once.
       asserts `doctest.testfile(...).failed == 0` and `attempted > 0`), and asserts that every
       public function is called in at least one `>>>` line (`\b<f>\(`). A deliberately wrong
       example must make `scripts/check.sh` red (state in the PR body that this was tried).
-      Depends on every other task of phases 1 and 2.
+      Depends on every other task of phases 1, 2 and 3.
