@@ -1,7 +1,7 @@
 import unicodedata
 import unittest
 
-from textkit.strings import slugify, squeeze, strip_accents, truncate
+from textkit.strings import slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -109,6 +109,46 @@ class TruncateTest(unittest.TestCase):
     def test_counts_code_points(self):
         self.assertEqual(truncate("ñandú y más", 7), "ñand...")
         self.assertEqual(truncate("ñandú", 5), "ñandú")
+
+
+class WrapTest(unittest.TestCase):
+    def test_greedy_packing(self):
+        self.assertEqual(wrap("the quick brown fox", 10), ["the quick", "brown fox"])
+
+    def test_line_may_be_exactly_width(self):
+        self.assertEqual(wrap("ab cd ef", 5), ["ab cd", "ef"])
+
+    def test_long_word_gets_its_own_line(self):
+        self.assertEqual(wrap("a abcdefgh b", 3), ["a", "abcdefgh", "b"])
+
+    def test_long_word_alone(self):
+        self.assertEqual(wrap("abcdefgh", 3), ["abcdefgh"])
+
+    def test_runs_of_spaces_collapse_and_ends_dropped(self):
+        self.assertEqual(wrap("   a    b   ", 10), ["a b"])
+
+    def test_lines_never_contain_the_separating_space(self):
+        for line in wrap("aa bb cc dd ee", 5):
+            self.assertFalse(line.startswith(" ") or line.endswith(" "), line)
+
+    def test_newlines_and_tabs_are_spaces(self):
+        # ADR 0003: existing newlines do not force a break; the text is reflowed.
+        self.assertEqual(wrap("one\ntwo\n\nthree\tfour", 9), ["one two", "three", "four"])
+        self.assertEqual(wrap("a\nb", 10), ["a b"])
+
+    def test_empty_and_blank(self):
+        self.assertEqual(wrap("", 5), [])
+        self.assertEqual(wrap("  \n\t ", 5), [])
+
+    def test_width_one(self):
+        self.assertEqual(wrap("a b", 1), ["a", "b"])
+
+    def test_width_below_one_raises(self):
+        for width in (0, -1):
+            with self.assertRaises(ValueError):
+                wrap("a b", width)
+        with self.assertRaises(ValueError):
+            wrap("", 0)
 
 
 if __name__ == "__main__":

@@ -71,3 +71,38 @@ def truncate(text: str, width: int, suffix: str = "...") -> str:
     if len(text) <= width:
         return text
     return text[: width - len(suffix)] + suffix
+
+
+def wrap(text: str, width: int) -> list[str]:
+    """Split ``text`` into lines of at most ``width`` characters, breaking at spaces.
+
+    Words are packed greedily: each line takes as many words as fit, joined by one space.
+    Runs of spaces collapse to one, leading and trailing spaces are dropped, and a line
+    never starts or ends with the separating space. A word longer than ``width`` is not
+    cut: it gets a line of its own, which is then longer than ``width``.
+
+    Existing newlines (and tabs and any other whitespace) separate words exactly like a
+    space, so the text is reflowed as one paragraph (ADR 0003).
+
+    ``wrap("", width)`` and whitespace-only input give ``[]``.
+
+    Raises:
+        ValueError: if ``width < 1``, checked before ``text`` is looked at.
+    """
+    if width < 1:
+        raise ValueError(f"width must be at least 1, got {width}")
+    lines: list[str] = []
+    current = ""
+    # str.split() with no argument splits on every whitespace run and drops empty strings,
+    # which gives the collapsing, the trimming and the newline rule of ADR 0003 at once.
+    for word in text.split():
+        if not current:
+            current = word
+        elif len(current) + 1 + len(word) <= width:
+            current += " " + word
+        else:
+            lines.append(current)
+            current = word
+    if current:
+        lines.append(current)
+    return lines
