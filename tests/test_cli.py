@@ -1,4 +1,5 @@
-"""Tests for textkit/__main__.py, the ``python3 -m textkit`` command line (plan task T2.6).
+"""Tests for textkit/__main__.py, the ``python3 -m textkit`` command line (plan tasks T2.6
+and T2.7).
 
 The command set is recomputed here from the public-function definition of
 docs/phases/phase-1-core-helpers.md ("Rules for every task"), independently of
@@ -229,6 +230,34 @@ class BuildParserTest(unittest.TestCase):
             return text * times
 
         self.assertEqual(_call(kw, "ab"), "abab")
+
+
+class VersionTest(unittest.TestCase):
+    """``--version`` prints ``textkit <version>`` from ``textkit.__version__`` (T2.7)."""
+
+    def test_version_option_prints_the_package_version(self) -> None:
+        proc = _run("--version")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual(proc.stderr, "")
+        self.assertEqual(proc.stdout, f"textkit {textkit.__version__}\n")
+
+    def test_package_version(self) -> None:
+        self.assertEqual(textkit.__version__, "0.1.0")
+
+    def test_version_is_written_only_in_init(self) -> None:
+        # The plan makes __init__.py the single source; a copy elsewhere would drift.
+        holders = sorted(
+            p.name
+            for p in (_ROOT / "textkit").glob("*.py")
+            if textkit.__version__ in p.read_text(encoding="utf-8")
+        )
+        self.assertEqual(holders, ["__init__.py"])
+
+    def test_main_returns_0_for_version(self) -> None:
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            status = _main(["--version"])
+        self.assertEqual((status, out.getvalue(), err.getvalue()), (0, "textkit 0.1.0\n", ""))
 
 
 if __name__ == "__main__":

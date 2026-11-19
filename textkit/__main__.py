@@ -1,16 +1,17 @@
 """Command line for textkit: ``python3 -m textkit <function> <text>`` (plan task T2.6).
 
 Prints the result of any public function that takes one text argument, and lists those
-functions with ``--help``. The commands are discovered at run time, never hard-coded, so a
-helper added to a public module becomes a command with no change here. A command is every
-public function (the definition in docs/phases/phase-1-core-helpers.md, "Rules for every
-task") whose ``__module__`` is the module it is found in and that has exactly one parameter
-without a default; parameters with defaults keep their default.
+functions with ``--help``; ``--version`` prints ``textkit <version>`` from
+``textkit.__version__`` (plan task T2.7). The commands are discovered at run time, never
+hard-coded, so a helper added to a public module becomes a command with no change here. A
+command is every public function (the definition in docs/phases/phase-1-core-helpers.md,
+"Rules for every task") whose ``__module__`` is the module it is found in and that has
+exactly one parameter without a default; parameters with defaults keep their default.
 
 Output: a ``str`` result is printed as is; ``bool`` and ``int`` with ``print()``; ``dict`` and
 ``list`` as ``json.dumps(result, ensure_ascii=False, sort_keys=True)``. Exit status 0 on
-success and 2 on an unknown function, a wrong argument count or no arguments at all, with the
-message (and usage) on stderr.
+success (``--help`` and ``--version`` included) and 2 on an unknown function, a wrong
+argument count or no arguments at all, with the message (and usage) on stderr.
 
 This module starts with ``_`` so it holds no public functions; importing it has no side
 effects (``_main`` only runs under ``if __name__ == "__main__":``).
@@ -91,6 +92,11 @@ def _build_parser(commands: Dict[str, Callable[..., Any]]) -> argparse.ArgumentP
         description="Run a textkit function on one text argument and print the result.",
         epilog="Quote the text so the shell passes it as one argument.",
     )
+    # argparse's version action prints to stdout and exits 0 before the required subcommand
+    # is checked, so --version needs no function. The string is read from the package, never
+    # repeated here, so __init__.py stays the only place the version is written.
+    version = f"textkit {textkit.__version__}"
+    parser.add_argument("--version", action="version", version=version)
     # On Python 3.9, required=True without dest crashes when no command is given (argparse
     # joins a None name into the error), so dest is mandatory here.
     subparsers = parser.add_subparsers(
@@ -131,11 +137,11 @@ def _call(func: Callable[..., Any], text: str) -> Any:
 def _main(argv: Optional[List[str]] = None) -> int:
     """Run the command line on ``argv`` (default ``sys.argv[1:]``) and return the exit status.
 
-    Returns 0 after printing the result, or after ``--help``. Returns 2, with the usage and
-    the error on stderr, for no arguments, an unknown function or a wrong argument count:
-    argparse's ``SystemExit`` is caught and turned into the return value, so callers (and
-    tests) get a status instead of an exception. An exception raised by the function itself
-    is not caught and propagates with its traceback.
+    Returns 0 after printing the result, or after ``--help`` or ``--version``. Returns 2,
+    with the usage and the error on stderr, for no arguments, an unknown function or a wrong
+    argument count: argparse's ``SystemExit`` is caught and turned into the return value, so
+    callers (and tests) get a status instead of an exception. An exception raised by the
+    function itself is not caught and propagates with its traceback.
     """
     commands = _commands()
     parser = _build_parser(commands)

@@ -4,6 +4,7 @@
 
 - Added `char_freq`: counts each non-whitespace character of a text, case-sensitive, in order of first occurrence.
 - Added `is_palindrome`: tells whether text reads the same backwards, ignoring case, spaces, punctuation and accents (via `strip_accents`); digits count, and `""` is a palindrome.
+- Added `python3 -m textkit --version`.
 - Added `reading_time`: estimates the reading time of a text in whole minutes, rounded up as in ADR 0004 (`wpm < 1` raises `ValueError`).
 - Added `slug_title`: a slug cut to at most `max_len` characters that never ends in `-` (`slug_title("Hello, World!", 8)` -> `"hello-wo"`).
 - Added `slugify`: turns text into a lower-case ASCII slug (`"Hello, World!"` -> `"hello-world"`).
