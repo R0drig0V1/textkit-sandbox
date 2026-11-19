@@ -5,7 +5,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.counts import char_freq, reading_time, word_count
+from textkit.counts import char_freq, reading_time, sentence_count, word_count
 
 # The table of cases that ends the ADR "What counts as a word", row by row, in order.
 # test_cases_match_the_adr_table keeps the two in sync.
@@ -162,6 +162,92 @@ class ReadingTimeTest(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(TypeError):
                     reading_time(value)  # type: ignore[arg-type]
+
+
+class SentenceCountTest(unittest.TestCase):
+    # The table of cases that ends the ADR "Sentence boundaries: abbreviations and
+    # ellipses", row by row, in order. test_cases_match_the_adr_table keeps the two in sync.
+    ADR_CASES = [
+        ("", 0),
+        ("Hello world", 1),
+        ("Hello. World.", 2),
+        ("Really?! Yes!!!", 2),
+        ("!!! ... ?", 0),
+        ("One.  Two.\nThree.", 3),
+        ("Dr. Smith arrived. He sat down.", 2),
+        ("Mr. and Mrs. Smith left.", 1),
+        ("DR. Who? Prof. X.", 2),
+        ("Take fruit, e.g. an apple. Or a pear.", 2),
+        ("Fruit, i.e. apples, e.g. Fuji, is sweet.", 1),
+        ("(e.g. this) works.", 1),
+        ("Ask the Dr.", 1),
+        ("Apples, pears, etc. are fruit.", 1),
+        ("Apples, pears, etc. Then bread.", 2),
+        ("Wait... what?", 1),
+        ("I wonder... Maybe tomorrow.", 2),
+        ("Wait… what?", 1),
+        ('He paused... "maybe" not.', 1),
+        ("Well...", 1),
+        ("What?... No.", 2),
+        ("Pi is 3.14. It never ends.", 2),
+        ("Visit example.com today.", 1),
+        ('He said "Stop." Then he left.', 2),
+        ("(It rained.) We stayed in.", 2),
+        ("He lives on Main St. He likes it.", 1),
+        ("The U.S. Army won.", 2),
+        ("J. Smith wrote it.", 2),
+        ("Wait . . . what", 2),
+    ]
+
+    @staticmethod
+    def _adr_cases() -> list[tuple[str, int]]:
+        """Return the (input, count) rows of the sentence ADR's case table, found by title."""
+        (adr,) = _DECISIONS.glob("[0-9][0-9][0-9][0-9]-sentence-abbreviations-and-ellipses.md")
+        table = adr.read_text(encoding="utf-8").split("## Cases", 1)[1]
+        return [(ast.literal_eval(text), int(count)) for text, count in _ROW.findall(table)]
+
+    def test_adr_table(self):
+        for text, expected in self.ADR_CASES:
+            with self.subTest(text=text):
+                self.assertEqual(sentence_count(text), expected)
+
+    def test_cases_match_the_adr_table(self):
+        self.assertEqual(self._adr_cases(), self.ADR_CASES)
+
+    def test_every_listed_abbreviation(self):
+        for abbr in ("Mr", "Mrs", "Ms", "Dr", "Prof", "St", "vs", "cf", "e.g", "i.e"):
+            with self.subTest(abbr=abbr):
+                self.assertEqual(sentence_count(f"See {abbr}. Next word."), 1)
+                # The same token without its dot is an ordinary word before a period.
+                self.assertEqual(sentence_count(f"See {abbr}! Next word."), 2)
+
+    def test_unlisted_word_before_a_period_ends_a_sentence(self):
+        # "Drs" and "Doctor" look like "Dr" but are not listed.
+        self.assertEqual(sentence_count("Ask the Drs. They know."), 2)
+        self.assertEqual(sentence_count("Ask the Doctor. She knows."), 2)
+
+    def test_two_dots_are_an_ellipsis(self):
+        self.assertEqual(sentence_count("Hmm.. okay."), 1)
+        self.assertEqual(sentence_count("Hmm.. Okay."), 2)
+
+    def test_ellipsis_before_a_digit_or_caseless_word_ends_a_sentence(self):
+        self.assertEqual(sentence_count("Wait... 3 more."), 2)
+        self.assertEqual(sentence_count("Wait... 日本語."), 2)
+
+    def test_closers_at_the_very_end(self):
+        # The scan past closing quotes must not run past the end of the text.
+        self.assertEqual(sentence_count('"Stop."'), 1)
+        self.assertEqual(sentence_count("(Done.)”"), 1)
+
+    def test_trailing_whitespace_and_marks_add_nothing(self):
+        self.assertEqual(sentence_count("Hello.   \n"), 1)
+        self.assertEqual(sentence_count("Hello. ... !!"), 1)
+
+    def test_rejects_non_str(self):
+        for value in (b"One. Two.", ["One.", "Two."], None):
+            with self.subTest(value=value):
+                with self.assertRaises(TypeError):
+                    sentence_count(value)  # type: ignore[arg-type]
 
 
 if __name__ == "__main__":
