@@ -12,6 +12,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | Function | Module | What it does |
 |----------|--------|--------------|
 | `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive, in order of first occurrence |
+| `human_bytes` | `textkit.sizes` | Formats a byte count in binary units (`1536` -> `"1.5 KiB"`, up to TiB) |
 | `is_palindrome` | `textkit.strings` | Tells whether text reads the same backwards, ignoring case, spaces, punctuation and accents |
 | `parse_duration` | `textkit.durations` | Parses a compact duration such as `"1h30m"` into whole seconds |
 | `reading_time` | `textkit.counts` | Estimates the whole minutes needed to read a text (rounding: [0004-reading-time-rounding](docs/decisions/0004-reading-time-rounding.md)) |

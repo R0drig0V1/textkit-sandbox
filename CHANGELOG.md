@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added `char_freq` in `textkit.counts`: counts each character that is not `str.isspace()`, case-sensitive, keys in order of first occurrence.
+- Added `human_bytes` in the new module `textkit.sizes`: formats a byte count in binary units B, KiB, MiB, GiB, TiB (`1536` -> `"1.5 KiB"`), the unit chosen before rounding; raises `ValueError` for a negative or non-`int` `n` (a `bool` included) or one too large for a float.
 - Added `is_palindrome`: tells whether text reads the same backwards, ignoring case, spaces, punctuation and accents; digits count, and `""` or text with no letters or digits gives `True`.
 - Added `parse_duration` in the new module `textkit.durations`: seconds from `h`, `m` and `s` parts in that order (`"1h30m"` -> 5400); ASCII digits and lower-case units only, no whitespace; raises `ValueError` otherwise.
 - Added `reading_time`: whole minutes to read a text at `wpm` words per minute (default 200), rounded up, 0 for text with no words; raises `ValueError` when `wpm < 1` (rule: [docs/decisions/0004-reading-time-rounding.md](docs/decisions/0004-reading-time-rounding.md)).
