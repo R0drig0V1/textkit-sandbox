@@ -1,11 +1,11 @@
-"""Tests for textkit.cases: to_snake_case and the examples of ADR 0002."""
+"""Tests for textkit.cases: to_snake_case, the examples of ADR 0002, and to_camel_case."""
 
 import pathlib
 import re
 import unicodedata
 import unittest
 
-from textkit.cases import to_snake_case
+from textkit.cases import to_camel_case, to_snake_case
 
 ADR = pathlib.Path(__file__).resolve().parent.parent / "docs" / "decisions" / (
     "0002-snake-case-word-boundaries.md"
@@ -129,6 +129,106 @@ class ToSnakeCaseTest(unittest.TestCase):
             with self.subTest(bad=bad):
                 with self.assertRaises(TypeError):
                     to_snake_case(bad)  # type: ignore[arg-type]
+
+
+class ToCamelCaseTest(unittest.TestCase):
+    def check(self, cases):
+        for src, expected in cases:
+            with self.subTest(src=src):
+                self.assertEqual(to_camel_case(src), expected)
+
+    def test_snake_and_kebab(self):
+        self.check([
+            ("user_id", "userId"),
+            ("kebab-case", "kebabCase"),
+            ("get_http_response_code", "getHttpResponseCode"),
+            ("mixed_kebab-and snake", "mixedKebabAndSnake"),
+            ("user", "user"),
+            ("a_b", "aB"),
+        ])
+
+    def test_separators_at_ends_and_repeated(self):
+        self.check([
+            ("_private", "private"),
+            ("__user__id_", "userId"),
+            ("user--id", "userId"),
+            ("-user-id-", "userId"),
+            ("user name.v2", "userNameV2"),
+            ("-_- ", ""),
+        ])
+
+    def test_digits(self):
+        self.check([
+            ("version_2_beta", "version2Beta"),
+            ("utf8_decode", "utf8Decode"),
+            ("user_2fa", "user2fa"),
+            ("2fa_code", "2faCode"),
+            ("base64", "base64"),
+        ])
+
+    def test_digit_words_do_not_round_trip(self):
+        # Documented: a digits-only word joins the previous one.
+        self.assertEqual(to_snake_case(to_camel_case("version_2_beta")), "version2_beta")
+
+    def test_upper_case_input(self):
+        self.check([("USER_ID", "userId"), ("SCREAMING-KEBAB", "screamingKebab"),
+                    ("ABC", "abc")])
+
+    def test_camel_case_input_is_unchanged(self):
+        for name in ("userId", "parseUrl", "getHttpResponseCode", "utf8Decode", "a"):
+            with self.subTest(name=name):
+                self.assertEqual(to_camel_case(name), name)
+
+    def test_pascal_case_and_acronyms_are_split_first(self):
+        self.check([
+            ("UserId", "userId"),
+            ("PascalCase", "pascalCase"),
+            ("HTTPServer", "httpServer"),
+            ("parseURL", "parseUrl"),
+            ("my-HTTPServer", "myHttpServer"),
+            ("IOError", "ioError"),
+        ])
+
+    def test_idempotent(self):
+        for name in ("user_id", "HTTPServer", "version_2_beta", "naïve-über", "USER_ID"):
+            with self.subTest(name=name):
+                once = to_camel_case(name)
+                self.assertEqual(to_camel_case(once), once)
+
+    def test_non_ascii_letters(self):
+        self.check([
+            ("naïve-über", "naïveÜber"),
+            ("été_fini", "étéFini"),
+            ("straße_name", "straßeName"),
+            ("日本_語", "日本語"),  # caseless words are joined as they are
+        ])
+
+    def test_decomposed_marks_stay_with_their_letter(self):
+        # Written decomposed on purpose: "e" + U+0301 COMBINING ACUTE ACCENT.
+        self.check([
+            ("user_e\u0301tude", "userE\u0301tude"),
+            ("re\u0301sume\u0301_file", "re\u0301sume\u0301File"),
+            ("a-\u0301b", "aB"),  # a mark with no word to attach to is dropped
+        ])
+
+    def test_nfc_and_nfd_give_the_same_result(self):
+        for name in ("naïve-über", "été_fini", "user_étude", "ÉTÉ_FINI", "XMLÉtude",
+                     "ÅngströmUnit"):
+            with self.subTest(name=name):
+                nfc = to_camel_case(unicodedata.normalize("NFC", name))
+                nfd = to_camel_case(unicodedata.normalize("NFD", name))
+                self.assertEqual(unicodedata.normalize("NFC", nfd), nfc)
+                # The result keeps the input's form.
+                self.assertEqual(nfd, unicodedata.normalize("NFD", nfd))
+
+    def test_empty(self):
+        self.assertEqual(to_camel_case(""), "")
+
+    def test_non_str_raises_type_error(self):
+        for bad in (None, 42, b"user_id", ["user", "id"]):
+            with self.subTest(bad=bad):
+                with self.assertRaisesRegex(TypeError, "to_camel_case"):
+                    to_camel_case(bad)  # type: ignore[arg-type]
 
 
 if __name__ == "__main__":
