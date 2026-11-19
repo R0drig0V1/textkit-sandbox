@@ -130,3 +130,20 @@ def slug_title(text: str, max_len: int) -> str:
     if max_len < 0:
         raise ValueError(f"max_len must be >= 0, got {max_len}")
     return truncate(slugify(text), max_len, suffix="").rstrip("-")
+
+
+def is_palindrome(text: str) -> bool:
+    """Return whether ``text`` reads the same forwards and backwards.
+
+    Case, spaces, punctuation and accents are ignored: the text goes through
+    ``strip_accents`` and then ``str.casefold()``, and only the characters for which
+    ``str.isalnum()`` is true are kept and compared code point by code point. Digits count
+    (``"12321"`` is a palindrome). ``""`` and text with no alphanumeric characters
+    (``"!?"``) return ``True``: an empty sequence reads the same both ways. Never raises for
+    a ``str``.
+    """
+    # strip_accents runs before casefold so that "Á" and "a" meet as "a". casefold may
+    # still produce marks ("İ" -> "i" + U+0307); those are not alphanumeric and are dropped
+    # by the filter, so the order of the steps is the one the plan pins.
+    kept = [c for c in strip_accents(text).casefold() if c.isalnum()]
+    return kept == kept[::-1]
