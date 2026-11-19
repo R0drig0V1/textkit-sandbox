@@ -3,12 +3,12 @@
 
 Same rules as phase 1. Tasks with no "Depends on" can start at once.
 
-- [ ] **T2.1 `reading_time`** in `textkit/counts.py`: `reading_time(text, wpm=200) -> int`,
+- [x] **T2.1 `reading_time`** in `textkit/counts.py`: `reading_time(text, wpm=200) -> int`,
       whole minutes, from `word_count`. Write an ADR on rounding (an empty text, under one
       minute). Depends on T1.5.
 - [x] **T2.2 `sentence_count`** in `textkit/counts.py`: `sentence_count(text) -> int`.
       Write an ADR on abbreviations (`"e.g."`, `"Dr."`) and ellipses.
-- [ ] **T2.3 `to_kebab_case`** in `textkit/cases.py`: `to_kebab_case(name) -> str`, built on
+- [x] **T2.3 `to_kebab_case`** in `textkit/cases.py`: `to_kebab_case(name) -> str`, built on
       `to_snake_case`. Depends on T1.7.
 - [x] **T2.4 `is_palindrome`** in `textkit/strings.py`: `is_palindrome(text) -> bool`,
       ignoring case, spaces, punctuation and accents (use `strip_accents`). Depends on T1.3.
