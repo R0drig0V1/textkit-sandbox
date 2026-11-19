@@ -58,7 +58,7 @@ and 2.
       `"a"*64 + "@b.co"` and `"a"*65 + "@b.co"`, and a 254- and a 255-character address built
       only from labels of at most 63 characters (e.g. `"a@" + ".".join(["b"*63]*3) + "." + "c"*k`),
       the ADR stating the construction next to each row.
-- [ ] **T3.6 `pluralize`** in `textkit/plural.py`: `pluralize(word) -> str` for English
+- [x] **T3.6 `pluralize`** in `textkit/plural.py`: `pluralize(word) -> str` for English
       nouns. Write an ADR on the rules it covers (`-s`, `-es`, consonant `-y` -> `-ies`, a
       short table of irregulars such as `child` -> `children`) and on case handling, and
       implement what it decides. Minimum case-table rows: `cat`, `bus`, `box`, `buzz`,
