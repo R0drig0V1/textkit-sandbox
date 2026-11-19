@@ -5,6 +5,7 @@
 - Added `char_freq`: counts each non-whitespace character of a text (case-sensitive, keys in order of first occurrence).
 - Added `render`: fills `{name}` placeholders from a mapping, with `{{`/`}}` escapes and no format specs.
 - Added `levenshtein`: edit distance between two strings (insertions, deletions and substitutions of cost 1).
+- Added `number_to_words`: writes a whole number from 0 to 999 in English words, lower case, hyphenated tens, no "and".
 - Added `pluralize`: English plural of a singular noun (rules in docs/decisions/0004-pluralize-rules.md).
 - Added `slug_title`: the slug of a text cut to at most `max_len` characters, never ending in `-`.
 - Added `slugify`: lower-case ASCII slug of a text, runs of other characters become one `-`.
