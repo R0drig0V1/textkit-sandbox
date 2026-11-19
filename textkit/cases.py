@@ -3,9 +3,13 @@
 Every public function is listed in the README's function table. How words are split out of
 an identifier, runs of capitals included, is decided in ADR 0001
 (docs/decisions/0001-to-snake-case-capital-runs.md); `to_camel_case` uses its separator rule.
+`to_snake_case` takes its chunks from `textkit._tokens.words` (ADR 0002) when the two ADRs
+split the name the same way (see `_chunks`).
 """
 
 import re
+
+from textkit._tokens import words
 
 # `_` and `-` separate words; a run of them counts as one separator (ADR 0001).
 _SEPARATORS = re.compile(r"[-_]+")
@@ -19,7 +23,7 @@ def _split_camel(chunk: str) -> list[str]:
     lower-case character (`HTTPServer` -> `HTTP`, `Server`). Digits never start a word: they
     stay with what comes before them (`parseURL2` -> `parse`, `URL2`).
     """
-    words: list[str] = []
+    parts: list[str] = []
     start = 0
     for i in range(1, len(chunk)):
         char, prev = chunk[i], chunk[i - 1]
@@ -29,10 +33,26 @@ def _split_camel(chunk: str) -> list[str]:
         # Last capital of a run, followed by lower case: it starts the next word.
         ends_run = prev.isupper() and i + 1 < len(chunk) and chunk[i + 1].islower()
         if after_lower or ends_run:
-            words.append(chunk[start:i])
+            parts.append(chunk[start:i])
             start = i
-    words.append(chunk[start:])
-    return words
+    parts.append(chunk[start:])
+    return parts
+
+
+def _chunks(name: str) -> list[str]:
+    """Cut ``name`` into separator-free chunks at `_` and `-` (ADR 0001, rule 1).
+
+    Empty chunks may appear and are dropped by the caller. When ``name`` holds only
+    alphanumerics and `_`, the word rule of ADR 0002 (`textkit._tokens.words`) cuts it exactly
+    as ADR 0001 does, so the shared tokenizer is used. Any other name keeps the
+    separator split, because there the two rules disagree: a `-` between alphanumerics joins
+    a word under ADR 0002 but separates under ADR 0001 (`kebab-case`), and characters that
+    ADR 0002 drops as separators (spaces, `.`, `$`, a combining mark after `_`) are kept by
+    ADR 0001.
+    """
+    if all(ch.isalnum() or ch == "_" for ch in name):
+        return words(name)
+    return _SEPARATORS.split(name)
 
 
 def to_snake_case(name: str) -> str:
@@ -52,8 +72,8 @@ def to_snake_case(name: str) -> str:
     """
     if not isinstance(name, str):
         raise TypeError(f"name must be a str, not {type(name).__name__}")
-    words = [word for chunk in _SEPARATORS.split(name) for word in _split_camel(chunk) if word]
-    return "_".join(word.lower() for word in words)
+    parts = [part for chunk in _chunks(name) for part in _split_camel(chunk) if part]
+    return "_".join(part.lower() for part in parts)
 
 
 def to_camel_case(name: str) -> str:
