@@ -3,7 +3,7 @@
 import unicodedata
 import unittest
 
-from textkit.strings import is_palindrome, slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import is_palindrome, slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -230,6 +230,49 @@ class WrapTest(unittest.TestCase):
 
     def test_newline_only(self):
         self.assertEqual(wrap("\n\n", 10), [])
+
+
+class SlugTitleTest(unittest.TestCase):
+    def test_plan_examples(self):
+        self.assertEqual(slug_title("Hello, World!", 8), "hello-wo")
+        self.assertEqual(slug_title("Hello, World!", 6), "hello")
+        self.assertEqual(slug_title("Hello, World!", 11), "hello-world")
+        self.assertEqual(slug_title("x", 0), "")
+
+    def test_fits_unchanged(self):
+        self.assertEqual(slug_title("Hello, World!", 100), "hello-world")
+
+    def test_character_cut_not_word_cut(self):
+        self.assertEqual(slug_title("Hello, World!", 3), "hel")
+        self.assertEqual(slug_title("Hello, World!", 7), "hello-w")
+
+    def test_never_ends_in_dash(self):
+        for n in range(0, 20):
+            with self.subTest(max_len=n):
+                result = slug_title("a b c d e f", n)
+                self.assertFalse(result.endswith("-"))
+                self.assertLessEqual(len(result), n)
+
+    def test_matches_truncate_of_slugify(self):
+        text = "The Quick, Brown Fox -- jumps!"
+        for n in range(0, 30):
+            with self.subTest(max_len=n):
+                expected = truncate(slugify(text), n, suffix="").rstrip("-")
+                self.assertEqual(slug_title(text, n), expected)
+
+    def test_empty_results(self):
+        self.assertEqual(slug_title("", 5), "")
+        self.assertEqual(slug_title("!!!", 5), "")
+        self.assertEqual(slug_title("Hello", 0), "")
+
+    def test_non_ascii_follows_slugify(self):
+        self.assertEqual(slug_title("na\u00efve caf\u00e9", 6), "nave-c")
+
+    def test_negative_max_len_raises(self):
+        with self.assertRaises(ValueError):
+            slug_title("Hello", -1)
+        with self.assertRaises(ValueError):
+            slug_title("", -1)
 
 
 if __name__ == "__main__":
