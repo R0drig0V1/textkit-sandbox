@@ -95,3 +95,37 @@ def is_palindrome(text: str) -> bool:
     # last because casefold() can itself produce combining marks (e.g. "İ" -> "i̇").
     kept = [c for c in strip_accents(text).casefold() if c.isalnum()]
     return kept == kept[::-1]
+
+
+def wrap(text: str, width: int) -> list[str]:
+    """Split ``text`` into lines of at most ``width`` characters, breaking at spaces.
+
+    Words are filled greedily: each line takes as many words as fit, joined by one space.
+    Runs of spaces between words collapse to one, leading and trailing spaces are dropped,
+    and no line starts or ends with a space. A word longer than ``width`` is not split: it
+    gets a line of its own, longer than ``width``.
+
+    Existing newlines are not kept (ADR 0003): every whitespace character (``str.isspace``:
+    newlines, tabs, ``\\r`` and spaces alike) is a word separator, so ``"a\\nb"`` wraps like
+    ``"a b"`` and no returned line contains a newline.
+
+    ``wrap("", w)`` and whitespace-only text give ``[]``. Raises ``ValueError`` when
+    ``width < 1``, whatever ``text`` is.
+    """
+    if width < 1:
+        raise ValueError(f"width must be at least 1, got {width}")
+    lines: list[str] = []
+    current = ""
+    # str.split() with no argument splits on any whitespace run and drops empty pieces,
+    # which gives the collapsing, stripping and newline rules above in one step.
+    for word in text.split():
+        if not current:
+            current = word
+        elif len(current) + 1 + len(word) <= width:
+            current += " " + word
+        else:
+            lines.append(current)
+            current = word
+    if current:
+        lines.append(current)
+    return lines

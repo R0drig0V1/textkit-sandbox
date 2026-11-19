@@ -3,7 +3,7 @@
 import unicodedata
 import unittest
 
-from textkit.strings import is_palindrome, slugify, squeeze, strip_accents, truncate
+from textkit.strings import is_palindrome, slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -161,6 +161,75 @@ class IsPalindromeTest(unittest.TestCase):
         self.assertTrue(is_palindrome("   "))
         self.assertTrue(is_palindrome("!?, .;"))
         self.assertTrue(is_palindrome("\u0301"))
+
+
+class WrapTest(unittest.TestCase):
+    def test_fills_lines_greedily(self):
+        self.assertEqual(wrap("the quick brown fox", 10), ["the quick", "brown fox"])
+
+    def test_line_may_be_exactly_width(self):
+        self.assertEqual(wrap("ab cd", 5), ["ab cd"])
+
+    def test_one_over_width_breaks(self):
+        self.assertEqual(wrap("ab cde", 5), ["ab", "cde"])
+
+    def test_runs_of_spaces_collapse(self):
+        self.assertEqual(wrap("a    b     c", 80), ["a b c"])
+
+    def test_leading_and_trailing_spaces_dropped(self):
+        self.assertEqual(wrap("   a b   ", 80), ["a b"])
+
+    def test_lines_never_contain_separating_space(self):
+        for line in wrap("aa bb  cc   dd    ee", 5):
+            self.assertEqual(line, line.strip())
+            self.assertLessEqual(len(line), 5)
+
+    def test_empty(self):
+        self.assertEqual(wrap("", 10), [])
+
+    def test_spaces_only(self):
+        self.assertEqual(wrap("     ", 10), [])
+
+    def test_long_word_gets_own_line(self):
+        self.assertEqual(wrap("a abcdefghij b", 4), ["a", "abcdefghij", "b"])
+
+    def test_long_word_alone(self):
+        self.assertEqual(wrap("abcdefghij", 3), ["abcdefghij"])
+
+    def test_width_one(self):
+        self.assertEqual(wrap("a b c", 1), ["a", "b", "c"])
+
+    def test_width_zero_raises(self):
+        with self.assertRaises(ValueError):
+            wrap("a b", 0)
+
+    def test_negative_width_raises(self):
+        with self.assertRaises(ValueError):
+            wrap("a b", -3)
+
+    def test_width_checked_even_for_empty_text(self):
+        with self.assertRaises(ValueError):
+            wrap("", 0)
+
+    # ADR 0003: existing newlines are word separators, not kept.
+    def test_newline_is_a_separator(self):
+        self.assertEqual(wrap("a\nb", 80), ["a b"])
+
+    def test_blank_lines_are_not_kept(self):
+        self.assertEqual(wrap("one\n\ntwo", 80), ["one two"])
+
+    def test_crlf_and_tabs_are_separators(self):
+        self.assertEqual(wrap("a\r\nb\tc", 80), ["a b c"])
+
+    def test_newlines_rewrapped_to_width(self):
+        self.assertEqual(wrap("aa\nbb\ncc", 5), ["aa bb", "cc"])
+
+    def test_no_line_contains_newline(self):
+        for line in wrap("x\ny z\n\nw\n", 3):
+            self.assertNotIn("\n", line)
+
+    def test_newline_only(self):
+        self.assertEqual(wrap("\n\n", 10), [])
 
 
 if __name__ == "__main__":
