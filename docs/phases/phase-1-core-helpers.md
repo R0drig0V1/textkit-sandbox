@@ -34,7 +34,7 @@ anything else). Tasks with no "Depends on" can start at once.
       typed; no Unicode normalization is applied, so NFD input gives `"nandu"`: test both);
       then every run of characters outside `[a-z0-9]` after lower-casing (`_` included) becomes one `-`.
       `""` and `"!!!"` give `""`. Do not use `str.isalnum` (it accepts non-ASCII).
-- [ ] **T1.2 `truncate`** in `textkit/strings.py`: `truncate(text, width, suffix="...") -> str`
+- [x] **T1.2 `truncate`** in `textkit/strings.py`: `truncate(text, width, suffix="...") -> str`
       returns `text` unchanged when it fits in `width`, else cuts it so that the result,
       suffix included, is exactly `width` long. `width` smaller than the suffix raises
       `ValueError`, whenever `width < len(suffix)`, even if `text` fits. "Fits" means
