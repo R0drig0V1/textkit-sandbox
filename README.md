@@ -13,6 +13,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 |----------|--------|--------------|
 | `render` | `textkit.templates` | Fills `{name}` placeholders from a mapping; `{{` and `}}` are literal braces |
 | `levenshtein` | `textkit.distance` | Edit distance with insertions, deletions and substitutions of cost 1 |
+| `pluralize` | `textkit.plural` | English plural of a singular noun, with a few irregulars |
 | `slugify` | `textkit.strings` | Lower-case ASCII slug, runs of other characters become one `-` |
 | `soundex` | `textkit.phonetic` | Returns the four-character American Soundex code of a name |
 | `is_email` | `textkit.emails` | Tells whether a string is a syntactically valid e-mail address (offline) |
