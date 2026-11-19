@@ -11,6 +11,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 
 | Function | Module | What it does |
 |----------|--------|--------------|
+| `slug_title` | `textkit.strings` | Slug cut to a maximum length, never ending in `-` (`"Hello, World!"`, 8 -> `"hello-wo"`) |
 | `slugify` | `textkit.strings` | Turns text into a lower-case ASCII slug (`"Hello, World!"` -> `"hello-world"`) |
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
 | `strip_accents` | `textkit.strings` | Removes combining marks (`"Ñandú"` -> `"Nandu"`) |
