@@ -8,6 +8,8 @@
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (`"Ñandú"` -> `"Nandu"`).
 - Added `to_camel_case`: snake_case or kebab-case to camelCase (`"user_id"` -> `"userId"`).
+- Added `to_kebab_case`: camelCase, PascalCase or snake_case to kebab-case, built on
+  `to_snake_case` (`"HTTPServer"` -> `"http-server"`).
 - Added `to_snake_case` (new module `textkit.cases`): camelCase, PascalCase and kebab-case to
   snake_case; runs of capitals split as decided in
   the ADR "How `to_snake_case` splits runs of capitals".

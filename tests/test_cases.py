@@ -3,7 +3,8 @@
 `CASES` is the table of cases at the end of the ADR "How `to_snake_case` splits runs of
 capitals" (docs/decisions/NNNN-snake-case-capital-runs.md); every row is tested, and a
 sync test keeps the ADR table and `CASES` identical. `CAMEL_CASES` pins the behaviour of
-`to_camel_case` described in plan task T1.8 and its docstring.
+`to_camel_case` described in plan task T1.8 and its docstring. `ToKebabCaseTest` checks that
+`to_kebab_case` (plan task T2.3) is `to_snake_case` joined with `-`, on every row of `CASES`.
 """
 
 import ast
@@ -11,7 +12,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.cases import to_camel_case, to_snake_case
+from textkit.cases import to_camel_case, to_kebab_case, to_snake_case
 
 _ROOT = pathlib.Path(__file__).resolve().parent.parent
 
@@ -130,6 +131,44 @@ class ToCamelCaseTest(unittest.TestCase):
             to_camel_case(None)
         with self.assertRaises(TypeError):
             to_camel_case(b"user_id")
+
+
+class ToKebabCaseTest(unittest.TestCase):
+    def test_cases(self):
+        for name, expected in [
+            ("HTTPServer", "http-server"),
+            ("parseURL2", "parse-url2"),
+            ("camelCase", "camel-case"),
+            ("PascalCase", "pascal-case"),
+            ("already_snake", "already-snake"),
+            ("kebab-case", "kebab-case"),
+            ("-a--b-", "a-b"),
+            ("mixed-kebab_snakeCase", "mixed-kebab-snake-case"),
+            ("PDFs", "pd-fs"),
+            ("ÉcoleNormale", "école-normale"),
+            ("", ""),
+            ("---", ""),
+        ]:
+            with self.subTest(name=name):
+                self.assertEqual(to_kebab_case(name), expected)
+
+    def test_matches_snake_case_on_every_adr_row(self):
+        for name, snake in CASES:
+            with self.subTest(name=name):
+                self.assertEqual(to_kebab_case(name), snake.replace("_", "-"))
+                self.assertNotIn("_", to_kebab_case(name))
+
+    def test_idempotent(self):
+        for name, _ in CASES:
+            kebab = to_kebab_case(name)
+            with self.subTest(name=kebab):
+                self.assertEqual(to_kebab_case(kebab), kebab)
+
+    def test_non_str_raises_type_error(self):
+        with self.assertRaises(TypeError):
+            to_kebab_case(None)
+        with self.assertRaises(TypeError):
+            to_kebab_case(b"camelCase")
 
 
 if __name__ == "__main__":
