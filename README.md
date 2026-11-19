@@ -12,6 +12,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | Function | Module | What it does |
 |----------|--------|--------------|
 | `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive, in order of first occurrence |
+| `reading_time` | `textkit.counts` | Estimates reading time in whole minutes, rounded up (`wpm=200`; rule: ADR 0004) |
 | `slug_title` | `textkit.strings` | Slug of text cut to at most `max_len` characters, never ending in `-` (`("Hello, World!", 8)` -> `"hello-wo"`) |
 | `slugify` | `textkit.strings` | Turns text into a lower-case ASCII slug (`"Hello, World!"` -> `"hello-world"`) |
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
