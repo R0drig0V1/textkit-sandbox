@@ -13,6 +13,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 |----------|--------|--------------|
 | `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive, in order of first occurrence |
 | `human_bytes` | `textkit.sizes` | Formats a byte count in binary units (`1536` -> `"1.5 KiB"`, up to TiB) |
+| `is_email` | `textkit.emails` | Tells whether text is a syntactically valid email address, with no network or DNS (rule: [0006-what-is-an-email-address](docs/decisions/0006-what-is-an-email-address.md)) |
 | `is_palindrome` | `textkit.strings` | Tells whether text reads the same backwards, ignoring case, spaces, punctuation and accents |
 | `parse_duration` | `textkit.durations` | Parses a compact duration such as `"1h30m"` into whole seconds |
 | `number_to_words` | `textkit.numwords` | Spells `0..999` in lower-case English words, hyphenated tens, no "and" (`42` -> `"forty-two"`) |

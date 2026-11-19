@@ -10,3 +10,4 @@ One file per decision, `NNNN-title.md`, with Context / Decision / Consequences.
 | [0003](0003-snake-case-capital-runs.md) | How `to_snake_case` splits runs of capitals, digits and separators |
 | [0004](0004-reading-time-rounding.md) | `reading_time` rounds the word count up to whole minutes; text with no words is 0 |
 | [0005](0005-sentence-boundaries.md) | Where a sentence ends (`sentence_count`): abbreviations, ellipses and decimals |
+| [0006](0006-what-is-an-email-address.md) | What `is_email` accepts: one `@`, a dot-atom local part, a host-name domain of two or more labels, ASCII only, 64/254 length limits |
