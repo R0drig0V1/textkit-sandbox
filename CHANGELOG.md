@@ -7,4 +7,5 @@
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (`"Ñandú"` -> `"Nandu"`).
 - Added `to_snake_case`: converts camelCase, PascalCase or kebab-case identifiers to snake_case, splitting runs of capitals as in ADR 0002.
+- Added `truncate`: shortens text to a width, ending in a suffix when cut.
 - Added `word_count`: counts the words in a text, following the word rule of ADR 0001.

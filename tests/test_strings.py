@@ -4,7 +4,7 @@ import unittest
 
 import unicodedata
 
-from textkit.strings import slugify, squeeze, strip_accents
+from textkit.strings import slugify, squeeze, strip_accents, truncate
 
 
 class SqueezeTest(unittest.TestCase):
@@ -79,6 +79,53 @@ class StripAccentsTest(unittest.TestCase):
     def test_non_str_raises_type_error(self):
         with self.assertRaises(TypeError):
             strip_accents(None)  # type: ignore[arg-type]
+
+
+class TruncateTest(unittest.TestCase):
+    def test_text_that_fits_is_unchanged(self):
+        self.assertEqual(truncate("Hello", 10), "Hello")
+
+    def test_text_exactly_width_is_unchanged(self):
+        self.assertEqual(truncate("Hello", 5), "Hello")
+
+    def test_long_text_is_cut_to_exactly_width_with_suffix(self):
+        result = truncate("Hello, World!", 8)
+        self.assertEqual(result, "Hello...")
+        self.assertEqual(len(result), 8)
+
+    def test_cut_keeps_the_start_of_text(self):
+        self.assertEqual(truncate("abcdefghij", 6), "abc...")
+
+    def test_custom_suffix(self):
+        self.assertEqual(truncate("Hello, World!", 7, suffix="~"), "Hello,~")
+
+    def test_empty_suffix_is_a_plain_cut(self):
+        self.assertEqual(truncate("Hello, World!", 5, suffix=""), "Hello")
+
+    def test_width_equal_to_suffix_length_gives_only_suffix(self):
+        self.assertEqual(truncate("Hello, World!", 3), "...")
+
+    def test_width_zero_with_empty_suffix(self):
+        self.assertEqual(truncate("x", 0, suffix=""), "")
+        self.assertEqual(truncate("", 0, suffix=""), "")
+
+    def test_width_smaller_than_suffix_raises(self):
+        with self.assertRaises(ValueError):
+            truncate("Hello, World!", 2)
+
+    def test_width_smaller_than_suffix_raises_even_if_text_fits(self):
+        with self.assertRaises(ValueError):
+            truncate("Hi", 2)
+        with self.assertRaises(ValueError):
+            truncate("", 0)
+
+    def test_negative_width_raises(self):
+        with self.assertRaises(ValueError):
+            truncate("Hello", -1, suffix="")
+
+    def test_length_counts_code_points(self):
+        self.assertEqual(truncate("Ñandú", 5), "Ñandú")
+        self.assertEqual(truncate("Ñandú!", 5), "Ña...")
 
 
 if __name__ == "__main__":
