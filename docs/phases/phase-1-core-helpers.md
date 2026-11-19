@@ -46,7 +46,7 @@ anything else). Tasks with no "Depends on" can start at once.
       line of its own. Runs of spaces between words collapse to one; leading and trailing
       spaces are dropped; `wrap("", w) == []`; `width < 1` raises `ValueError`; lines never
       contain the separating space. Write an ADR on what happens to existing newlines.
-- [ ] **T1.5 `word_count`** in a new module `textkit/counts.py`: `word_count(text) -> int`.
+- [x] **T1.5 `word_count`** in a new module `textkit/counts.py`: `word_count(text) -> int`.
       Write an ADR on what counts as a word (hyphenated words, numbers, apostrophes). The ADR
       ends with a table of cases (input -> count), at least: a hyphenated word, a number, a
       word with an apostrophe, `""`, punctuation only, several spaces/newlines;
