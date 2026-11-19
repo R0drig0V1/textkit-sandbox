@@ -25,7 +25,7 @@ CHANGELOG line. Tasks with no "Depends on" can start at once.
       ADR on how runs of capitals are split (`HTTPServer`, `parseURL2`).
 - [ ] **T1.8 `to_camel_case`** in `textkit/cases.py`: `to_camel_case(name) -> str` for
       snake_case and kebab-case input (`"user_id"` -> `"userId"`).
-- [ ] **T1.9 `slug_title`** in `textkit/strings.py`: `slug_title(text, max_len) -> str`, a
+- [x] **T1.9 `slug_title`** in `textkit/strings.py`: `slug_title(text, max_len) -> str`, a
       slug of at most `max_len` characters that never ends in `-`, built from `slugify`
       (and `truncate` if it fits). Depends on T1.1 and T1.2.
 - [ ] **T1.10 shared tokenizer**: add `textkit/_tokens.py` with `words(text) -> list[str]`
