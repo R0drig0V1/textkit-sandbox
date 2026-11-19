@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added `char_freq`: counts each non-whitespace character of a text (case-sensitive, keys in order of first occurrence).
+- Added `initials`: the upper-cased first letter of each space- or hyphen-separated part of a name, with no separators.
 - Added `render`: fills `{name}` placeholders from a mapping, with `{{`/`}}` escapes and no format specs.
 - Added `levenshtein`: edit distance between two strings (insertions, deletions and substitutions of cost 1).
 - Added `number_to_words`: writes a whole number from 0 to 999 in English words, lower case, hyphenated tens, no "and".

@@ -12,6 +12,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | Function | Module | What it does |
 |----------|--------|--------------|
 | `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive, in order of first occurrence |
+| `initials` | `textkit.names` | Upper-cased first letter of each space- or hyphen-separated part of a name |
 | `render` | `textkit.templates` | Fills `{name}` placeholders from a mapping; `{{` and `}}` are literal braces |
 | `levenshtein` | `textkit.distance` | Edit distance with insertions, deletions and substitutions of cost 1 |
 | `number_to_words` | `textkit.numwords` | Writes a whole number from 0 to 999 in English words (`42` -> `forty-two`) |
