@@ -17,6 +17,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `sentence_count` | `textkit.counts` | Counts the sentences of a text (rule: [0005-sentence-boundaries](docs/decisions/0005-sentence-boundaries.md)) |
 | `slug_title` | `textkit.strings` | Makes a slug of at most `max_len` characters that never ends in `-` |
 | `slugify` | `textkit.strings` | Turns text into a lower-case ASCII slug (`"Hello, World!"` -> `"hello-world"`) |
+| `soundex` | `textkit.phonetic` | Returns the American Soundex code of a name (`"Robert"` -> `"R163"`); H and W are transparent, non-letters are removed |
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
 | `strip_accents` | `textkit.strings` | Removes combining marks (accents, diacritics) |
 | `truncate` | `textkit.strings` | Shortens text to a width, ending with a suffix when cut |
