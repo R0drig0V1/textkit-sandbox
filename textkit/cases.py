@@ -86,3 +86,21 @@ def to_camel_case(name: str) -> str:
     if not words:
         return ""
     return words[0].lower() + "".join(word.capitalize() for word in words[1:])
+
+
+def to_kebab_case(name: str) -> str:
+    """Convert a camelCase, PascalCase or snake_case identifier to kebab-case.
+
+    Built on ``to_snake_case``: words are found exactly as it finds them, then joined with
+    ``-`` instead of ``_`` (``"HTTPServer"`` -> ``"http-server"``, ``"parseURL2"`` ->
+    ``"parse-url2"``, ``"already_snake"`` -> ``"already-snake"``). Runs of separators and
+    separators at either end follow the same rule (``"-a--b-"`` -> ``"a-b"``), kebab-case input
+    comes back unchanged, and ``""`` (or separators only) gives ``""``. The splitting rule and
+    its limits (``"PDFs"`` -> ``"pd-fs"``) are in the ADR "How `to_snake_case` splits runs of
+    capitals" (docs/decisions/NNNN-snake-case-capital-runs.md).
+
+    Raises ``TypeError`` if ``name`` is not a ``str``.
+    """
+    # to_snake_case splits on every `_` and `-`, so the only `_` left in its output are the
+    # separators it inserted: swapping them is enough, and keeps the two functions in step.
+    return to_snake_case(name).replace("_", "-")
