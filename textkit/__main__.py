@@ -44,8 +44,18 @@ Output, by the type of the result
       ``char_freq``, order of first appearance). A key or value that itself contains a tab
       or a newline makes the output ambiguous; no current command can produce one.
 
+Version
+    ``python3 -m textkit --version`` prints one line, ``textkit <version>``, on standard
+    output and exits 0. The number is ``textkit.__version__``, the single source of
+    the version; this module never writes a second literal. The program name in the output
+    is ``textkit``, not the ``prog`` of the usage line (``python3 -m textkit``), so the line
+    reads the same however the command line was started. ``--version`` needs no function:
+    argparse runs the version action as soon as it meets the option, before it checks that
+    a function was given. It is an option of the top-level parser, so it goes before the
+    function name; ``python3 -m textkit squeeze --version`` is a usage error.
+
 Exit codes
-    - 0: success.
+    - 0: success (also ``--help`` and ``--version``).
     - 1: the function raised ``ValueError`` or ``TypeError``, or standard input could not
       be decoded; the message goes to standard error as ``textkit: <function>: <message>``.
     - 2: usage error (argparse's convention): no function, an unknown function, a missing
@@ -57,7 +67,7 @@ Exit codes
 The entry point is ``_main``, not ``main``: ``scripts/check.sh`` treats every public
 top-level function in ``textkit/*.py`` as a text helper that needs a README table row and a
 changelog entry, and the command line is not one. The parser is built by
-``_build_parser`` so later options (``--version``, plan task T2.7) can be added there.
+``_build_parser``; top-level options such as ``--version`` (plan task T2.7) are added there.
 """
 
 from __future__ import annotations
@@ -152,12 +162,22 @@ def _discover(module_names: Optional[Iterable[str]] = None) -> Dict[str, Command
 
 
 def _build_parser(commands: Dict[str, Command]) -> argparse.ArgumentParser:
-    """Build the argument parser: one subcommand per command, each taking one ``text``."""
+    """Build the argument parser: one subcommand per command, each taking one ``text``.
+
+    The top-level parser also has ``--version``, which prints ``textkit <version>`` and
+    exits 0 (see "Version" in the module docstring).
+    """
     parser = argparse.ArgumentParser(
         prog="python3 -m textkit",
         description="Run one textkit function on one text and print the result.",
         epilog=_EPILOG,
         formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    # Literal "textkit" rather than "%(prog)s", which would print "python3 -m textkit <version>".
+    # The number comes from textkit.__version__ only: no second literal to keep in step
+    # (tests/test_main.py fails if the version string appears anywhere in this file).
+    parser.add_argument(
+        "--version", action="version", version=f"textkit {textkit.__version__}"
     )
     subparsers = parser.add_subparsers(
         dest="function", metavar="<function>", title="functions", required=True
@@ -211,7 +231,8 @@ def _main(argv: Optional[List[str]] = None, commands: Optional[Dict[str, Command
         commands: The commands to offer; defaults to ``_discover()``. Tests pass their own.
 
     Output goes to ``sys.stdout`` and errors to ``sys.stderr``, both looked up at call
-    time so tests can capture them. ``--help`` returns 0 instead of exiting.
+    time so tests can capture them. ``--help`` and ``--version`` return 0 instead of
+    exiting.
 
     Raises:
         RuntimeError: from ``_discover`` on a command name clash.
@@ -221,7 +242,7 @@ def _main(argv: Optional[List[str]] = None, commands: Optional[Dict[str, Command
     parser = _build_parser(commands)
     try:
         args = parser.parse_args(argv)
-    except SystemExit as exc:  # --help (0) or a usage error (2), already printed
+    except SystemExit as exc:  # --help/--version (0) or a usage error (2), already printed
         return exc.code if isinstance(exc.code, int) else 2
     func = commands[args.function]
     try:
