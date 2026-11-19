@@ -6,6 +6,7 @@
 - Added `char_freq` in `textkit.counts`: counts each non-whitespace character, case-sensitive, keys in order of first occurrence.
 - Added `reading_time` in `textkit.counts`: whole minutes to read a text at `wpm` words per minute (default 200), rounded up; 0 for a text with no words (ADR 0004).
 - Added `is_palindrome`: tells whether text reads the same both ways, ignoring case, spaces, punctuation and accents (via `strip_accents`).
+- Added `sentence_count` in `textkit.counts`: counts sentences; `Dr.`, `e.g.` and similar abbreviations do not end one, an ellipsis does only before a capital (ADR 0005).
 - Added `slugify`: turns text into a lower-case ASCII slug.
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `to_camel_case`: converts snake_case or kebab-case identifiers to camelCase (separators as in ADR 0001).
