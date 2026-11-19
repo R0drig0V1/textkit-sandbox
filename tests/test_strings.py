@@ -1,7 +1,7 @@
 import unicodedata
 import unittest
 
-from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import is_palindrome, slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -176,6 +176,40 @@ class SlugTitleTest(unittest.TestCase):
     def test_negative_max_len_raises(self):
         with self.assertRaises(ValueError):
             slug_title("Hello", -1)
+
+
+class IsPalindromeTest(unittest.TestCase):
+    def test_simple(self):
+        self.assertTrue(is_palindrome("racecar"))
+        self.assertFalse(is_palindrome("textkit"))
+
+    def test_ignores_case_spaces_and_punctuation(self):
+        self.assertTrue(is_palindrome("A man, a plan, a canal: Panama"))
+        self.assertTrue(is_palindrome("Was it a car or a cat I saw?"))
+
+    def test_ignores_accents(self):
+        self.assertTrue(is_palindrome("Anita lava la tina"))
+        self.assertTrue(is_palindrome("A man, a plan, a canal: Panamá"))
+        self.assertTrue(is_palindrome("Àñá"))
+        self.assertTrue(is_palindrome("a\u0301ba"))  # NFD input
+
+    def test_casefold(self):
+        # "ß" casefolds to "ss".
+        self.assertTrue(is_palindrome("sß"))
+
+    def test_digits_count(self):
+        self.assertTrue(is_palindrome("12321"))
+        self.assertTrue(is_palindrome("1a1"))
+        self.assertFalse(is_palindrome("123"))
+        self.assertFalse(is_palindrome("ab1"))
+
+    def test_empty_and_no_alphanumerics(self):
+        self.assertTrue(is_palindrome(""))
+        self.assertTrue(is_palindrome("   "))
+        self.assertTrue(is_palindrome("?!, -"))
+
+    def test_single_character(self):
+        self.assertTrue(is_palindrome("x"))
 
 
 if __name__ == "__main__":

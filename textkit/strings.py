@@ -123,3 +123,19 @@ def slug_title(text: str, max_len: int) -> str:
     if max_len < 0:
         raise ValueError(f"max_len ({max_len}) must not be negative")
     return truncate(slugify(text), max_len, suffix="").rstrip("-")
+
+
+def is_palindrome(text: str) -> bool:
+    """Return ``True`` if the letters and digits of ``text`` read the same backwards.
+
+    The text goes through ``strip_accents`` and then ``str.casefold()``; of the result only
+    the characters for which ``str.isalnum()`` is true are kept (letters and digits in any
+    script, so digits count: ``"12321"`` is a palindrome). Spaces, punctuation and symbols
+    are ignored, so ``"A man, a plan, a canal: Panamá"`` is a palindrome. ``""`` and text
+    with no alphanumeric characters give ``True`` (the empty sequence reads the same both
+    ways). Never raises for a ``str``.
+    """
+    # Accents are stripped before casefold, as the plan specifies; casefold rather than
+    # lower so that "ß" compares like "ss".
+    kept = [ch for ch in strip_accents(text).casefold() if ch.isalnum()]
+    return kept == kept[::-1]
