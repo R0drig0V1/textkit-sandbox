@@ -11,6 +11,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 
 | Function | Module | What it does |
 |----------|--------|--------------|
+| `slug_title` | `textkit.strings` | Slug cut to at most a length, never ending in `-` (`"Hello, World!"`, 8 -> `hello-wo`) |
 | `slugify` | `textkit.strings` | Turns text into a lower-case ASCII slug (`"Hello, World!"` -> `hello-world`) |
 | `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive |
 | `reading_time` | `textkit.counts` | Minutes to read a text at a words-per-minute rate, rounded up (ADR "Reading time rounding") |

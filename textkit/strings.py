@@ -105,3 +105,21 @@ def wrap(text: str, width: int) -> list[str]:
     if current:
         lines.append(current)
     return lines
+
+
+def slug_title(text: str, max_len: int) -> str:
+    """Build a slug of ``text`` that is at most ``max_len`` characters and never ends in ``-``.
+
+    Exactly ``truncate(slugify(text), max_len, suffix="")`` with trailing ``-`` stripped:
+    the cut is by character, not by word, so ``("Hello, World!", 8)`` gives ``"hello-wo"``
+    and ``("Hello, World!", 6)`` gives ``"hello"`` (the cut ``"hello-"`` loses its dash).
+    The result may be ``""``: for ``max_len == 0``, or when ``slugify`` gives ``""``.
+
+    Raises:
+        ValueError: if ``max_len < 0``. Checked first, so it raises even for ``""``.
+    """
+    # truncate would also reject a negative width (it is below len("") == 0), but its message
+    # talks about a suffix the caller never passed; say what is actually wrong instead.
+    if max_len < 0:
+        raise ValueError(f"max_len must be at least 0, got {max_len}")
+    return truncate(slugify(text), max_len, suffix="").rstrip("-")
