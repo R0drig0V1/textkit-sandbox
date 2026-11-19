@@ -21,6 +21,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive, no Unicode normalisation |
 | `wrap` | `textkit.strings` | Splits text into lines of at most `width` characters, keeping line breaks |
 | `slug_title` | `textkit.strings` | Slug of at most `max_len` characters, cut at a word boundary when possible, never ending in `-` |
+| `is_palindrome` | `textkit.strings` | Whether text reads the same both ways, ignoring case (`casefold`), accents and anything not a letter or digit |
 
 ## Commands
 

@@ -192,3 +192,58 @@ def slug_title(text: str, max_len: int) -> str:
     if boundary > 0:
         return head[:boundary]
     return head
+
+
+def is_palindrome(text: str) -> bool:
+    """Return ``True`` if ``text`` reads the same forwards and backwards.
+
+    Case, spaces, punctuation and accents are ignored. ``text`` is reduced to a sequence of
+    characters in this order, and that sequence is compared with its reverse:
+
+    1. **Accents:** ``strip_accents`` removes every combining mark (``"á"`` -> ``"a"``,
+       ``"ñ"`` -> ``"n"``). It also normalises, so decomposed (NFD) input gives the same
+       result as precomposed (NFC) input.
+    2. **Case:** ``str.casefold()``, not ``str.lower()``. Case folding is the Unicode
+       operation meant for caseless comparison: ``"ß"`` folds to ``"ss"`` (``lower()``
+       keeps ``"ß"``), so ``"sß"`` is a palindrome. Accents are stripped *before* folding
+       so that ``"İ"`` (which ``casefold`` would turn into ``"i"`` plus a combining dot)
+       becomes a plain ``"i"``.
+    3. **What is kept:** only characters for which ``str.isalnum()`` is true, i.e. Unicode
+       letters and numbers of any script. Everything else is ignored: whitespace,
+       punctuation, symbols, ``_``, and any combining mark left over (spacing marks such
+       as Devanagari vowel signs, category ``Mc``, are not letters, so they are ignored
+       too).
+    4. **Digits count:** they are compared like letters, so ``"12321"`` and ``"1a1"`` are
+       palindromes and ``"12"`` and ``"a1"`` are not. There is no
+       compatibility mapping (``strip_accents`` uses NFD, not NFKD), so ``"²"`` does not
+       equal ``"2"``.
+
+    The comparison is per code point, which works for any script whose letters are single
+    code points after step 1: Latin, Greek, Cyrillic, Hebrew, Arabic, kana, CJK ideographs
+    and precomposed Hangul syllables (``"기러기"`` is a palindrome). It does not know about
+    grapheme clusters, so in scripts that build one visible character from several code
+    points only the base letters are compared. Note that step 1 also removes marks that
+    change the letter outside Latin (Japanese dakuten: ``"が"`` compares as ``"か"``).
+
+    Edge cases:
+
+    - **Empty text, or text with no letter or digit** (``""``, ``"!?"``, ``"  "``) is a
+      palindrome: ``True``. What is left is the empty sequence, which equals its reverse.
+      Returning ``False`` would break the rule that ignored characters never change the
+      answer (``"a!"`` is ``True`` because ``"a"`` is, so ``"!"`` must answer like ``""``).
+      Callers that need actual content must check for it themselves.
+    - **A single letter or digit** is a palindrome: ``True``.
+
+    Examples: ``"A man, a plan, a canal: Panama"`` -> ``True``;
+    ``"Dábale arroz a la zorra el abad"`` -> ``True``; ``"Ñandú"`` -> ``False``
+    (``"nandu"``).
+
+    Raises:
+        TypeError: if ``text`` is not a ``str`` (``bytes``, ``None``, numbers...). The
+            check is explicit, so the error does not depend on how ``strip_accents``
+            fails. Subclasses of ``str`` are accepted.
+    """
+    if not isinstance(text, str):
+        raise TypeError(f"text must be a str, got {type(text).__name__}")
+    kept = [ch for ch in strip_accents(text).casefold() if ch.isalnum()]
+    return kept == kept[::-1]
