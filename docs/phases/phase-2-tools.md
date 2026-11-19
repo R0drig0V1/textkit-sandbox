@@ -20,5 +20,5 @@ Same rules as phase 1. Tasks with no "Depends on" can start at once.
       with `--help`. Depends on T1.1 to T1.8.
 - [x] **T2.7 `--version`**: `textkit.__version__ = "0.1.0"` and `python3 -m textkit
       --version`. Depends on T2.6.
-- [ ] **T2.8 usage guide**: `docs/usage.md` with one short example per public function, and
+- [x] **T2.8 usage guide**: `docs/usage.md` with one short example per public function, and
       a test that runs every example. Depends on every other task of phases 1 and 2.
