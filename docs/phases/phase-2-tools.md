@@ -4,7 +4,7 @@
 Same rules as phase 1 (its "Rules for every task" section). Tasks with no "Depends on" can
 start at once.
 
-- [ ] **T2.1 `reading_time`** in `textkit/counts.py`: `reading_time(text, wpm=200) -> int`,
+- [x] **T2.1 `reading_time`** in `textkit/counts.py`: `reading_time(text, wpm=200) -> int`,
       whole minutes, from `word_count`. Write an ADR on rounding (an empty text, under one
       minute). `wpm < 1` raises `ValueError`. Depends on T1.5.
 - [ ] **T2.2 `sentence_count`** in `textkit/counts.py`: `sentence_count(text) -> int`.
@@ -12,7 +12,7 @@ start at once.
       creates `textkit/counts.py`).
 - [x] **T2.3 `to_kebab_case`** in `textkit/cases.py`: `to_kebab_case(name) -> str`, built on
       `to_snake_case`. Depends on T1.7.
-- [ ] **T2.4 `is_palindrome`** in `textkit/strings.py`: `is_palindrome(text) -> bool`,
+- [x] **T2.4 `is_palindrome`** in `textkit/strings.py`: `is_palindrome(text) -> bool`,
       ignoring case, spaces, punctuation and accents (use `strip_accents`). Only characters
       with `str.isalnum()` are kept after `strip_accents` and `casefold()`; digits count; `""`
       and text with no alphanumerics return `True`. Depends on T1.3.

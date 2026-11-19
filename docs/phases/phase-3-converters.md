@@ -74,7 +74,7 @@ and 2.
       characters. A name with no ASCII letter raises `ValueError`. Tests: `Robert` R163,
       `Rupert` R163, `Tymczak` T522, `Ashcraft` A261, `Pfister` P236, `Honeyman` H555, `Lee`
       L000, `O'Brien` O165, `José` J200; `""`, `"123"`, `"é"` raise `ValueError`.
-- [ ] **T3.8 `initials`** in `textkit/names.py`: `initials(name) -> str`, `c.upper()` of the
+- [x] **T3.8 `initials`** in `textkit/names.py`: `initials(name) -> str`, `c.upper()` of the
       first letter of each space- or hyphen-separated part (it may be several characters), no separators
       (`"jean-luc picard"` -> `"JLP"`); `""` returns `""`. Split with
       `re.split(r"[ -]+", name)` (only spaces and hyphens; runs count as one; empty parts are
