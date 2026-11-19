@@ -11,7 +11,15 @@ import re
 import unicodedata
 import unittest
 
-from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import (
+    is_palindrome,
+    slug_title,
+    slugify,
+    squeeze,
+    strip_accents,
+    truncate,
+    wrap,
+)
 
 _WRAP_ADR = (
     pathlib.Path(__file__).resolve().parents[1] / "docs" / "decisions" / "0003-wrap-newlines.md"
@@ -224,6 +232,62 @@ class SlugTitleTest(unittest.TestCase):
             slug_title("Hello", -1)
         with self.assertRaises(ValueError):
             slug_title("", -1)
+
+
+class IsPalindromeTest(unittest.TestCase):
+    """Every rule of plan task T2.4; accents go through strip_accents (T1.3, PR #39)."""
+
+    def test_simple_palindrome(self):
+        self.assertTrue(is_palindrome("level"))
+
+    def test_non_palindrome(self):
+        self.assertFalse(is_palindrome("hello"))
+        self.assertFalse(is_palindrome("ab"))
+
+    def test_case_is_ignored(self):
+        self.assertTrue(is_palindrome("Racecar"))
+        self.assertTrue(is_palindrome("RaCeCaR"))
+
+    def test_spaces_and_punctuation_are_ignored(self):
+        self.assertTrue(is_palindrome("A man, a plan, a canal: Panama!"))
+        self.assertTrue(is_palindrome("Was it a car or a cat I saw?"))
+        self.assertTrue(is_palindrome("no\tlemon,\nno melon"))
+
+    def test_accents_are_ignored(self):
+        self.assertTrue(is_palindrome("Ésé"))
+        self.assertTrue(is_palindrome("Anita lava la tina"))
+        self.assertTrue(is_palindrome("Dábale arroz a la zorra el abad"))
+
+    def test_nfc_and_nfd_input_agree(self):
+        for text, expected in (("Ésé", True), ("añña", True), ("Ñandú", False)):
+            for form in ("NFC", "NFD"):
+                with self.subTest(text=text, form=form):
+                    self.assertEqual(is_palindrome(unicodedata.normalize(form, text)), expected)
+
+    def test_casefold_not_lower(self):
+        # casefold maps "ß" to "ss"; lower() would leave "ß" and "ß" != "ss" reversed.
+        self.assertTrue(is_palindrome("ßss"))
+
+    def test_digits_count(self):
+        self.assertTrue(is_palindrome("12321"))
+        self.assertTrue(is_palindrome("1a1"))
+        self.assertFalse(is_palindrome("123"))
+        self.assertFalse(is_palindrome("a1b2a"))
+
+    def test_empty_text_is_palindrome(self):
+        self.assertTrue(is_palindrome(""))
+
+    def test_text_without_alphanumerics_is_palindrome(self):
+        for text in ("!!!", "   ", ".,;-", "\u0301"):
+            with self.subTest(text=text):
+                self.assertTrue(is_palindrome(text))
+
+    def test_single_character(self):
+        self.assertTrue(is_palindrome("x"))
+
+    def test_non_str_raises_type_error(self):
+        with self.assertRaises(TypeError):
+            is_palindrome(None)  # type: ignore[arg-type]
 
 
 if __name__ == "__main__":

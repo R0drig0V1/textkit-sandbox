@@ -146,3 +146,27 @@ def slug_title(text: str, max_len: int) -> str:
         raise ValueError(f"max_len ({max_len}) must not be negative")
     # slugify never leaves a leading "-", so only the end of the cut can dangle.
     return truncate(slugify(text), max_len, suffix="").rstrip("-")
+
+
+def is_palindrome(text: str) -> bool:
+    """Return ``True`` if the letters and digits of ``text`` read the same backwards.
+
+    Steps, in order:
+
+    1. ``strip_accents`` removes combining marks, so NFC and NFD input give the same answer
+       and ``"é"`` matches ``"e"``.
+    2. ``str.casefold`` folds case (stronger than ``lower``: ``"ß"`` becomes ``"ss"``).
+    3. Only characters with ``str.isalnum()`` are kept, so spaces and punctuation are
+       ignored and digits count (``"12321"`` is a palindrome, ``"123"`` is not).
+
+    The kept characters are compared with their reverse, code point by code point.
+    ``""`` and text with no letters or digits (``"!!!"``) return ``True``: an empty
+    sequence reads the same both ways.
+
+    Raises:
+        TypeError: if ``text`` is not a ``str`` (raised by ``strip_accents``).
+    """
+    # casefold runs after strip_accents: strip_accents decomposes and drops the marks first,
+    # so folds that would otherwise add a combining mark (U+0130 -> "i" + U+0307) cannot.
+    kept = [ch for ch in strip_accents(text).casefold() if ch.isalnum()]
+    return kept == kept[::-1]
