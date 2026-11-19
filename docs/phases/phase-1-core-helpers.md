@@ -41,7 +41,7 @@ anything else). Tasks with no "Depends on" can start at once.
       `len(text) <= width` (code points); the cut keeps the start of `text`.
 - [x] **T1.3 `strip_accents`** in `textkit/strings.py`: `strip_accents(text) -> str` removes
       combining marks (`"Ñandú"` -> `"Nandu"`) with `unicodedata`.
-- [ ] **T1.4 `wrap`** in `textkit/strings.py`: `wrap(text, width) -> list[str]` splits text
+- [x] **T1.4 `wrap`** in `textkit/strings.py`: `wrap(text, width) -> list[str]` splits text
       into lines of at most `width` characters at spaces; a word longer than `width` gets a
       line of its own. Runs of spaces between words collapse to one; leading and trailing
       spaces are dropped; `wrap("", w) == []`; `width < 1` raises `ValueError`; lines never
@@ -60,7 +60,7 @@ anything else). Tasks with no "Depends on" can start at once.
       ADR on how runs of capitals are split (`HTTPServer`, `parseURL2`). The ADR ends with a
       table of cases (input -> output), at least: `HTTPServer`, `parseURL2`, `camelCase`,
       `PascalCase`, `kebab-case`, `already_snake`, `""`; `tests/test_cases.py` tests every row.
-- [ ] **T1.8 `to_camel_case`** in `textkit/cases.py`: `to_camel_case(name) -> str` for
+- [x] **T1.8 `to_camel_case`** in `textkit/cases.py`: `to_camel_case(name) -> str` for
       snake_case and kebab-case input (`"user_id"` -> `"userId"`). Separators are `_` and `-`
       (a run of them counts as one); leading and trailing separators are dropped; the first
       word is lower-cased and the rest capitalized (`"HTTP_server"` -> `"httpServer"`); input
