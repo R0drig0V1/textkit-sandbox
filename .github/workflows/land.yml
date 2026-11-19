@@ -1,0 +1,48 @@
+# The lander (herdr-agent-pool's land.py, vendored in .github/lander/): merges the PRs labelled
+# `queue` against the base branch `run3`, one after another, after verifying each merge.
+# Only run 3 of the experiment uses it. The queue label is the approval: only the repository
+# owner's account can add it.
+name: land
+
+on:
+  pull_request_target: # zizmor: ignore[dangerous-triggers] - runs the base's workflow and lander
+    types: [labeled]
+    branches: [run3]
+  workflow_run: # zizmor: ignore[dangerous-triggers]
+    workflows: [CI]
+    types: [completed]
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: land-run3
+  cancel-in-progress: false
+
+jobs:
+  land:
+    if: github.event_name != 'pull_request_target' || github.event.label.name == 'queue'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write # push run3, delete merged head branches
+      pull-requests: write # comments and labels
+      issues: read # the base-red issue
+    env:
+      BASE: run3
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: run3
+          fetch-depth: 0
+          persist-credentials: true # land.py pushes the verified merge with it
+      - name: Land the queue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_PR: ${{ github.event.pull_request.number }}
+        run: |
+          git config user.name "lander[bot]"
+          git config user.email "lander[bot]@users.noreply.github.com"
+          python3 .github/lander/land.py --base "$BASE" ${EVENT_PR:+--pr "$EVENT_PR"}
