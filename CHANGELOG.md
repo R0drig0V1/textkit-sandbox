@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added `char_freq` in `textkit.counts`: counts each character that is not `str.isspace()`, case-sensitive, keys in order of first occurrence.
+- Added `is_palindrome`: tells whether text reads the same backwards, ignoring case, spaces, punctuation and accents; digits count, and `""` or text with no letters or digits gives `True`.
 - Added `slug_title`: a slug of at most `max_len` characters that never ends in `-` (character cut); raises `ValueError` when `max_len` is negative.
 - Added `slugify`: turns text into a lower-case ASCII slug.
 - Added `squeeze`: collapses runs of whitespace into single spaces.
