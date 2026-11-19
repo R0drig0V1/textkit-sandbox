@@ -39,7 +39,7 @@ and 2.
       is 0; `levenshtein("kitten", "sitting")` is 3.
 - [ ] **T3.2 `rot13`** in `textkit/ciphers.py`: `rot13(text) -> str`; ASCII letters rotate
       by 13 keeping their case, every other character is unchanged; `rot13(rot13(s)) == s`.
-- [ ] **T3.3 `to_roman`** in `textkit/roman.py`: `to_roman(n) -> str` for `1 <= n <= 3999`
+- [x] **T3.3 `to_roman`** in `textkit/roman.py`: `to_roman(n) -> str` for `1 <= n <= 3999`
       in standard subtractive form (`1994` -> `"MCMXCIV"`); any other `n`, or a non-`int`
       (a `bool` included), raises `ValueError`.
 - [x] **T3.4 `number_to_words`** in `textkit/numwords.py` (not `numbers.py`: it would shadow
