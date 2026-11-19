@@ -8,3 +8,4 @@
 - Added `to_camel_case`: converts snake_case or kebab-case identifiers to camelCase.
 - Added `to_snake_case`: converts camelCase, PascalCase or kebab-case identifiers to snake_case (ADR 0001).
 - Added `truncate`: cuts text to a width, ending in a suffix (`...` by default).
+- Added `word_count`: counts the words in a text, by the rule of ADR 0002.

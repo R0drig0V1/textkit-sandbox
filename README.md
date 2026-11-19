@@ -17,6 +17,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `to_camel_case` | `textkit.cases` | Converts snake_case or kebab-case to camelCase (`"user_id"` -> `"userId"`) |
 | `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase or kebab-case to snake_case |
 | `truncate` | `textkit.strings` | Cuts text to a width, ending in a suffix (`...` by default) |
+| `word_count` | `textkit.counts` | Counts the words in a text (rule: ADR 0002) |
 
 ## Commands
 
