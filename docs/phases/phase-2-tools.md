@@ -12,7 +12,7 @@ start at once.
       creates `textkit/counts.py`).
 - [x] **T2.3 `to_kebab_case`** in `textkit/cases.py`: `to_kebab_case(name) -> str`, built on
       `to_snake_case`. Depends on T1.7.
-- [ ] **T2.4 `is_palindrome`** in `textkit/strings.py`: `is_palindrome(text) -> bool`,
+- [x] **T2.4 `is_palindrome`** in `textkit/strings.py`: `is_palindrome(text) -> bool`,
       ignoring case, spaces, punctuation and accents (use `strip_accents`). Only characters
       with `str.isalnum()` are kept after `strip_accents` and `casefold()`; digits count; `""`
       and text with no alphanumerics return `True`. Depends on T1.3.
@@ -42,7 +42,7 @@ start at once.
       public-function definition, and runs every command once via `subprocess` with
       `sys.executable -m textkit`. Add the CHANGELOG line "Added the `python3 -m textkit`
       command line." (no README row). Depends on T1.1 to T1.8.
-- [ ] **T2.7 `--version`**: `__version__ = "0.1.0"` in `textkit/__init__.py` (the only place
+- [x] **T2.7 `--version`**: `__version__ = "0.1.0"` in `textkit/__init__.py` (the only place
       in `textkit/` the version string appears; `__main__.py` reads `textkit.__version__`);
       `python3 -m textkit --version` prints exactly `textkit 0.1.0` and exits 0. Test via
       `subprocess` with `sys.executable`: the output equals `f"textkit {textkit.__version__}\n"`
