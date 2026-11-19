@@ -8,3 +8,4 @@
 - Added `to_snake_case`: converts camelCase, PascalCase or kebab-case identifiers to snake_case (word boundaries in ADR 0001).
 - Added `word_count`: counts the words in a text; the word rule is ADR 0002.
 - Added `truncate`: shortens text to a width, ending with a suffix when cut.
+- Added `wrap`: splits text into lines of at most `width` characters at spaces (ADR 0003).
