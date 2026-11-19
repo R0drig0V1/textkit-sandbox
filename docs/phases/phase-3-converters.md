@@ -49,7 +49,7 @@ and 2.
       `"forty-two"`, `100` -> `"one hundred"`, `105` -> `"one hundred five"`, `110` ->
       `"one hundred ten"`, `999` -> `"nine hundred ninety-nine"`); outside the range, or a
       non-`int` (a `bool` included), raises `ValueError`.
-- [ ] **T3.5 `is_email`** in `textkit/emails.py`: `is_email(text) -> bool`. Write an ADR on
+- [x] **T3.5 `is_email`** in `textkit/emails.py`: `is_email(text) -> bool`. Write an ADR on
       what is accepted (one `@`, the local part and domain characters, dots, the length
       limits) and implement what it decides; no network and no DNS. Minimum case-table rows,
       written as Python literals: `"a@b.co"`, `"a.b@c.co"`, `".a@b.co"`, `"a..b@c.co"`,
