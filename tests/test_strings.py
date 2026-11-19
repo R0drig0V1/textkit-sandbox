@@ -2,7 +2,7 @@ import unittest
 
 import unicodedata
 
-from textkit.strings import slugify, squeeze
+from textkit.strings import slugify, squeeze, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -41,6 +41,54 @@ class SlugifyTest(unittest.TestCase):
     def test_empty_and_punctuation_only_give_empty(self):
         self.assertEqual(slugify(""), "")
         self.assertEqual(slugify("!!!"), "")
+
+
+class WrapTest(unittest.TestCase):
+    def test_greedy_packing(self):
+        self.assertEqual(wrap("the quick brown fox", 10), ["the quick", "brown fox"])
+
+    def test_exact_fit(self):
+        self.assertEqual(wrap("ab cd", 5), ["ab cd"])
+        self.assertEqual(wrap("ab cd", 4), ["ab", "cd"])
+
+    def test_long_word_gets_own_line(self):
+        self.assertEqual(wrap("a abcdefgh b", 3), ["a", "abcdefgh", "b"])
+
+    def test_runs_of_spaces_collapse(self):
+        self.assertEqual(wrap("a    b", 10), ["a b"])
+
+    def test_leading_and_trailing_spaces_dropped(self):
+        self.assertEqual(wrap("   a b   ", 10), ["a b"])
+
+    def test_lines_never_contain_separating_space(self):
+        for line in wrap("aa bb cc dd ee", 5):
+            self.assertFalse(line.startswith(" ") or line.endswith(" "))
+            self.assertLessEqual(len(line), 5)
+
+    def test_empty_and_blank_input(self):
+        self.assertEqual(wrap("", 5), [])
+        self.assertEqual(wrap("   ", 5), [])
+        self.assertEqual(wrap(" \n \r\n ", 5), [])
+
+    def test_width_below_one_raises(self):
+        for width in (0, -1):
+            with self.assertRaises(ValueError):
+                wrap("a", width)
+
+    def test_width_one(self):
+        self.assertEqual(wrap("a b", 1), ["a", "b"])
+
+    def test_newlines_are_reflowed_like_spaces(self):
+        # ADR 0001: existing line breaks are separators, not hard breaks.
+        self.assertEqual(wrap("one\ntwo three", 20), ["one two three"])
+        self.assertEqual(wrap("a\r\nb\rc", 10), ["a b c"])
+        self.assertEqual(wrap("a\n\nb", 10), ["a b"])
+
+    def test_tabs_stay_inside_words(self):
+        self.assertEqual(wrap("a\tb c", 3), ["a\tb", "c"])
+
+    def test_width_counts_code_points(self):
+        self.assertEqual(wrap("ñandú ñu", 8), ["ñandú ñu"])
 
 
 if __name__ == "__main__":
