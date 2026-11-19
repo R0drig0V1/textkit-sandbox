@@ -4,6 +4,7 @@ The word-splitting rules for `to_snake_case` (separators, runs of capitals, digi
 recorded in the ADR docs/decisions/NNNN-to-snake-case-capital-runs.md, which ends with the
 table of cases that tests/test_cases.py checks row by row. `to_camel_case` goes the other
 way (snake_case or kebab-case to camelCase); it splits on separators only.
+`to_kebab_case` is `to_snake_case` with `-` in place of `_`, so it follows the same ADR.
 """
 
 import re
@@ -84,3 +85,27 @@ def to_camel_case(name: str) -> str:
     if not words:
         return ""
     return words[0].lower() + "".join(word.capitalize() for word in words[1:])
+
+
+def to_kebab_case(name: str) -> str:
+    """Convert a camelCase, PascalCase or snake_case identifier to kebab-case.
+
+    The words are exactly those of ``to_snake_case`` (ADR ``*-to-snake-case-capital-runs.md``
+    in ``docs/decisions/``: runs of ``-``/``_`` are one boundary, leading and trailing ones are
+    dropped, runs of capitals keep their last capital for the next word, digits stick to the
+    word before them), lower-cased and joined with single ``-``: ``"HTTPServer"`` ->
+    ``"http-server"``, ``"parseURL2"`` -> ``"parse-url2"``, ``"already_snake"`` ->
+    ``"already-snake"``. Kebab-case input is returned unchanged, ``""`` (or separators only)
+    gives ``""``, and the result is never changed by a second call. Characters other than
+    ASCII letters, digits, ``-`` and ``_`` are kept in place and lower-cased, as in
+    ``to_snake_case``.
+
+    Raises:
+        TypeError: if ``name`` is not a ``str``.
+    """
+    # Checked here so the message names this function, not to_snake_case.
+    if not isinstance(name, str):
+        raise TypeError(f"to_kebab_case() expects a str, got {type(name).__name__}")
+    # Safe because every `_` in the input is a separator that to_snake_case consumes, so each
+    # `_` in its output is one of the word joins it inserted.
+    return to_snake_case(name).replace("_", "-")

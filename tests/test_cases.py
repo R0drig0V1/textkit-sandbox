@@ -5,7 +5,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.cases import to_camel_case, to_snake_case
+from textkit.cases import to_camel_case, to_kebab_case, to_snake_case
 
 # The table of cases at the end of ADR "to-snake-case-capital-runs" (docs/decisions/), in the
 # same order. test_adr_table_matches keeps the two in sync.
@@ -120,6 +120,45 @@ class ToCamelCaseTest(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(TypeError):
                     to_camel_case(value)
+
+
+
+class ToKebabCaseTest(unittest.TestCase):
+    def test_adr_cases_with_hyphens(self):
+        # Built on to_snake_case, so every row of its ADR table holds with `-` for `_`.
+        for name, expected in SNAKE_CASES:
+            with self.subTest(name=name):
+                self.assertEqual(to_kebab_case(name), expected.replace("_", "-"))
+
+    def test_examples(self):
+        self.assertEqual(to_kebab_case("HTTPServer"), "http-server")
+        self.assertEqual(to_kebab_case("parseURL2"), "parse-url2")
+        self.assertEqual(to_kebab_case("camelCase"), "camel-case")
+        self.assertEqual(to_kebab_case("PascalCase"), "pascal-case")
+        self.assertEqual(to_kebab_case("already_snake"), "already-snake")
+        self.assertEqual(to_kebab_case("kebab-case"), "kebab-case")
+        self.assertEqual(to_kebab_case("mixed_snake-camelCase"), "mixed-snake-camel-case")
+
+    def test_separators_only_or_empty(self):
+        for name in ("", "_", "--", "-_-"):
+            with self.subTest(name=name):
+                self.assertEqual(to_kebab_case(name), "")
+
+    def test_idempotent(self):
+        for name, _ in SNAKE_CASES:
+            with self.subTest(name=name):
+                once = to_kebab_case(name)
+                self.assertEqual(to_kebab_case(once), once)
+
+    def test_other_characters_kept_and_lowered(self):
+        self.assertEqual(to_kebab_case("ÉcoleName"), "école-name")
+        self.assertEqual(to_kebab_case("a.bC"), "a.b-c")
+
+    def test_non_str_raises_type_error(self):
+        for value in (None, 42, b"camelCase"):
+            with self.subTest(value=value):
+                with self.assertRaisesRegex(TypeError, "to_kebab_case"):
+                    to_kebab_case(value)
 
 
 if __name__ == "__main__":
