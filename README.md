@@ -28,3 +28,16 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 ## Commands
 
 - `scripts/check.sh`: unit tests, this table, the changelog, ADR numbering.
+- `python3 -m textkit <function> "<text>"`: prints the result of any public function that
+  takes one text argument (other parameters keep their defaults); `python3 -m textkit --help`
+  lists them with the first line of each docstring. The commands are discovered at run time.
+  Strings print as is, numbers and booleans with `print()`, dicts and lists as JSON with
+  sorted keys. Exit 0 on success, 2 on an unknown function or a wrong argument count (usage
+  on stderr), 1 when the function rejects the text with `ValueError`.
+
+  ```console
+  $ python3 -m textkit slugify "Hello, World!"
+  hello-world
+  $ python3 -m textkit char_freq "banana"
+  {"a": 3, "b": 1, "n": 2}
+  ```
