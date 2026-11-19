@@ -1,7 +1,7 @@
 import unicodedata
 import unittest
 
-from textkit.strings import slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -149,6 +149,33 @@ class WrapTest(unittest.TestCase):
                 wrap("a b", width)
         with self.assertRaises(ValueError):
             wrap("", 0)
+
+
+class SlugTitleTest(unittest.TestCase):
+    def test_character_cut_inside_word(self):
+        self.assertEqual(slug_title("Hello, World!", 8), "hello-wo")
+
+    def test_trailing_dash_stripped(self):
+        self.assertEqual(slug_title("Hello, World!", 6), "hello")
+
+    def test_fits_unchanged(self):
+        self.assertEqual(slug_title("Hello, World!", 11), "hello-world")
+
+    def test_zero_gives_empty(self):
+        self.assertEqual(slug_title("x", 0), "")
+
+    def test_never_longer_than_max_len(self):
+        for n in range(0, 15):
+            result = slug_title("Hello, World!", n)
+            self.assertLessEqual(len(result), n)
+            self.assertFalse(result.endswith("-"))
+
+    def test_empty_slug(self):
+        self.assertEqual(slug_title("!!!", 5), "")
+
+    def test_negative_max_len_raises(self):
+        with self.assertRaises(ValueError):
+            slug_title("Hello", -1)
 
 
 if __name__ == "__main__":
