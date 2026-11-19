@@ -76,3 +76,22 @@ def to_camel_case(name: str) -> str:
     if not words:
         return ""
     return words[0].lower() + "".join(word.capitalize() for word in words[1:])
+
+
+def to_kebab_case(name: str) -> str:
+    """Convert a camelCase, PascalCase or snake_case identifier to kebab-case.
+
+    Built on ``to_snake_case``, so the words are exactly the ones ADR 0002 gives (runs of
+    capitals, digits and separators): the words are lower-cased and joined with ``-``
+    instead of ``_``. ``"HTTPServer"`` -> ``"http-server"``, ``"parseURL2"`` ->
+    ``"parse-url2"``, ``"already_snake"`` -> ``"already-snake"``; kebab-case input comes back
+    unchanged. Like ``to_snake_case`` it is lossy (``"HTTPServer"`` and ``"HttpServer"`` both
+    give ``"http-server"``).
+
+    Spaces and other characters are not separators and are kept, only lower-cased
+    (``"hello world"`` -> ``"hello world"``). Returns ``""`` for ``""`` or separators only.
+    Never raises for ``str`` input. See docs/decisions/0002-snake-case-word-splitting.md.
+    """
+    # Safe as a plain replace: `_` and `-` are separators in ADR 0002, so no word of the
+    # snake_case form contains one and every `_` in it is a word boundary.
+    return to_snake_case(name).replace("_", "-")
