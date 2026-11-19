@@ -16,6 +16,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `is_email` | `textkit.emails` | Tells whether text is a syntactically valid email address, with no network or DNS (rule: [0006-what-is-an-email-address](docs/decisions/0006-what-is-an-email-address.md)) |
 | `initials` | `textkit.names` | Returns the upper-case initials of a name split on spaces and hyphens (`"jean-luc picard"` -> `"JLP"`) |
 | `is_palindrome` | `textkit.strings` | Tells whether text reads the same backwards, ignoring case, spaces, punctuation and accents |
+| `levenshtein` | `textkit.distance` | Counts the insertions, deletions and substitutions that turn one string into another (`"kitten"`, `"sitting"` -> `3`) |
 | `parse_duration` | `textkit.durations` | Parses a compact duration such as `"1h30m"` into whole seconds |
 | `number_to_words` | `textkit.numwords` | Spells `0..999` in lower-case English words, hyphenated tens, no "and" (`42` -> `"forty-two"`) |
 | `ordinal` | `textkit.ordinals` | Turns a non-negative int into its English ordinal (`1` -> `"1st"`, `11` -> `"11th"`) |
