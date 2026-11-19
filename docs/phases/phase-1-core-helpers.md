@@ -7,7 +7,7 @@ CHANGELOG line. Tasks with no "Depends on" can start at once.
 - [x] **T1.1 `slugify`** in `textkit/strings.py`: `slugify(text) -> str` lower-cases, turns
       every run of non-alphanumeric characters into one `-` and strips `-` at both ends
       (`"Hello, World!"` -> `"hello-world"`). ASCII only: other characters are dropped.
-- [ ] **T1.2 `truncate`** in `textkit/strings.py`: `truncate(text, width, suffix="...") -> str`
+- [x] **T1.2 `truncate`** in `textkit/strings.py`: `truncate(text, width, suffix="...") -> str`
       returns `text` unchanged when it fits in `width`, else cuts it so that the result,
       suffix included, is exactly `width` long. `width` smaller than the suffix raises
       `ValueError`.
