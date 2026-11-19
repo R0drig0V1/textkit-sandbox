@@ -2,6 +2,7 @@
 
 The word-splitting rules (runs of capitals, digits, separators) are fixed by
 docs/decisions/0002-snake-case-word-splitting.md; change that ADR before changing them here.
+to_camel_case shares only its separator rule (rule 1): it never splits at case changes.
 """
 
 import re
@@ -44,3 +45,34 @@ def to_snake_case(name: str) -> str:
     raises for ``str`` input. See docs/decisions/0002-snake-case-word-splitting.md.
     """
     return "_".join(_split_words(name)).lower()
+
+
+def to_camel_case(name: str) -> str:
+    """Convert a snake_case or kebab-case identifier to camelCase.
+
+    Words are split only at `-` and `_`, with the separator rule of ADR 0002 (a run of them
+    counts as one; leading and trailing separators are dropped). The first word is
+    lower-cased and every other word is capitalized with ``str.capitalize`` (first character
+    upper-cased, the rest lower-cased), then the words are joined with nothing between them:
+    ``"user_id"`` -> ``"userId"``, ``"HTTP_server"`` -> ``"httpServer"``,
+    ``"SCREAMING_SNAKE"`` -> ``"screamingSnake"``.
+
+    Case changes inside a word are not boundaries here, unlike in ``to_snake_case``: a name
+    with no `-` or `_` at all is returned with only its first character lower-cased
+    (``"PascalCase"`` -> ``"pascalCase"``, ``"camelCase"`` unchanged, ``"HTTPServer"`` ->
+    ``"hTTPServer"``), while a word after a separator loses its inner capitals
+    (``"my_camelCase"`` -> ``"myCamelcase"``). The conversion is lossy (``"version_2"`` and
+    ``"version-2"`` both give ``"version2"``), so ``to_snake_case(to_camel_case(x))`` is not
+    always ``x``.
+
+    Spaces and other characters are not separators and are kept. Returns ``""`` for ``""``
+    or separators only. Never raises for ``str`` input.
+    """
+    if "_" not in name and "-" not in name:
+        # The plan (T1.8) keeps separator-free input as written apart from its first
+        # character, so already-camelCase names are a fixed point.
+        return name[:1].lower() + name[1:]
+    words = [word for word in _SEPARATORS.split(name) if word]
+    if not words:
+        return ""
+    return words[0].lower() + "".join(word.capitalize() for word in words[1:])
