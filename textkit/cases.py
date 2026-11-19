@@ -33,3 +33,21 @@ def to_snake_case(name: str) -> str:
     text = _LOWER_UPPER_BOUNDARY.sub(r"\1_\2", text)
     text = _SEPARATORS.sub("_", text).strip("_")
     return text.lower()
+
+
+def to_kebab_case(name: str) -> str:
+    """Convert a camelCase, PascalCase or snake_case identifier to kebab-case.
+
+    Built on ``to_snake_case``, so it splits words by exactly the same rules (ADR 0001):
+    acronyms stay whole (``"HTTPServer"`` -> ``"http-server"``), digits stay attached to the
+    word before them (``"parseURL2"`` -> ``"parse-url2"``), a run of ``-`` and ``_`` becomes
+    one ``-``, separators at either end are dropped, and the result is lower-cased. Every
+    ``_`` in the snake_case result is a word separator, so each one becomes a ``-``.
+
+    Input that is already kebab-case is returned unchanged, and ``""`` gives ``""``. Never
+    raises for a ``str``; other characters (spaces, punctuation, non-ASCII letters) are kept
+    as they are, apart from lower-casing, as in ``to_snake_case``.
+    """
+    # to_snake_case already collapses every separator run to a single "_", so a plain
+    # replace is enough; re-deriving the boundaries here would risk the two drifting apart.
+    return to_snake_case(name).replace("_", "-")

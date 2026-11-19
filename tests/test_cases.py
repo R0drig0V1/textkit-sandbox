@@ -2,7 +2,7 @@
 
 import unittest
 
-from textkit.cases import to_snake_case
+from textkit.cases import to_kebab_case, to_snake_case
 
 
 class ToSnakeCaseTest(unittest.TestCase):
@@ -39,6 +39,37 @@ class ToSnakeCaseTest(unittest.TestCase):
 
     def test_other_characters_are_kept(self):
         self.assertEqual(to_snake_case("Foo Bar"), "foo bar")
+
+
+class ToKebabCaseTest(unittest.TestCase):
+    # Every ADR 0001 row, through to_kebab_case: the same words joined by "-".
+    def test_adr_table(self):
+        for name, snake in ToSnakeCaseTest.ADR_TABLE:
+            with self.subTest(name=name):
+                self.assertEqual(to_kebab_case(name), snake.replace("_", "-"))
+
+    def test_examples(self):
+        cases = [
+            ("HTTPServer", "http-server"),
+            ("parseURL2", "parse-url2"),
+            ("snake_case_name", "snake-case-name"),
+            ("already-kebab", "already-kebab"),
+            ("__dunder__", "dunder"),
+            ("mixed-kebab_snakeCase", "mixed-kebab-snake-case"),
+            ("", ""),
+        ]
+        for name, expected in cases:
+            with self.subTest(name=name):
+                self.assertEqual(to_kebab_case(name), expected)
+
+    def test_idempotent(self):
+        for name, _ in ToSnakeCaseTest.ADR_TABLE:
+            with self.subTest(name=name):
+                once = to_kebab_case(name)
+                self.assertEqual(to_kebab_case(once), once)
+
+    def test_other_characters_are_kept(self):
+        self.assertEqual(to_kebab_case("Foo Bar"), "foo bar")
 
 
 if __name__ == "__main__":
