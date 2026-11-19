@@ -85,3 +85,26 @@ def char_freq(text: str) -> dict[str, int]:
         if not char.isspace():
             counts[char] = counts.get(char, 0) + 1
     return counts
+
+
+def reading_time(text: str, wpm: int = 200) -> int:
+    """Return how many whole minutes ``text`` takes to read at ``wpm`` words per minute.
+
+    Words are counted with ``word_count`` (ADR 0002). The time is rounded **up** to whole
+    minutes (ADR 0004): a text with no words (``""``, whitespace or punctuation only) takes
+    0 minutes, any text with 1 to ``wpm`` words takes 1, and exactly ``k * wpm`` words take
+    ``k``. The arithmetic is integer-only, so boundaries are exact.
+
+    Raises:
+        ValueError: if ``wpm < 1``. ``wpm`` is checked before ``text``, so this is raised
+            even for ``""``.
+        TypeError: if ``wpm`` (being at least 1) is not an ``int``, or is a ``bool``
+            (``200.0``, ``True``).
+    """
+    if wpm < 1:
+        raise ValueError(f"wpm must be at least 1, got {wpm!r}")
+    # bool is a subclass of int; ``True`` as "1 wpm" is never meant (ADR 0004).
+    if isinstance(wpm, bool) or not isinstance(wpm, int):
+        raise TypeError(f"wpm must be an int, not {type(wpm).__name__}")
+    # Ceiling division without floats: (words + wpm - 1) // wpm == ceil(words / wpm).
+    return (word_count(text) + wpm - 1) // wpm

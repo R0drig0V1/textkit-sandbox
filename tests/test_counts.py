@@ -1,8 +1,9 @@
 """Tests for textkit.counts. One TestCase class per public function."""
 
+import math
 import unittest
 
-from textkit.counts import char_freq, word_count
+from textkit.counts import char_freq, reading_time, word_count
 
 # The case table of ADR 0002 (docs/decisions/0002-what-counts-as-a-word.md), row by row:
 # (row number, input, count). Keep it in sync with the ADR; T1.10 checks the same rows
@@ -105,6 +106,75 @@ class CharFreqTest(unittest.TestCase):
 
     def test_returns_plain_dict(self):
         self.assertIs(type(char_freq("ab")), dict)
+
+
+def _n_words(n):
+    """Return ``n`` copies of "word" separated by single spaces (ADR 0004's "n words")."""
+    return " ".join(["word"] * n)
+
+
+# The case table of ADR 0004 (docs/decisions/0004-reading-time-rounds-up.md), row by row:
+# (row number, text, wpm, minutes). Keep it in sync with the ADR.
+READING_TIME_CASES = [
+    (1, "", 200, 0),
+    (2, " \n\t ", 200, 0),
+    (3, "!!! ... ?", 200, 0),
+    (4, "- " * 500, 200, 0),
+    (5, "hello", 200, 1),
+    (6, _n_words(199), 200, 1),
+    (7, _n_words(200), 200, 1),
+    (8, _n_words(201), 200, 2),
+    (9, _n_words(400), 200, 2),
+    (10, _n_words(401), 200, 3),
+    (11, "well-known " * 201, 200, 2),
+    (12, "one two three", 1, 3),
+    (13, "one two three", 2, 2),
+    (14, "a b", 1000, 1),
+    (15, "", 1, 0),
+]
+
+# The error table of ADR 0004: (text, wpm, exception).
+READING_TIME_ERRORS = [
+    ("hello", 0, ValueError),
+    ("hello", -5, ValueError),
+    ("", 0, ValueError),
+    ("hello", 0.5, ValueError),
+    ("hello", 200.0, TypeError),
+    ("hello", True, TypeError),
+]
+
+
+class ReadingTimeTest(unittest.TestCase):
+    def test_adr_0004_case_table(self):
+        for row, text, wpm, expected in READING_TIME_CASES:
+            with self.subTest(row=row, text=text[:20], wpm=wpm):
+                self.assertEqual(reading_time(text, wpm), expected)
+
+    def test_case_table_rows_are_numbered_in_order(self):
+        self.assertEqual([row for row, _, _, _ in READING_TIME_CASES],
+                         list(range(1, len(READING_TIME_CASES) + 1)))
+
+    def test_adr_0004_error_table(self):
+        for text, wpm, error in READING_TIME_ERRORS:
+            with self.subTest(text=text, wpm=wpm):
+                with self.assertRaises(error):
+                    reading_time(text, wpm)
+
+    def test_default_wpm_is_200(self):
+        self.assertEqual(reading_time(_n_words(200)), 1)
+        self.assertEqual(reading_time(_n_words(201)), 2)
+
+    def test_returns_an_int(self):
+        self.assertIs(type(reading_time("hello")), int)
+
+    def test_matches_ceiling_of_word_count(self):
+        # Cross-check the integer formula against the float definition on small inputs,
+        # where float division is exact enough to compare.
+        for words in range(0, 60):
+            for wpm in range(1, 25):
+                with self.subTest(words=words, wpm=wpm):
+                    expected = math.ceil(words / wpm)
+                    self.assertEqual(reading_time(_n_words(words), wpm), expected)
 
 
 if __name__ == "__main__":
