@@ -10,3 +10,4 @@
 - Added `strip_accents`: removes combining marks (NFD, drop category Mn, recompose with NFC).
 - Added `char_freq` in `textkit.counts`: counts each non-whitespace character (`str.isspace()`), case-sensitive, without normalising.
 - Added `wrap`: splits text into lines of at most `width` characters at whitespace, keeping existing line breaks (ADR 0003).
+- Added `to_camel_case` in `textkit.cases`: converts snake_case and kebab-case names to camelCase; words are split as in `to_snake_case` (ADR 0002), so PascalCase and acronyms are normalised (`"HTTPServer"` -> `"httpServer"`).

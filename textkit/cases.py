@@ -1,8 +1,9 @@
-"""Identifier case conversion helpers (snake_case and friends).
+"""Identifier case conversion helpers (snake_case, camelCase and friends).
 
 The word-boundary rules used here are recorded in
 docs/decisions/0002-snake-case-word-boundaries.md; every example in that ADR is tested in
-tests/test_cases.py. Every public function is listed in the README's function table.
+tests/test_cases.py. ``to_camel_case`` splits names with ``to_snake_case``, so it follows
+the same rules. Every public function is listed in the README's function table.
 """
 
 import unicodedata
@@ -106,3 +107,50 @@ def to_snake_case(name: str) -> str:
     flush()
 
     return "_".join(word.lower() for word in words)
+
+
+def to_camel_case(name: str) -> str:
+    """Convert a snake_case, kebab-case, camelCase or PascalCase name to camelCase.
+
+    The name is first split into words exactly as ``to_snake_case`` does (ADR 0002), then
+    the first word is kept lower case and every later word gets its first character
+    title-cased (``str.capitalize``); the words are joined with nothing in between
+    (``"user_id"`` -> ``"userId"``, ``"kebab-case"`` -> ``"kebabCase"``). Splitting first,
+    instead of only removing separators, means the ADR 0002 rules apply unchanged:
+
+    - Leading, trailing and repeated separators are dropped (``"__user__id_"`` ->
+      ``"userId"``, ``"-_- "`` -> ``""``).
+    - Upper-case input is lower-cased word by word (``"USER_ID"`` -> ``"userId"``).
+    - camelCase input comes back unchanged (``"userId"`` -> ``"userId"``); PascalCase
+      input gets a lower-case first word (``"UserId"`` -> ``"userId"``). Acronyms are
+      words too, so they are not kept in capitals: ``"HTTPServer"`` -> ``"httpServer"``,
+      ``"parseURL"`` -> ``"parseUrl"`` (the round-trip cost noted in ADR 0002).
+    - Digits stay with the word they follow; a word that is only digits joins the
+      previous one, and a word that starts with a digit has nothing to capitalise
+      (``"version_2_beta"`` -> ``"version2Beta"``, ``"utf8_decode"`` -> ``"utf8Decode"``,
+      ``"user_2fa"`` -> ``"user2fa"``). So ``to_snake_case`` of the result can differ from
+      the input (``"version2Beta"`` -> ``"version2_beta"``).
+    - Combining marks stay with their base letter, and only the base letter is
+      capitalised, so composed (NFC) and decomposed (NFD) input give the same result up
+      to normalisation; the text is not normalised (``"naïve-über"`` -> ``"naïveÜber"``
+      in either form). Caseless letters (CJK, ...) are left as they are.
+
+    Args:
+        name: The identifier to convert. Any string is accepted; an empty string, or one
+            with no letters or digits, gives ``""``.
+
+    Returns:
+        The camelCase form of ``name``, with no separators.
+
+    Raises:
+        TypeError: If ``name`` is not a ``str``.
+    """
+    if not isinstance(name, str):
+        # Checked here too so the message names this function, not to_snake_case.
+        raise TypeError(f"to_camel_case() expects a str, got {type(name).__name__}")
+
+    # to_snake_case drops every non-alphanumeric character, so "_" only ever joins words.
+    words = to_snake_case(name).split("_")
+    # The words are already lower case; capitalize() only title-cases the first
+    # character, which in NFD text is the base letter, never a mark.
+    return words[0] + "".join(word.capitalize() for word in words[1:])
