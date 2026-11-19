@@ -10,7 +10,7 @@ Same rules as phase 1. Tasks with no "Depends on" can start at once.
       Write an ADR on abbreviations (`"e.g."`, `"Dr."`) and ellipses.
 - [ ] **T2.3 `to_kebab_case`** in `textkit/cases.py`: `to_kebab_case(name) -> str`, built on
       `to_snake_case`. Depends on T1.7.
-- [ ] **T2.4 `is_palindrome`** in `textkit/strings.py`: `is_palindrome(text) -> bool`,
+- [x] **T2.4 `is_palindrome`** in `textkit/strings.py`: `is_palindrome(text) -> bool`,
       ignoring case, spaces, punctuation and accents (use `strip_accents`). Depends on T1.3.
 - [ ] **T2.5 API contract test**: `tests/test_api.py` checks that every public function of
       every `textkit` module has a docstring and type hints for all parameters and the
