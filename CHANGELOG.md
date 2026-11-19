@@ -8,6 +8,7 @@
 - Added `is_palindrome`: tells whether text reads the same both ways, ignoring case, spaces, punctuation and accents (via `strip_accents`).
 - Added `sentence_count` in `textkit.counts`: counts sentences; `Dr.`, `e.g.` and similar abbreviations do not end one, an ellipsis does only before a capital (ADR 0005).
 - Added the `python3 -m textkit` command line.
+- Added `python3 -m textkit --version`.
 - Added `slugify`: turns text into a lower-case ASCII slug.
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `to_camel_case`: converts snake_case or kebab-case identifiers to camelCase (separators as in ADR 0001).

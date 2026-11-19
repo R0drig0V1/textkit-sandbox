@@ -15,6 +15,8 @@ with ``print()``. Exit status: 0 on success; 2, with the message on stderr, on a
 function, a wrong number of arguments or no arguments at all (argparse's usage errors); 1,
 with the message on stderr, if the function itself raises ``ValueError`` or ``TypeError``.
 A text that starts with ``-`` goes after ``--`` (``python3 -m textkit word_count -- -x``).
+``python3 -m textkit --version`` prints ``textkit <version>`` (from ``textkit.__version__``)
+and exits 0.
 
 This module defines no public function (its entry point is ``_main``) and importing it has
 no side effects: the command line only runs under ``if __name__ == "__main__":``.
@@ -116,6 +118,11 @@ def _parser(commands: Dict[str, Callable[..., Any]]) -> argparse.ArgumentParser:
         description="Run a textkit function on one text and print the result.",
         epilog="commands:\n" + "\n".join(lines),
         formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    # argparse's "version" action prints on stdout and exits 0 as soon as it is seen, before the
+    # required subcommand is checked, so `--version` works without a command.
+    parser.add_argument(
+        "--version", action="version", version=f"textkit {textkit.__version__}"
     )
     # `dest` is mandatory with `required=True` on Python 3.9: without it, a missing command
     # crashes argparse with a TypeError instead of printing the usage and exiting 2.
