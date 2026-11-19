@@ -1,8 +1,9 @@
-import unittest
+"""Tests for textkit.strings, one TestCase class per public function."""
 
 import unicodedata
+import unittest
 
-from textkit.strings import squeeze, strip_accents, truncate
+from textkit.strings import slugify, squeeze, strip_accents, truncate
 
 
 class SqueezeTest(unittest.TestCase):
@@ -79,6 +80,51 @@ class StripAccentsTest(unittest.TestCase):
 
     def test_lone_combining_mark_removed(self):
         self.assertEqual(strip_accents("\u0301"), "")
+
+
+class SlugifyTest(unittest.TestCase):
+    def test_basic_example(self):
+        self.assertEqual(slugify("Hello, World!"), "hello-world")
+
+    def test_lower_cases(self):
+        self.assertEqual(slugify("ABC Def"), "abc-def")
+
+    def test_run_of_separators_becomes_one_dash(self):
+        self.assertEqual(slugify("a  --  b...c"), "a-b-c")
+
+    def test_underscore_is_a_separator(self):
+        self.assertEqual(slugify("snake_case__name"), "snake-case-name")
+
+    def test_strips_dashes_at_both_ends(self):
+        self.assertEqual(slugify("--  hello  --"), "hello")
+
+    def test_keeps_digits(self):
+        self.assertEqual(slugify("Version 2.0"), "version-2-0")
+
+    def test_non_ascii_removed_without_separator(self):
+        self.assertEqual(slugify("naïve"), "nave")
+
+    def test_nfc_input(self):
+        text = unicodedata.normalize("NFC", "Ñandú")
+        self.assertEqual(slugify(text), "and")
+
+    def test_nfd_input(self):
+        text = unicodedata.normalize("NFD", "Ñandú")
+        self.assertEqual(slugify(text), "nandu")
+
+    def test_non_ascii_that_lowercases_to_ascii_is_removed(self):
+        # KELVIN SIGN lower-cases to ASCII "k"; it must be removed before lower-casing.
+        self.assertEqual(slugify("K"), "")
+        self.assertEqual(slugify("İstanbul"), "stanbul")
+
+    def test_non_ascii_alphanumerics_are_not_kept(self):
+        self.assertEqual(slugify("a²b ٣"), "ab")
+
+    def test_empty(self):
+        self.assertEqual(slugify(""), "")
+
+    def test_punctuation_only(self):
+        self.assertEqual(slugify("!!!"), "")
 
 
 if __name__ == "__main__":

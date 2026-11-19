@@ -1,5 +1,6 @@
 """String helpers. Every public function is listed in the README's function table."""
 
+import re
 import unicodedata
 
 
@@ -41,3 +42,28 @@ def strip_accents(text: str) -> str:
     decomposed = unicodedata.normalize("NFD", text)
     kept = "".join(c for c in decomposed if not unicodedata.combining(c))
     return unicodedata.normalize("NFC", kept)
+
+
+# Anything that is not a lower-case ASCII letter or digit; `_` included on purpose.
+_NON_SLUG_RUN = re.compile(r"[^a-z0-9]+")
+
+
+def slugify(text: str) -> str:
+    """Turn ``text`` into a lower-case ASCII slug such as ``"hello-world"``.
+
+    Steps, in order:
+
+    1. Every character outside ASCII is removed, with no separator left in its place
+       (``"naïve"`` -> ``"nave"``). No Unicode normalization is applied, so the result
+       depends on the input form: NFC ``"Ñandú"`` gives ``"and"``, NFD gives ``"nandu"``.
+    2. The remaining text is lower-cased.
+    3. Every run of characters outside ``[a-z0-9]`` (``_`` included) becomes one ``-``.
+    4. ``-`` is stripped from both ends.
+
+    ``""`` and input with no ASCII letters or digits (``"!!!"``) give ``""``. Never raises
+    for a ``str`` argument.
+    """
+    # Drop non-ASCII before lower-casing: some non-ASCII characters lower-case to ASCII
+    # (KELVIN SIGN -> "k", "İ" -> "i" plus a combining dot), which would leak into the slug.
+    ascii_text = text.encode("ascii", "ignore").decode("ascii")
+    return _NON_SLUG_RUN.sub("-", ascii_text.lower()).strip("-")
