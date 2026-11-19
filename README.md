@@ -13,6 +13,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 |----------|--------|--------------|
 | `slugify` | `textkit.strings` | Turns text into a lower-case ASCII slug (`"Hello, World!"` -> `"hello-world"`) |
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
+| `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase or kebab-case to snake_case (ADR 0002) |
 | `word_count` | `textkit.counts` | Counts the words in a text (rule: ADR 0001) |
 
 ## Commands
