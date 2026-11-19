@@ -97,7 +97,7 @@ and 2.
       `"1024.0 KiB"`, `1048576` -> `"1.0 MiB"`, `1024**4` -> `"1.0 TiB"`, `1024**5` ->
       `"1024.0 TiB"`; `-1`, `1.5`, `True` raise. An `n` for which `n / 1024**k` overflows a float
       raises `ValueError` (catch `OverflowError`); test `10**400`.
-- [ ] **T3.11 `parse_duration`** in `textkit/durations.py`: `parse_duration(text) -> int`,
+- [x] **T3.11 `parse_duration`** in `textkit/durations.py`: `parse_duration(text) -> int`,
       seconds from `h`, `m` and `s` parts in that order, each optional but at least one
       (`"1h30m"` -> `5400`, `"45s"` -> `45`, `"2h5s"` -> `7205`). The whole text must match
       `re.fullmatch(r"(?:([0-9]+)h)?(?:([0-9]+)m)?(?:([0-9]+)s)?", text)` with at least one
