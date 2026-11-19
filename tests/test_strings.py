@@ -1,6 +1,8 @@
+import unicodedata
 import unittest
 
 from textkit.strings import squeeze, truncate
+from textkit.strings import strip_accents
 
 
 class SqueezeTest(unittest.TestCase):
@@ -50,6 +52,38 @@ class TruncateTest(unittest.TestCase):
     def test_negative_width_raises(self):
         with self.assertRaises(ValueError):
             truncate("abc", -1, suffix="")
+
+
+class StripAccentsTest(unittest.TestCase):
+    def test_plan_example(self):
+        self.assertEqual(strip_accents("Ñandú"), "Nandu")
+
+    def test_nfc_and_nfd_input_give_the_same_result(self):
+        for form in ("NFC", "NFD"):
+            with self.subTest(form=form):
+                text = unicodedata.normalize(form, "Ñandú crème brûlée")
+                self.assertEqual(strip_accents(text), "Nandu creme brulee")
+
+    def test_upper_case_and_other_scripts(self):
+        self.assertEqual(strip_accents("ÉCOLE Ångström"), "ECOLE Angstrom")
+        self.assertEqual(strip_accents("άέή"), "αεη")
+
+    def test_stacked_marks(self):
+        self.assertEqual(strip_accents("ệ"), "e")
+        self.assertEqual(strip_accents("a\u0301\u0323"), "a")
+
+    def test_ascii_and_empty_unchanged(self):
+        self.assertEqual(strip_accents(""), "")
+        self.assertEqual(strip_accents("Hello, World! 123"), "Hello, World! 123")
+
+    def test_letters_without_decomposition_are_kept(self):
+        self.assertEqual(strip_accents("øłßæ"), "øłßæ")
+
+    def test_compatibility_characters_are_kept(self):
+        self.assertEqual(strip_accents("ﬁ²Ａ"), "ﬁ²Ａ")
+
+    def test_hangul_is_recomposed(self):
+        self.assertEqual(strip_accents("한국어"), "한국어")
 
 
 if __name__ == "__main__":
