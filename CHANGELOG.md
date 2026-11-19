@@ -4,6 +4,7 @@
 
 - Added `char_freq`: counts each non-whitespace character (case-sensitive).
 - Added `is_palindrome`: tells whether text is a palindrome, ignoring case, accents, spaces and punctuation.
+- Added `reading_time`: whole minutes to read a text at `wpm` words per minute, rounded up (ADR 0004).
 - Added `slug_title`: a slug cut to at most `max_len` characters that never ends in `-`.
 - Added `slugify`: turns text into a lower-case ASCII slug.
 - Added `squeeze`: collapses runs of whitespace into single spaces.

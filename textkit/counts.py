@@ -96,3 +96,26 @@ def char_freq(text: str) -> dict[str, int]:
             # dict keeps insertion order (guaranteed since Python 3.7): first occurrence wins.
             counts[ch] = counts.get(ch, 0) + 1
     return counts
+
+
+def reading_time(text: str, wpm: int = 200) -> int:
+    """Return the minutes needed to read ``text`` at ``wpm`` words per minute.
+
+    The result is a whole number of minutes: ``word_count(text) / wpm`` rounded **up**
+    (ADR 0004). So a text with no words (``""``, whitespace or punctuation only) takes 0
+    minutes, any text with at least one word takes at least 1 minute, and a partial minute
+    counts as a full one (201 words at 200 wpm is 2 minutes). Words are counted with
+    ``word_count`` (ADR 0001). The arithmetic is integer-only, so there is no float rounding.
+
+    Raises:
+        TypeError: if ``text`` is not a ``str``, or ``wpm`` is not an ``int`` (``bool`` is
+            rejected too, although it is a subclass of ``int``).
+        ValueError: if ``wpm < 1``.
+    """
+    # bool is checked explicitly: True would otherwise silently mean 1 word per minute.
+    if isinstance(wpm, bool) or not isinstance(wpm, int):
+        raise TypeError(f"reading_time() expects int wpm, got {type(wpm).__name__}")
+    if wpm < 1:
+        raise ValueError(f"reading_time() needs wpm >= 1, got {wpm}")
+    # Ceiling division without floats: -(-a // b) == ceil(a / b) for b > 0.
+    return -(-word_count(text) // wpm)

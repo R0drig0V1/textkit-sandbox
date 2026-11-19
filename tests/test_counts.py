@@ -5,7 +5,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.counts import char_freq, word_count
+from textkit.counts import char_freq, reading_time, word_count
 
 ADR = pathlib.Path(__file__).resolve().parent.parent / "docs" / "decisions" / (
     "0001-what-counts-as-a-word.md"
@@ -94,6 +94,83 @@ class CharFreqTest(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(TypeError):
                     char_freq(value)
+
+
+READING_TIME_ADR = ADR.parent / "0004-reading-time-rounding.md"
+
+# The case table of ADR 0004, row by row, in the same order: (words, wpm, minutes).
+READING_TIME_CASES = [
+    (0, 200, 0),
+    (0, 1, 0),
+    (1, 200, 1),
+    (199, 200, 1),
+    (200, 200, 1),
+    (201, 200, 2),
+    (400, 200, 2),
+    (401, 200, 3),
+    (5, 1, 5),
+    (1, 1000, 1),
+]
+
+
+def _reading_time_adr_cases() -> list[tuple[int, int, int]]:
+    """Parse the "Cases" table of ADR 0004 into (words, wpm, minutes) triples."""
+    section = READING_TIME_ADR.read_text(encoding="utf-8").split("## Cases", 1)[1]
+    rows = re.findall(r"^\| (\d+) \| (\d+) \| (\d+) \|", section, re.M)
+    return [(int(words), int(wpm), int(minutes)) for words, wpm, minutes in rows]
+
+
+def _text_of(words: int) -> str:
+    """Return a text that word_count counts as exactly ``words`` words."""
+    return " ".join(["word"] * words)
+
+
+class ReadingTimeTest(unittest.TestCase):
+    def test_every_case_of_the_adr(self):
+        for words, wpm, minutes in READING_TIME_CASES:
+            with self.subTest(words=words, wpm=wpm):
+                text = _text_of(words)
+                self.assertEqual(word_count(text), words)
+                self.assertEqual(reading_time(text, wpm), minutes)
+
+    def test_cases_match_the_adr_table(self):
+        # Keeps the ADR and this list from drifting apart: the ADR is the specification.
+        self.assertEqual(_reading_time_adr_cases(), READING_TIME_CASES)
+
+    def test_default_wpm_is_200(self):
+        self.assertEqual(reading_time(_text_of(200)), 1)
+        self.assertEqual(reading_time(_text_of(201)), 2)
+
+    def test_text_with_no_words_takes_zero_minutes(self):
+        for text in ("", "   \n\t ", "!!! ... ?"):
+            with self.subTest(text=text):
+                self.assertEqual(reading_time(text), 0)
+
+    def test_counts_words_with_word_count(self):
+        # "well-known" is one word and "C++" one word under ADR 0001: 2 words, not 4 tokens.
+        self.assertEqual(reading_time("well-known C++", wpm=2), 1)
+        self.assertEqual(reading_time("well-known C++", wpm=1), 2)
+
+    def test_returns_int(self):
+        self.assertIs(type(reading_time(_text_of(3), 2)), int)
+
+    def test_rejects_wpm_below_one(self):
+        for wpm in (0, -1, -200):
+            with self.subTest(wpm=wpm):
+                with self.assertRaises(ValueError):
+                    reading_time("hello", wpm)
+
+    def test_rejects_non_int_wpm(self):
+        for wpm in (200.0, 0.5, "200", None, True):
+            with self.subTest(wpm=wpm):
+                with self.assertRaises(TypeError):
+                    reading_time("hello", wpm)
+
+    def test_rejects_non_str_text(self):
+        for value in (None, b"hello world", 42):
+            with self.subTest(value=value):
+                with self.assertRaises(TypeError):
+                    reading_time(value)
 
 
 if __name__ == "__main__":
