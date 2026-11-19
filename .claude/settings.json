@@ -1,0 +1,16 @@
+{
+  "extraKnownMarketplaces": {
+    "herdr-agent-pool": {
+      "source": {
+        "source": "github",
+        "repo": "R0drig0V1/herdr-agent-pool"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "herdr-agent-pool@herdr-agent-pool": true,
+    "multi-agent-herdr@claude-code-herdr": false
+  },
+  "model": "claude-opus-5-5",
+  "effortLevel": "high"
+}
