@@ -11,7 +11,7 @@ import re
 import unicodedata
 import unittest
 
-from textkit.strings import slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 _WRAP_ADR = (
     pathlib.Path(__file__).resolve().parents[1] / "docs" / "decisions" / "0003-wrap-newlines.md"
@@ -194,6 +194,36 @@ class WrapTest(unittest.TestCase):
             with self.subTest(width=width):
                 with self.assertRaises(TypeError):
                     wrap("a b", width)
+
+
+class SlugTitleTest(unittest.TestCase):
+    def test_character_cut_inside_a_word(self):
+        self.assertEqual(slug_title("Hello, World!", 8), "hello-wo")
+
+    def test_trailing_separator_is_stripped(self):
+        self.assertEqual(slug_title("Hello, World!", 6), "hello")
+
+    def test_slug_that_fits_is_unchanged(self):
+        self.assertEqual(slug_title("Hello, World!", 11), "hello-world")
+
+    def test_zero_max_len_gives_empty(self):
+        self.assertEqual(slug_title("x", 0), "")
+
+    def test_matches_truncate_of_slugify_without_trailing_dash(self):
+        for text in ("Hello, World!", "a--b  c", "Ñandú", "!!!", ""):
+            for max_len in range(0, 14):
+                with self.subTest(text=text, max_len=max_len):
+                    expected = truncate(slugify(text), max_len, suffix="").rstrip("-")
+                    result = slug_title(text, max_len)
+                    self.assertEqual(result, expected)
+                    self.assertLessEqual(len(result), max_len)
+                    self.assertFalse(result.endswith("-"))
+
+    def test_negative_max_len_raises(self):
+        with self.assertRaises(ValueError):
+            slug_title("Hello", -1)
+        with self.assertRaises(ValueError):
+            slug_title("", -1)
 
 
 if __name__ == "__main__":
