@@ -4,6 +4,8 @@ The word rule is tested against the example table of ADR 0001, read from the ADR
 so the documented examples and the code cannot drift apart. T1.10's shared tokenizer can
 run the same table against ``textkit._tokens.words``. ``char_freq`` is tested on the edges
 its docstring documents: whitespace by ``str.isspace()``, case, NFC versus NFD, the type.
+``sentence_count`` is tested the same way as the word rule, against the example table of
+ADR 0004 read from the ADR, plus the edges that a table row cannot show.
 """
 
 import ast
@@ -11,9 +13,11 @@ import pathlib
 import re
 import unittest
 
-from textkit.counts import _words, char_freq, word_count
+from textkit.counts import _sentences, _words, char_freq, sentence_count, word_count
 
-ADR = pathlib.Path(__file__).resolve().parent.parent / "docs/decisions/0001-what-counts-as-a-word.md"
+DECISIONS = pathlib.Path(__file__).resolve().parent.parent / "docs/decisions"
+ADR = DECISIONS / "0001-what-counts-as-a-word.md"
+SENTENCE_ADR = DECISIONS / "0004-where-a-sentence-ends.md"
 
 # One example row: | `<str literal>` | `<list literal>` | <count> |
 _ROW = re.compile(r"^\| `(.+?)` \| `(\[.*?\])` \| (\d+) \|$", re.M)
@@ -24,6 +28,18 @@ def adr_examples():
     return [
         (ast.literal_eval(text), ast.literal_eval(words), int(count))
         for text, words, count in _ROW.findall(ADR.read_text(encoding="utf-8"))
+    ]
+
+
+# One ADR 0004 row: | `<str literal>` | `<list literal>` | <count> | <why> |
+_SENTENCE_ROW = re.compile(r"^\| `(.+?)` \| `(\[.*?\])` \| (\d+) \| [^|]+ \|$", re.M)
+
+
+def sentence_examples():
+    """Return (text, sentences, count) for every row of the ADR 0004 example table."""
+    return [
+        (ast.literal_eval(text), ast.literal_eval(sentences), int(count))
+        for text, sentences, count in _SENTENCE_ROW.findall(SENTENCE_ADR.read_text(encoding="utf-8"))
     ]
 
 
@@ -114,6 +130,53 @@ class CharFreqTest(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(TypeError):
                     char_freq(value)
+
+
+class SentenceAdrExamplesTest(unittest.TestCase):
+    def test_table_is_read(self):
+        # Guards against a reformatted table silently matching no rows.
+        self.assertGreaterEqual(len(sentence_examples()), 50)
+
+    def test_every_example(self):
+        for text, sentences, count in sentence_examples():
+            with self.subTest(text=text):
+                self.assertEqual(len(sentences), count, "the ADR row contradicts itself")
+                self.assertEqual(_sentences(text), sentences)
+                self.assertEqual(sentence_count(text), count)
+
+
+class SentenceCountTest(unittest.TestCase):
+    def test_returns_int(self):
+        self.assertIs(type(sentence_count("One. Two.")), int)
+
+    def test_any_whitespace_after_the_terminator_ends_it(self):
+        # Tab, newline, NBSP and the ideographic space are all str.isspace().
+        self.assertEqual(sentence_count("A.\tB.\nC.\u00a0D.\u3000E."), 5)
+
+    def test_abbreviation_needs_a_single_dot(self):
+        # "Dr.." or "Dr.!" is a terminator run, not the abbreviation's dot.
+        self.assertEqual(sentence_count("Ask the Dr.. Then go."), 2)
+
+    def test_abbreviation_must_be_the_whole_token(self):
+        # "Mr" inside "Hammr" is not the title.
+        self.assertEqual(sentence_count("A hammr. Then a nail."), 2)
+
+    def test_long_text_is_linear(self):
+        # Many candidate ends with no letter after them: must not rescan the tail each time.
+        text = "Hi" + ". " * 200_000
+        self.assertEqual(sentence_count(text), 1)
+
+    def test_str_subclass_is_accepted(self):
+        class Text(str):
+            pass
+
+        self.assertEqual(sentence_count(Text("One. Two.")), 2)
+
+    def test_non_str_raises_type_error(self):
+        for value in (None, b"One. Two.", 42, ["One.", "Two."]):
+            with self.subTest(value=value):
+                with self.assertRaises(TypeError):
+                    sentence_count(value)
 
 
 if __name__ == "__main__":
