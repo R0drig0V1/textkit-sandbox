@@ -55,7 +55,7 @@ anything else). Tasks with no "Depends on" can start at once.
       counts of each non-space character, case-sensitive. Characters for which
       `str.isspace()` is true are not counted; keys appear in order of first occurrence.
       Depends on T1.5 (it creates `textkit/counts.py` and `tests/test_counts.py`).
-- [ ] **T1.7 `to_snake_case`** in a new module `textkit/cases.py`:
+- [x] **T1.7 `to_snake_case`** in a new module `textkit/cases.py`:
       `to_snake_case(name) -> str` for camelCase, PascalCase and kebab-case input. Write an
       ADR on how runs of capitals are split (`HTTPServer`, `parseURL2`). The ADR ends with a
       table of cases (input -> output), at least: `HTTPServer`, `parseURL2`, `camelCase`,
