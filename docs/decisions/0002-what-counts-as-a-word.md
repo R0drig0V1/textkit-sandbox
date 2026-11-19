@@ -1,4 +1,4 @@
-<!-- ADR 0001: the word rule of textkit.counts.word_count (and later textkit._tokens.words). -->
+<!-- ADR 0002: the word rule of textkit.counts.word_count (and later textkit._tokens.words). -->
 # 0002. What counts as a word
 
 ## Context
@@ -38,7 +38,7 @@ A **word** is a maximal run of word characters, where:
 
 ## Table of cases
 
-Tested row by row in `tests/test_counts.py` (`ADR_0001_CASES`, same order).
+Tested row by row in `tests/test_counts.py` (`ADR_0002_CASES`, same order).
 
 | Input (Python literal) | Count | Why |
 |------------------------|-------|-----|
