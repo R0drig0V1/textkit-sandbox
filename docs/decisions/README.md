@@ -7,3 +7,4 @@ One file per decision, `NNNN-title.md`, with Context / Decision / Consequences.
 |---|----------|
 | [0001](0001-what-counts-as-a-word.md) | What counts as a word: alphanumeric runs joined by single hyphens/apostrophes, and digits by `.`/`,` |
 | [0002](0002-snake-case-capital-runs.md) | How `to_snake_case` splits runs of capitals, digits and separators |
+| [0003](0003-reading-time-rounding.md) | Reading time rounding: `ceil(words / wpm)`, so no words is 0 minutes and any text under a minute is 1 |

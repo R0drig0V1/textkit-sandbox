@@ -5,7 +5,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.counts import char_freq, word_count
+from textkit.counts import char_freq, reading_time, word_count
 
 # The table of cases that ends the ADR "What counts as a word", row by row, in order.
 # test_cases_match_the_adr_table keeps the two in sync.
@@ -105,6 +105,63 @@ class CharFreqTest(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(TypeError):
                     char_freq(value)  # type: ignore[arg-type]
+
+
+class ReadingTimeTest(unittest.TestCase):
+    # The table of cases that ends the ADR "Reading time rounding": (words, wpm, minutes).
+    ADR_CASES = [
+        (0, 200, 0),
+        (1, 200, 1),
+        (199, 200, 1),
+        (200, 200, 1),
+        (201, 200, 2),
+        (400, 200, 2),
+        (401, 200, 3),
+        (5, 1, 5),
+    ]
+
+    def test_adr_table(self):
+        for words, wpm, expected in self.ADR_CASES:
+            with self.subTest(words=words, wpm=wpm):
+                self.assertEqual(reading_time(" ".join(["word"] * words), wpm), expected)
+
+    def test_default_wpm_is_200(self):
+        self.assertEqual(reading_time("word " * 200), 1)
+        self.assertEqual(reading_time("word " * 201), 2)
+
+    def test_no_words_is_zero_minutes(self):
+        for text in ("", "   \n\t ", "!!! ... ?"):
+            with self.subTest(text=text):
+                self.assertEqual(reading_time(text), 0)
+
+    def test_counts_words_with_word_count(self):
+        # 3 words by the word rule ("--" and "!!!" are not words), though str.split()
+        # sees 5 tokens: 5 words at 3 wpm would give 2 minutes, not 1.
+        text = "well-known -- don't stop !!!"
+        self.assertEqual(word_count(text), 3)
+        self.assertEqual(reading_time(text, wpm=3), 1)
+        self.assertEqual(reading_time(text, wpm=2), 2)
+
+    def test_rejects_wpm_below_one(self):
+        for wpm in (0, -1, -200):
+            with self.subTest(wpm=wpm):
+                with self.assertRaises(ValueError):
+                    reading_time("hello", wpm)
+        # Even when the text has no words.
+        with self.assertRaises(ValueError):
+            reading_time("", 0)
+
+    def test_rejects_non_int_wpm(self):
+        for wpm in (200.0, "200", None, True):
+            with self.subTest(wpm=wpm):
+                with self.assertRaises(TypeError):
+                    reading_time("hello", wpm)  # type: ignore[arg-type]
+
+    def test_rejects_non_str(self):
+        for value in (b"two words", ["two", "words"], None):
+            with self.subTest(value=value):
+                with self.assertRaises(TypeError):
+                    reading_time(value)  # type: ignore[arg-type]
 
 
 if __name__ == "__main__":
