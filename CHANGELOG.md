@@ -10,3 +10,4 @@
 - Added `strip_accents`: removes combining marks (NFD, drop category Mn, recompose with NFC).
 - Added `char_freq` in `textkit.counts`: counts each non-whitespace character (`str.isspace()`), case-sensitive, without normalising.
 - Added `wrap`: splits text into lines of at most `width` characters at whitespace, keeping existing line breaks (ADR 0003).
+- Added `slug_title`: a slug of at most `max_len` characters, cut at a `-` word boundary when possible (mid-word only if the first word alone is too long); `""` for an empty slug or `max_len == 0`; raises `ValueError` for a negative `max_len`.

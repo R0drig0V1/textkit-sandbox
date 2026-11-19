@@ -144,3 +144,51 @@ def wrap(text: str, width: int) -> List[str]:
         # Appended even when empty: a blank source line stays a blank output line.
         lines.append(current)
     return lines
+
+
+def slug_title(text: str, max_len: int) -> str:
+    """Turn ``text`` into a slug (see ``slugify``) of at most ``max_len`` characters.
+
+    If ``slugify(text)`` already fits it is returned unchanged. Otherwise it is shortened:
+
+    - **At a word boundary when possible.** The result is the longest run of whole slug
+      words (the parts between ``-``) that fits in ``max_len``:
+      ``slug_title("Hello big world", 10)`` -> ``"hello-big"``, not ``"hello-big-"`` or
+      ``"hello-big-w"``. A cut that lands right after a ``-`` just drops that ``-``.
+    - **Mid-word only when the first word alone is longer than** ``max_len``: then the
+      first word is cut to exactly ``max_len`` characters
+      (``slug_title("Internationalization", 5)`` -> ``"inter"``). Returning ``""`` there
+      would throw away all the information, so a partial word is preferred.
+
+    The result therefore never starts or ends with ``-``, never contains ``--`` and is
+    always a prefix of ``slugify(text)``. The cut is a plain one (``truncate`` with an empty
+    suffix): no ``...`` marker, since ``.`` is not a slug character.
+
+    Edge cases: ``max_len == 0`` gives ``""``. When ``slugify(text)`` is ``""`` (``text``
+    has no ASCII letter or digit, e.g. ``""`` or ``"!?"``) the result is ``""`` for any
+    valid ``max_len``; callers that need a non-empty slug must check for it.
+
+    Raises:
+        ValueError: if ``max_len`` is negative. Like ``truncate``, the check runs before
+            anything else, so it fails even when the slug would be empty: the contract
+            depends only on ``max_len``, never on the input text.
+
+    A non-``str`` ``text`` or non-``int`` ``max_len`` is not supported (``AttributeError``
+    or ``TypeError``).
+    """
+    if max_len < 0:
+        raise ValueError(f"max_len must be at least 0, got {max_len}")
+    slug = slugify(text)
+    if len(slug) <= max_len:
+        return slug
+    head = truncate(slug, max_len, suffix="")
+    # slug has no "--", so if the next character is "-" the cut is already between words
+    # and head cannot end in "-".
+    if slug[max_len] == "-":
+        return head
+    # Otherwise drop the partial last word (and the "-" before it). slug never starts with
+    # "-", so a boundary, when there is one, is at an index > 0 and the result is non-empty.
+    boundary = head.rfind("-")
+    if boundary > 0:
+        return head[:boundary]
+    return head
