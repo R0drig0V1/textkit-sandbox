@@ -18,6 +18,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase and kebab-case names to snake_case (ADR 0002) |
 | `strip_accents` | `textkit.strings` | Removes combining marks (`"Ñandú"` -> `"Nandu"`) |
 | `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive, no Unicode normalisation |
+| `wrap` | `textkit.strings` | Splits text into lines of at most `width` characters, keeping line breaks |
 
 ## Commands
 

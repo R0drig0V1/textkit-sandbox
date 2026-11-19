@@ -2,6 +2,7 @@
 
 import re
 import unicodedata
+from typing import List
 
 # Runs of anything that is not an ASCII lower-case letter or digit; slugify applies it after
 # dropping non-ASCII characters and lower-casing, so this is exactly "a separator run".
@@ -97,3 +98,49 @@ def strip_accents(text: str) -> str:
     decomposed = unicodedata.normalize("NFD", text)
     kept = "".join(ch for ch in decomposed if unicodedata.category(ch) != "Mn")
     return unicodedata.normalize("NFC", kept)
+
+
+def wrap(text: str, width: int) -> List[str]:
+    """Split ``text`` into lines of at most ``width`` characters, breaking at whitespace.
+
+    The rules are those of ADR 0003
+    (``docs/decisions/0003-wrap-line-breaks-and-whitespace.md``):
+
+    - **Existing line breaks are kept.** ``text`` is first cut at the line boundaries of
+      ``str.splitlines`` (``"\\n"``, ``"\\r\\n"``, ``"\\r"`` and the other Unicode line
+      separators); each source line is wrapped on its own and no output line spans two of
+      them. A final line break does not add an empty line (``"a\\n"`` -> ``["a"]``).
+    - **A source line with no words gives one empty string**, so blank lines survive:
+      ``"a\\n\\nb"`` -> ``["a", "", "b"]``, and ``"\\n".join(result)`` keeps the
+      paragraph layout.
+    - **Inside a line, any run of whitespace** (spaces, tabs, other Unicode whitespace) is
+      one word separator: runs collapse, leading and trailing whitespace is dropped, and
+      words in an output line are joined by exactly one space. Tabs are not expanded.
+    - **Greedy filling:** each output line takes as many words as fit in ``width``
+      characters (code points).
+    - **A word longer than ``width``** is not broken: it gets a line of its own, longer than
+      ``width``.
+
+    Examples: ``wrap("the quick brown fox", 10)`` -> ``["the quick", "brown fox"]``;
+    ``wrap("", 10)`` -> ``[]``; ``wrap("   ", 10)`` -> ``[""]``.
+
+    Failure modes: ``width <= 0`` raises ``ValueError`` (checked first, even for empty
+    ``text``). The result is ``[]`` only for text with no lines at all (``""``). A
+    non-``str`` ``text`` is not supported and raises ``AttributeError``.
+    """
+    if width <= 0:
+        raise ValueError(f"width must be at least 1, got {width!r}")
+    lines: List[str] = []
+    for source_line in text.splitlines():
+        current = ""
+        for word in source_line.split():
+            if not current:
+                current = word
+            elif len(current) + 1 + len(word) <= width:
+                current += " " + word
+            else:
+                lines.append(current)
+                current = word
+        # Appended even when empty: a blank source line stays a blank output line.
+        lines.append(current)
+    return lines
