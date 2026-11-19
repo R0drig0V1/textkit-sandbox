@@ -82,9 +82,10 @@ and once with input and output decomposed to NFD):
 - Leading and trailing underscores are lost (`__init__` -> `init`); callers that need
   dunder or private names must keep them themselves.
 - `to_kebab_case` (T2.3) can be `to_snake_case(name).replace("_", "-")`.
-- T1.10 may move rule 1 onto the shared tokenizer `textkit._tokens.words`; it must keep
-  every example above unchanged. The mark rule already agrees with ADR 0001's. The joiner
-  and number-separator rules do not apply here: in an identifier `-` and `.` always
-  separate (`kebab-case` is two words), so `to_snake_case` can share the character
-  classes but not ADR 0001's word regex as is.
+- T1.10 moved rule 1's character test onto the shared tokenizer: `to_snake_case` reads
+  `textkit._tokens.char_class` (not `textkit._tokens.words`), and every example above is
+  unchanged. The mark rule already agrees with ADR 0001's. The joiner and
+  number-separator rules do not apply here: in an identifier `-` and `.` always separate
+  (`kebab-case` is two words), so `to_snake_case` shares the character classes but not
+  ADR 0001's word regex.
 - A stray combining mark at the start of a name or after a separator is lost.

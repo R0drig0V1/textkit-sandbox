@@ -3,11 +3,15 @@
 The word-boundary rules used here are recorded in
 docs/decisions/0002-snake-case-word-boundaries.md; every example in that ADR is tested in
 tests/test_cases.py. ``to_camel_case`` and ``to_kebab_case`` split names with
-``to_snake_case``, so they follow the same rules. Every public function is listed in the README's function table.
+``to_snake_case``, so they follow the same rules. Which characters are letters, digits or
+combining marks comes from the shared tokenizer ``textkit._tokens.char_class`` (ADR 0001's
+classes); the splitting itself is this module's own. Every public function is listed in the
+README's function table.
 """
 
-import unicodedata
 from typing import List
+
+from textkit._tokens import DIGIT, LETTER, MARK, char_class
 
 
 def _is_lower(ch: str) -> bool:
@@ -16,8 +20,8 @@ def _is_lower(ch: str) -> bool:
 
 
 def _is_mark(ch: str) -> bool:
-    """True for a combining mark (Unicode category M*), as in ADR 0001's "mark" class."""
-    return unicodedata.category(ch).startswith("M")
+    """True for a combining mark: ADR 0001's "mark" class, from the shared tokenizer."""
+    return char_class(ch) == MARK
 
 
 def _next_base(name: str, start: int) -> str:
@@ -82,13 +86,16 @@ def to_snake_case(name: str) -> str:
             current.clear()
 
     for i, ch in enumerate(name):
-        if _is_mark(ch):
+        cls = char_class(ch)
+        if cls == MARK:
             # A mark continues the word it follows (ADR 0001) and never starts one; with
             # no word open it has no base letter and is dropped.
             if current:
                 current.append(ch)
             continue
-        if not ch.isalnum():
+        if cls not in (LETTER, DIGIT):
+            # Joiners and number separators separate here too: ADR 0002 shares ADR
+            # 0001's classes but not its word regex ("kebab-case" is two words).
             flush()
             continue
         if current and ch.isupper():
