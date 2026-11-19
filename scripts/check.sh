@@ -8,9 +8,10 @@ python3 -m unittest discover -s tests -t . -q
 
 python3 - <<'PY'
 import ast, pathlib, re, sys
-# Private modules (textkit/_tokens.py, ...) are not public API, whatever their names.
+# Single-underscore modules (textkit/_tokens.py, ...) are private and skipped. Dunder ones
+# (__init__.py, __main__.py) are checked: __init__.py is the package's public namespace.
 funcs = sorted(n.name for p in pathlib.Path("textkit").glob("*.py")
-               if not p.name.startswith("_")
+               if not (p.name.startswith("_") and not p.name.startswith("__"))
                for n in ast.parse(p.read_text()).body
                if isinstance(n, ast.FunctionDef) and not n.name.startswith("_"))
 errors = []
