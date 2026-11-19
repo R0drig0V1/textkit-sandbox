@@ -5,6 +5,9 @@ tiny synthetic project. Nothing here matters; it can be wiped at any time.
 
 `textkit` is a small Python package of text helpers (standard library only, Python 3.9+).
 
+See [docs/usage.md](docs/usage.md) for a short, tested example of every function, and for
+the `python3 -m textkit` command line.
+
 ## Functions
 
 Every public function is listed here, once (checked by `scripts/check.sh`).
