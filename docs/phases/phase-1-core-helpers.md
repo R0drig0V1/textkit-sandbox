@@ -51,7 +51,7 @@ anything else). Tasks with no "Depends on" can start at once.
       ends with a table of cases (input -> count), at least: a hyphenated word, a number, a
       word with an apostrophe, `""`, punctuation only, several spaces/newlines;
       `tests/test_counts.py` tests every row.
-- [ ] **T1.6 `char_freq`** in `textkit/counts.py`: `char_freq(text) -> dict[str, int]`,
+- [x] **T1.6 `char_freq`** in `textkit/counts.py`: `char_freq(text) -> dict[str, int]`,
       counts of each non-space character, case-sensitive. Characters for which
       `str.isspace()` is true are not counted; keys appear in order of first occurrence.
       Depends on T1.5 (it creates `textkit/counts.py` and `tests/test_counts.py`).
