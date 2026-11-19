@@ -21,6 +21,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `truncate` | `textkit.strings` | Cuts text to a width, ending with a suffix when cut |
 | `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase or kebab-case to snake_case |
 | `word_count` | `textkit.counts` | Counts the words in a text |
+| `wrap` | `textkit.strings` | Splits text into lines of at most `width` characters at whitespace |
 
 ## Commands
 
