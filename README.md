@@ -15,6 +15,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `human_bytes` | `textkit.sizes` | Formats a byte count in binary units (`1536` -> `"1.5 KiB"`, up to TiB) |
 | `is_palindrome` | `textkit.strings` | Tells whether text reads the same backwards, ignoring case, spaces, punctuation and accents |
 | `parse_duration` | `textkit.durations` | Parses a compact duration such as `"1h30m"` into whole seconds |
+| `number_to_words` | `textkit.numwords` | Spells `0..999` in lower-case English words, hyphenated tens, no "and" (`42` -> `"forty-two"`) |
 | `reading_time` | `textkit.counts` | Estimates the whole minutes needed to read a text (rounding: [0004-reading-time-rounding](docs/decisions/0004-reading-time-rounding.md)) |
 | `sentence_count` | `textkit.counts` | Counts the sentences of a text (rule: [0005-sentence-boundaries](docs/decisions/0005-sentence-boundaries.md)) |
 | `slug_title` | `textkit.strings` | Makes a slug of at most `max_len` characters that never ends in `-` |
