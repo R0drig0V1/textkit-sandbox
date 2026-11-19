@@ -19,6 +19,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase or kebab-case names to snake_case |
 | `truncate` | `textkit.strings` | Cuts text to a width, ending in a suffix (`...` by default) |
 | `word_count` | `textkit.counts` | Counts the words in a text (rule: ADR 0001) |
+| `wrap` | `textkit.strings` | Splits text into lines of at most `width` characters at spaces |
 
 ## Commands
 
