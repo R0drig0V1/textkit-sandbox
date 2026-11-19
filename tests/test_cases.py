@@ -5,7 +5,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.cases import to_snake_case
+from textkit.cases import to_camel_case, to_snake_case
 
 # The table of cases at the end of ADR "to-snake-case-capital-runs" (docs/decisions/), in the
 # same order. test_adr_table_matches keeps the two in sync.
@@ -67,6 +67,59 @@ class ToSnakeCaseTest(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(TypeError):
                     to_snake_case(value)
+
+
+class ToCamelCaseTest(unittest.TestCase):
+    def test_snake_case(self):
+        self.assertEqual(to_camel_case("user_id"), "userId")
+        self.assertEqual(to_camel_case("get_http_response_code"), "getHttpResponseCode")
+
+    def test_kebab_case(self):
+        self.assertEqual(to_camel_case("kebab-case"), "kebabCase")
+        self.assertEqual(to_camel_case("mixed-snake_case"), "mixedSnakeCase")
+
+    def test_first_word_lowered_rest_capitalized(self):
+        self.assertEqual(to_camel_case("HTTP_server"), "httpServer")
+        self.assertEqual(to_camel_case("user_ID"), "userId")
+        self.assertEqual(to_camel_case("Kebab-CASE"), "kebabCase")
+
+    def test_run_of_separators_is_one(self):
+        self.assertEqual(to_camel_case("a--b__c"), "aBC")
+        self.assertEqual(to_camel_case("user_-_id"), "userId")
+
+    def test_leading_and_trailing_separators_dropped(self):
+        self.assertEqual(to_camel_case("__private__"), "private")
+        self.assertEqual(to_camel_case("-user-id-"), "userId")
+        # A separator anywhere means the word rule applies, so the word is lower-cased.
+        self.assertEqual(to_camel_case("_UserId"), "userid")
+
+    def test_separators_only_or_empty(self):
+        for name in ("", "_", "--", "-_-"):
+            with self.subTest(name=name):
+                self.assertEqual(to_camel_case(name), "")
+
+    def test_no_separator_lowers_only_first_character(self):
+        self.assertEqual(to_camel_case("userId"), "userId")
+        self.assertEqual(to_camel_case("UserId"), "userId")
+        self.assertEqual(to_camel_case("HTTPServer"), "hTTPServer")
+        self.assertEqual(to_camel_case("x"), "x")
+        self.assertEqual(to_camel_case("X"), "x")
+
+    def test_digits(self):
+        self.assertEqual(to_camel_case("parse_url2"), "parseUrl2")
+        self.assertEqual(to_camel_case("http2_server"), "http2Server")
+        self.assertEqual(to_camel_case("version_2"), "version2")
+
+    def test_round_trip_from_snake_case(self):
+        for name in ("camelCase", "userId", "getResponseCode", "utf8Encode"):
+            with self.subTest(name=name):
+                self.assertEqual(to_camel_case(to_snake_case(name)), name)
+
+    def test_non_str_raises_type_error(self):
+        for value in (None, 42, b"user_id"):
+            with self.subTest(value=value):
+                with self.assertRaises(TypeError):
+                    to_camel_case(value)
 
 
 if __name__ == "__main__":
