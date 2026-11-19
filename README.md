@@ -27,3 +27,6 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 ## Commands
 
 - `scripts/check.sh`: unit tests, this table, the changelog, ADR numbering.
+- `python3 -m textkit <function> "<text>"`: prints the result of any function above that
+  takes one text argument (`python3 -m textkit slugify "Hello, World!"` -> `hello-world`);
+  `python3 -m textkit --help` lists them. Lists and dicts print as JSON; usage errors exit 2.
