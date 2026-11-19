@@ -50,3 +50,24 @@ def strip_accents(text: str) -> str:
     decomposed = unicodedata.normalize("NFD", text)
     kept = "".join(ch for ch in decomposed if not unicodedata.combining(ch))
     return unicodedata.normalize("NFC", kept)
+
+
+def truncate(text: str, width: int, suffix: str = "...") -> str:
+    """Shorten ``text`` to at most ``width`` code points, ending with ``suffix`` when cut.
+
+    ``text`` is returned unchanged when it fits (``len(text) <= width``). Otherwise the start
+    of ``text`` is kept and ``suffix`` appended so that the result is exactly ``width`` long.
+    Lengths are counted in code points (``len``), not grapheme clusters or display columns.
+
+    Raises:
+        ValueError: if ``width < len(suffix)``. This is checked before the fit test, so it
+            raises even when ``text`` would fit: a width that cannot hold the suffix is a
+            caller error regardless of the input (with ``suffix=""`` it means ``width < 0``).
+    """
+    if width < len(suffix):
+        raise ValueError(
+            f"width ({width}) must be at least the length of suffix ({len(suffix)})"
+        )
+    if len(text) <= width:
+        return text
+    return text[: width - len(suffix)] + suffix
