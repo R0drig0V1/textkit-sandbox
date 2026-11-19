@@ -13,7 +13,7 @@ CHANGELOG line. Tasks with no "Depends on" can start at once.
       `ValueError`.
 - [x] **T1.3 `strip_accents`** in `textkit/strings.py`: `strip_accents(text) -> str` removes
       combining marks (`"Ñandú"` -> `"Nandu"`) with `unicodedata`.
-- [ ] **T1.4 `wrap`** in `textkit/strings.py`: `wrap(text, width) -> list[str]` splits text
+- [x] **T1.4 `wrap`** in `textkit/strings.py`: `wrap(text, width) -> list[str]` splits text
       into lines of at most `width` characters at spaces; a word longer than `width` gets a
       line of its own. Write an ADR on what happens to existing newlines.
 - [x] **T1.5 `word_count`** in a new module `textkit/counts.py`: `word_count(text) -> int`.
