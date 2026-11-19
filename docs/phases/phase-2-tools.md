@@ -18,7 +18,7 @@ Same rules as phase 1. Tasks with no "Depends on" can start at once.
 - [x] **T2.6 command line**: `textkit/__main__.py` so that `python3 -m textkit <function>
       <text>` prints the result of any public function of one text argument, and lists them
       with `--help`. Depends on T1.1 to T1.8.
-- [ ] **T2.7 `--version`**: `textkit.__version__ = "0.1.0"` and `python3 -m textkit
+- [x] **T2.7 `--version`**: `textkit.__version__ = "0.1.0"` and `python3 -m textkit
       --version`. Depends on T2.6.
 - [ ] **T2.8 usage guide**: `docs/usage.md` with one short example per public function, and
       a test that runs every example. Depends on every other task of phases 1 and 2.
