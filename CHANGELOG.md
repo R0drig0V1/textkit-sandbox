@@ -9,3 +9,4 @@
 - Added `to_snake_case` (new module `textkit.cases`): converts camelCase, PascalCase and kebab-case names to snake_case; acronyms stay whole (ADR 0002).
 - Added `strip_accents`: removes combining marks (NFD, drop category Mn, recompose with NFC).
 - Added `char_freq` in `textkit.counts`: counts each non-whitespace character (`str.isspace()`), case-sensitive, without normalising.
+- Added `wrap`: splits text into lines of at most `width` characters at whitespace, keeping existing line breaks (ADR 0003).
