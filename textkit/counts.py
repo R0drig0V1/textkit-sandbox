@@ -2,6 +2,7 @@
 
 What counts as a word is decided in ADR 0002 (docs/decisions/0002-what-counts-as-a-word.md);
 `_words` below implements that rule and nothing else, so the ADR's case table is the spec.
+`char_freq` counts characters, not words, and does not use that rule.
 """
 
 import unicodedata
@@ -65,3 +66,22 @@ def word_count(text: str) -> int:
     letters or digits has 0 words. Never raises for any ``str``; ``""`` gives 0.
     """
     return len(_words(text))
+
+
+def char_freq(text: str) -> dict[str, int]:
+    """Return how many times each non-whitespace character occurs in ``text``.
+
+    Keys are single characters (code points), case-sensitive (``"a"`` and ``"A"`` are
+    counted apart), in order of first occurrence in ``text``; values are their counts.
+    Every character for which ``str.isspace()`` is true (spaces, tabs, newlines, and
+    Unicode spaces such as U+00A0 and U+3000) is skipped. No normalization is applied, so
+    an NFD ``"é"`` counts as ``"e"`` plus U+0301 COMBINING ACUTE ACCENT, unlike its NFC
+    form. Never raises for any ``str``; ``""`` and whitespace-only text give ``{}``.
+    """
+    counts: dict[str, int] = {}
+    # A plain dict keeps insertion order (guaranteed since Python 3.7), which is exactly
+    # "order of first occurrence"; no sorting or Counter needed.
+    for char in text:
+        if not char.isspace():
+            counts[char] = counts.get(char, 0) + 1
+    return counts
