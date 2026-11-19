@@ -12,6 +12,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | Function | Module | What it does |
 |----------|--------|--------------|
 | `slugify` | `textkit.strings` | Lower-case ASCII slug, runs of other characters become one `-` |
+| `is_email` | `textkit.emails` | Tells whether a string is a syntactically valid e-mail address (offline) |
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
 
 ## Commands
