@@ -1,7 +1,8 @@
 """Counting helpers. Every public function is listed in the README's function table.
 
 What counts as a word is decided in docs/decisions/0002-what-counts-as-a-word.md; that ADR's
-case table is the specification, and tests/test_counts.py checks every row of it.
+case table is the specification, and tests/test_counts.py checks every row of it. How
+`reading_time` rounds to whole minutes is decided in docs/decisions/0006-reading-time-rounding.md.
 """
 
 import re
@@ -55,3 +56,24 @@ def char_freq(text: str) -> dict[str, int]:
         if not char.isspace():
             counts[char] = counts.get(char, 0) + 1
     return counts
+
+
+def reading_time(text: str, wpm: int = 200) -> int:
+    """Return the minutes needed to read ``text`` at ``wpm`` words per minute.
+
+    Words are counted with ``word_count`` (docs/decisions/0002-what-counts-as-a-word.md) and
+    the result is rounded **up** to whole minutes, as decided in
+    docs/decisions/0006-reading-time-rounding.md: text with no words takes ``0`` minutes, and
+    any text with at least one word takes at least ``1`` minute
+    (``reading_time("one word") == 1``, ``reading_time(" ".join(["w"] * 201)) == 2``).
+
+    Raises ``TypeError`` if ``text`` is not a ``str`` or ``wpm`` is not an ``int`` (``bool``
+    is rejected too), and ``ValueError`` if ``wpm < 1``.
+    """
+    # bool is a subclass of int; reading_time(text, True) is almost certainly a mistake.
+    if isinstance(wpm, bool) or not isinstance(wpm, int):
+        raise TypeError(f"reading_time() expects an int wpm, got {type(wpm).__name__}")
+    if wpm < 1:
+        raise ValueError(f"reading_time() needs wpm >= 1, got {wpm}")
+    # Ceiling division in integers: exact for any size, unlike math.ceil on a float quotient.
+    return -(-word_count(text) // wpm)

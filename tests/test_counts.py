@@ -5,7 +5,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.counts import char_freq, word_count
+from textkit.counts import char_freq, reading_time, word_count
 
 # The case table of docs/decisions/0002-what-counts-as-a-word.md, as (input, count). The ADR
 # is the specification; WordCountTest.test_adr_table_matches keeps the two in sync.
@@ -100,6 +100,55 @@ class CharFreqTest(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(TypeError):
                     char_freq(value)
+
+
+class ReadingTimeTest(unittest.TestCase):
+    """Rounding cases of docs/decisions/0006-reading-time-rounding.md."""
+
+    def test_empty_and_wordless_text_is_zero(self):
+        for text in ("", "   \n\t ", "!?.,;:--"):
+            with self.subTest(text=text):
+                self.assertEqual(reading_time(text), 0)
+
+    def test_under_one_minute_rounds_up_to_one(self):
+        self.assertEqual(reading_time("word"), 1)
+        self.assertEqual(reading_time(" ".join(["w"] * 199)), 1)
+
+    def test_exact_minutes(self):
+        self.assertEqual(reading_time(" ".join(["w"] * 200)), 1)
+        self.assertEqual(reading_time(" ".join(["w"] * 400)), 2)
+
+    def test_partial_minute_rounds_up(self):
+        self.assertEqual(reading_time(" ".join(["w"] * 201)), 2)
+        self.assertEqual(reading_time(" ".join(["w"] * 399)), 2)
+
+    def test_custom_wpm(self):
+        self.assertEqual(reading_time("one two three", wpm=1), 3)
+        self.assertEqual(reading_time("one two three", wpm=2), 2)
+        self.assertEqual(reading_time("one two three", wpm=3), 1)
+
+    def test_uses_word_count(self):
+        # "well-known" and "3.14" are one word each under the word ADR.
+        self.assertEqual(reading_time("well-known 3.14", wpm=2), 1)
+        self.assertEqual(reading_time("well known 3 14", wpm=2), 2)
+
+    def test_wpm_below_one_raises_value_error(self):
+        for wpm in (0, -1, -200):
+            with self.subTest(wpm=wpm):
+                with self.assertRaises(ValueError):
+                    reading_time("text", wpm)
+
+    def test_non_int_wpm_raises_type_error(self):
+        for wpm in (200.0, "200", None, True):
+            with self.subTest(wpm=wpm):
+                with self.assertRaises(TypeError):
+                    reading_time("text", wpm)
+
+    def test_non_str_text_raises_type_error(self):
+        for value in (None, 42, b"bytes"):
+            with self.subTest(value=value):
+                with self.assertRaises(TypeError):
+                    reading_time(value)
 
 
 if __name__ == "__main__":
