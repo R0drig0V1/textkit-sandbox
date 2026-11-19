@@ -21,6 +21,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `parse_duration` | `textkit.durations` | Seconds in a duration written as `1h30m`, `45s` or `2h5s` (ASCII digits, lower-case units) |
 | `pluralize` | `textkit.plural` | English plural of a singular noun, with a few irregulars |
 | `reading_time` | `textkit.counts` | Whole minutes to read a text at `wpm` words per minute, rounded up |
+| `sentence_count` | `textkit.counts` | Counts the sentences in a text, skipping abbreviations and mid-sentence ellipses |
 | `slug_title` | `textkit.strings` | Slug cut to a maximum length, never ending in `-` |
 | `rot13` | `textkit.ciphers` | Rotates ASCII letters by 13 places, keeping case; other characters unchanged |
 | `slugify` | `textkit.strings` | Lower-case ASCII slug, runs of other characters become one `-` |
