@@ -14,6 +14,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `slug_title` | `textkit.strings` | Slug cut to at most `max_len` characters, never ending in `-` |
 | `slugify` | `textkit.strings` | Lower-case ASCII slug with runs of other characters turned into `-` |
 | `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive, in order of first occurrence |
+| `is_palindrome` | `textkit.strings` | Tells whether a text is a palindrome, ignoring case, spaces, punctuation and accents |
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
 | `strip_accents` | `textkit.strings` | Removes combining marks (`"Ñandú"` -> `"Nandu"`) |
 | `to_camel_case` | `textkit.cases` | Converts snake_case or kebab-case to camelCase (`"user_id"` -> `"userId"`) |

@@ -6,6 +6,7 @@ from textkit.strings import strip_accents
 from textkit.strings import slugify
 from textkit.strings import wrap
 from textkit.strings import slug_title
+from textkit.strings import is_palindrome
 
 
 class SqueezeTest(unittest.TestCase):
@@ -223,6 +224,50 @@ class SlugTitleTest(unittest.TestCase):
     def test_negative_max_len_raises_even_for_empty_text(self):
         with self.assertRaises(ValueError):
             slug_title("", -1)
+
+
+class IsPalindromeTest(unittest.TestCase):
+    def test_simple_palindromes(self):
+        self.assertTrue(is_palindrome("radar"))
+        self.assertTrue(is_palindrome("a"))
+        self.assertTrue(is_palindrome("abba"))
+
+    def test_not_palindromes(self):
+        self.assertFalse(is_palindrome("hello"))
+        self.assertFalse(is_palindrome("ab"))
+        self.assertFalse(is_palindrome("12a3"))
+
+    def test_ignores_case_spaces_and_punctuation(self):
+        self.assertTrue(is_palindrome("A man, a plan, a canal: Panama!"))
+        self.assertTrue(is_palindrome("Was it a car or a cat I saw?"))
+
+    def test_ignores_accents(self):
+        self.assertTrue(is_palindrome("Dábale arroz a la zorra el abad"))
+        self.assertTrue(is_palindrome("Ána"))
+
+    def test_nfc_and_nfd_input_give_the_same_result(self):
+        for form in ("NFC", "NFD"):
+            with self.subTest(form=form):
+                text = unicodedata.normalize(form, "Átá")
+                self.assertTrue(is_palindrome(text))
+
+    def test_digits_count(self):
+        self.assertTrue(is_palindrome("12321"))
+        self.assertTrue(is_palindrome("1a1"))
+        self.assertFalse(is_palindrome("123"))
+
+    def test_casefold_not_lower(self):
+        # casefold maps "ß" to "ss", lower() does not.
+        self.assertTrue(is_palindrome("ßs"))
+
+    def test_empty_and_no_alphanumerics_return_true(self):
+        self.assertTrue(is_palindrome(""))
+        self.assertTrue(is_palindrome("   "))
+        self.assertTrue(is_palindrome("!?., -"))
+
+    def test_letters_of_other_scripts(self):
+        self.assertTrue(is_palindrome("άνά"))
+        self.assertFalse(is_palindrome("αβ"))
 
 
 if __name__ == "__main__":
