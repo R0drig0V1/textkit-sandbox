@@ -15,3 +15,4 @@
 - Added `truncate`: cuts text to an exact width, ending in a suffix (`...` by default).
 - Added `word_count`: counts the words in a text, following ADR 0001.
 - Added `wrap`: splits text into lines of at most `width` characters at spaces; existing newlines are word separators (ADR 0003).
+- Added the `python3 -m textkit` command line.
