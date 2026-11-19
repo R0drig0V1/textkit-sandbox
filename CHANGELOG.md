@@ -14,3 +14,4 @@
 - Added `to_camel_case` in `textkit.cases`: converts snake_case and kebab-case names to camelCase; words are split as in `to_snake_case` (ADR 0002), so PascalCase and acronyms are normalised (`"HTTPServer"` -> `"httpServer"`).
 - Added `sentence_count` in `textkit.counts`: counts sentences by the rule of ADR 0004 (abbreviations, ellipses, decimals, quotes, CJK terminators).
 - Added `is_palindrome`: compares text with its reverse after `strip_accents`, `casefold` and keeping only `str.isalnum()` characters (digits count); `True` for empty text or text with no letters or digits; raises `TypeError` for a non-`str`.
+- Added `reading_time` in `textkit.counts`: whole minutes to read a text, `ceil(word_count / wpm)` with exact arithmetic; raises `ValueError` for a non-positive or non-finite `wpm` and `TypeError` for a `bool` or non-numeric `wpm` (ADR 0005).
