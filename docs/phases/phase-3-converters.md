@@ -11,14 +11,18 @@ and 2.
 
 - **No CLI edits.** No phase-3 PR edits `textkit/__main__.py` or `tests/test_cli.py`: T2.6's
   generic rules (argument conversion for `int` parameters, exit 1 on `ValueError`, `KeyError`
-  or `TypeError`) cover every phase-3 function. If T2.6 is red after a phase-3 function merges,
-  that is a T2.6 bug, reported to the integrator, not patched in the phase-3 PR.
+  or `TypeError`) cover every phase-3 function. So every phase-3 function with one required
+  parameter raises only `ValueError`, `KeyError` or `TypeError` for any `str` argument (any
+  `int` for an `int` parameter), and its own test file calls it with `"a"` (or `1`). When
+  `tests/test_cli.py` fails in a phase-3 PR, the PR fixes its function; only a failure that a
+  stub function reproduces in `test_cli.py` is a T2.6 bug, reported to the integrator.
 - **`int` parameters** reject a non-`int` and a `bool` with `ValueError`
   (`isinstance(n, bool) or not isinstance(n, int)`), checked before the range.
 - **Docs**: no `docs/` page other than the task's ADR (the module docstring and the README row
   are the documentation). An ADR is cited only by its full stem or a link to
-  `docs/decisions/NNNN-<slug>.md`, never as a bare "ADR NNNN": numbers are reassigned at merge
-  and only stems and links are rewritten.
+  `docs/decisions/NNNN-<slug>.md`, never as a bare "ADR NNNN": the integrator's merge script
+  renumbers a colliding ADR to the next free number and rewrites stems, links, the heading and
+  index rows, but not bare numbers elsewhere.
 - **ADR case tables**: a task that writes an ADR ends it with a table of cases
   (input -> output) containing at least the rows listed in the task; its test file tests every
   row.
@@ -47,10 +51,13 @@ and 2.
       non-`int` (a `bool` included), raises `ValueError`.
 - [ ] **T3.5 `is_email`** in `textkit/emails.py`: `is_email(text) -> bool`. Write an ADR on
       what is accepted (one `@`, the local part and domain characters, dots, the length
-      limits) and implement what it decides; no network and no DNS. Minimum case-table rows:
-      `a@b.co`, `a.b@c.co`, `.a@b.co`, `a..b@c.co`, `a@b`, `a@b.co.`, `"a b"@c.co`,
-      `a@[1.2.3.4]`, `ü@b.co`, `a@b@c.co`, `" a@b.co"`, a 65-character local part, a
-      255-character address, `""`.
+      limits) and implement what it decides; no network and no DNS. Minimum case-table rows,
+      written as Python literals: `"a@b.co"`, `"a.b@c.co"`, `".a@b.co"`, `"a..b@c.co"`,
+      `"a@b"`, `"a@b.co."`, `'"a b"@c.co'` (a quoted local part), `"a@[1.2.3.4]"`,
+      `"ü@b.co"`, `"a@b@c.co"`, `" a@b.co"`, `""`; both sides of each length limit:
+      `"a"*64 + "@b.co"` and `"a"*65 + "@b.co"`, and a 254- and a 255-character address built
+      only from labels of at most 63 characters (e.g. `"a@" + ".".join(["b"*63]*3) + "." + "c"*k`),
+      the ADR stating the construction next to each row.
 - [ ] **T3.6 `pluralize`** in `textkit/plural.py`: `pluralize(word) -> str` for English
       nouns. Write an ADR on the rules it covers (`-s`, `-es`, consonant `-y` -> `-ies`, a
       short table of irregulars such as `child` -> `children`) and on case handling, and
@@ -67,14 +74,15 @@ and 2.
       characters. A name with no ASCII letter raises `ValueError`. Tests: `Robert` R163,
       `Rupert` R163, `Tymczak` T522, `Ashcraft` A261, `Pfister` P236, `Honeyman` H555, `Lee`
       L000, `O'Brien` O165, `José` J200; `""`, `"123"`, `"é"` raise `ValueError`.
-- [ ] **T3.8 `initials`** in `textkit/names.py`: `initials(name) -> str`, the upper-case
-      first letter of each space- or hyphen-separated part, no separators
+- [ ] **T3.8 `initials`** in `textkit/names.py`: `initials(name) -> str`, `c.upper()` of the
+      first letter of each space- or hyphen-separated part (it may be several characters), no separators
       (`"jean-luc picard"` -> `"JLP"`); `""` returns `""`. Split with
       `re.split(r"[ -]+", name)` (only spaces and hyphens; runs count as one; empty parts are
       ignored; tabs are not separators). Each part contributes `c.upper()` for its first
       character `c` with `c.isalpha()`; a part with no letter contributes nothing. Tests:
       `"  jean--luc  picard "` -> `"JLP"`, `"o'brien"` -> `"O"`, `"élodie durand"` -> `"ÉD"`,
-      `"3d printer"` -> `"DP"`, `"- -"` -> `""`, `"ßa"` -> `"SS"`.
+      `"3d printer"` -> `"DP"`, `"- -"` -> `""`, `"ßa"` -> `"SS"`. No Unicode normalization:
+      NFD input gives the bare base letter (NFD `"élodie"` -> `"E"`); test both forms.
 - [ ] **T3.9 `ordinal`** in `textkit/ordinals.py`: `ordinal(n) -> str` for `int` `n >= 0`
       (`0` -> `"0th"`, `1` -> `"1st"`, `2` -> `"2nd"`, `11` -> `"11th"`, `101` -> `"101st"`,
       `111` -> `"111th"`, `112` -> `"112th"`, `113` -> `"113th"`, `1011` -> `"1011th"`,
@@ -87,7 +95,8 @@ and 2.
       raises `ValueError`. Tests: `0` -> `"0 B"`, `1` -> `"1 B"`, `1023` -> `"1023 B"`, `1024`
       -> `"1.0 KiB"`, `1280` -> `"1.2 KiB"`, `1536` -> `"1.5 KiB"`, `1048575` ->
       `"1024.0 KiB"`, `1048576` -> `"1.0 MiB"`, `1024**4` -> `"1.0 TiB"`, `1024**5` ->
-      `"1024.0 TiB"`; `-1`, `1.5`, `True` raise.
+      `"1024.0 TiB"`; `-1`, `1.5`, `True` raise. An `n` for which `n / 1024**k` overflows a float
+      raises `ValueError` (catch `OverflowError`); test `10**400`.
 - [ ] **T3.11 `parse_duration`** in `textkit/durations.py`: `parse_duration(text) -> int`,
       seconds from `h`, `m` and `s` parts in that order, each optional but at least one
       (`"1h30m"` -> `5400`, `"45s"` -> `45`, `"2h5s"` -> `7205`). The whole text must match
