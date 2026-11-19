@@ -1,5 +1,5 @@
-<!-- ADR 0001: the word rule used by textkit.counts.word_count (and later textkit._tokens.words). -->
-# 0001. What counts as a word
+<!-- 0002-what-counts-as-a-word: the word rule used by textkit.counts.word_count (and later textkit._tokens.words). -->
+# 0002. What counts as a word
 
 ## Context
 

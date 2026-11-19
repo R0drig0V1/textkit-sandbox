@@ -1,11 +1,11 @@
 """Counting helpers. Every public function is listed in the README's function table.
 
-The word rule is ADR 0001 (docs/decisions/0001-what-counts-as-a-word.md).
+The word rule is the word-rule ADR, docs/decisions/0002-what-counts-as-a-word.md.
 """
 
 import unicodedata
 
-# Joiners that keep a word together when a word character is on both sides (ADR 0001, rule 2).
+# Joiners that keep a word together when a word character is on both sides (word-rule ADR, rule 2).
 _JOINERS = frozenset("-'’")
 # Joiners only between two decimal digits, so "3.14" and "1,000" are one word.
 _DIGIT_JOINERS = frozenset(".,")
@@ -17,7 +17,7 @@ def _is_mark(char: str) -> bool:
 
 
 def _word_spans(text: str) -> list[tuple[int, int]]:
-    """Return the (start, end) index pairs of the words of ``text`` under ADR 0001.
+    """Return the (start, end) index pairs of the words of ``text`` under the word-rule ADR.
 
     A hand-written scanner rather than a regex: ``re`` has no class for combining marks and
     the digit-only joiners need to look at both neighbours.
@@ -58,7 +58,8 @@ def word_count(text: str) -> int:
     two such characters joins them (``"well-known"``, ``"don't"`` are one word), and so does
     ``.`` or ``,`` between two digits (``"3.14"``, ``"1,000"``). Everything else, the
     underscore and dashes included, separates words. Empty, whitespace-only and
-    punctuation-only text gives 0. The full rule and its case table are ADR 0001.
+    punctuation-only text gives 0. The full rule and its case table are in
+    docs/decisions/0002-what-counts-as-a-word.md.
 
     Raises ``TypeError`` if ``text`` is not a ``str``.
     """

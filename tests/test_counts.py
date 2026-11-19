@@ -1,7 +1,8 @@
 """Tests for textkit.counts, one TestCase class per public function.
 
-WordCountTest tests every row of the case table that ends ADR 0001 (what counts as a word)
-and checks that the table and CASES stay identical, so neither can drift from the other.
+WordCountTest tests every row of the case table that ends the word-rule ADR
+(docs/decisions/*-what-counts-as-a-word.md) and checks that the table and CASES stay
+identical, so neither can drift from the other.
 """
 
 import ast
