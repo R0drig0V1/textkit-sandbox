@@ -9,6 +9,8 @@ tiny synthetic project. Nothing here matters; it can be wiped at any time.
 
 Every public function is listed here, once (checked by `scripts/check.sh`).
 
+A short example of each one, run by the tests, is in the [usage guide](docs/usage.md).
+
 | Function | Module | What it does |
 |----------|--------|--------------|
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |

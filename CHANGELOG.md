@@ -18,4 +18,5 @@
 - Added `to_kebab_case` in `textkit.cases`: converts camelCase, PascalCase and snake_case names to kebab-case; words are split as in `to_snake_case` (ADR 0002), joined with `-`.
 - Added the command line `python3 -m textkit <function> <text>` (`textkit/__main__.py`): every public one-text function is a command, found at run time; `--help` lists them; `-` reads the text from stdin; exit codes 0, 1 (the function rejected the text) and 2 (usage error).
 - Added `textkit.__version__` (`"0.1.0"`, PEP 440) and `python3 -m textkit --version`, which prints `textkit <version>` on stdout and exits 0, with or without a function; the version is written only in `textkit/__init__.py`.
+- Added the usage guide `docs/usage.md`: one example per public function and a few command line runs, all run by `tests/test_usage.py`, which also fails when a public function has no example or the guide names one that does not exist.
 - Changed: `word_count` and `to_snake_case` share the private tokenizer `textkit._tokens` (ADR 0001's word rule and character classes); no change in their results.
