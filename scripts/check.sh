@@ -8,7 +8,11 @@ python3 -m unittest discover -s tests -t . -q
 
 python3 - <<'PY'
 import ast, pathlib, re, sys
+# Public function (phase 1 "Rules for every task"): a top-level def whose name does not start
+# with "_", in a module whose name does not start with "_" (so _tokens.py and __init__.py are
+# skipped: their functions are private however they are named).
 funcs = sorted(n.name for p in pathlib.Path("textkit").glob("*.py")
+               if not p.name.startswith("_")
                for n in ast.parse(p.read_text()).body
                if isinstance(n, ast.FunctionDef) and not n.name.startswith("_"))
 errors = []

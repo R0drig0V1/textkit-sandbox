@@ -3,9 +3,13 @@
 How `to_snake_case` splits words inside an identifier (runs of capitals, digits) is fixed by
 docs/decisions/0001-snake-case-word-boundaries.md; its case table is tested row by row in
 tests/test_cases.py. `to_camel_case` splits only at the `_` and `-` separators.
+`to_snake_case` splits at `_` with the shared tokenizer
+(`textkit._tokens.words`, the prose word rule of ADR 0002) only where both ADRs agree.
 """
 
 import re
+
+from textkit import _tokens
 
 # Both patterns use explicit ASCII ranges on purpose: non-ASCII letters never create a word
 # boundary (ADR 0001), and `[A-Z]` in a str pattern does not match them.
@@ -32,10 +36,19 @@ def to_snake_case(name: str) -> str:
     ADR 0001. ``""`` gives ``""``. Never raises for a ``str`` argument.
     """
     text = name.replace("-", "_")
+    # ADR 0001 and ADR 0002 split the same way at a single `_` between two words, and only
+    # there: ADR 0002 never splits camelCase, and it drops what ADR 0001 keeps (leading,
+    # trailing or doubled `_`, spaces, other punctuation). So the shared tokenizer splits the
+    # identifier only when it is exactly its words joined by single `_`; anything else is
+    # handled whole, as before. The substitutions below never match across `_`, so both paths
+    # give the same result.
+    parts = _tokens.words(text)
+    if "_".join(parts) != text:
+        parts = [text]
     # Acronym boundary first: it only looks at capitals, so the second pass cannot undo it.
-    text = _ACRONYM_THEN_WORD.sub(r"\1_\2", text)
-    text = _LOWER_OR_DIGIT_THEN_UPPER.sub(r"\1_\2", text)
-    return text.lower()
+    parts = [_ACRONYM_THEN_WORD.sub(r"\1_\2", part) for part in parts]
+    parts = [_LOWER_OR_DIGIT_THEN_UPPER.sub(r"\1_\2", part) for part in parts]
+    return "_".join(parts).lower()
 
 
 # A run of separators counts as one; empty pieces from leading or trailing runs are dropped.
