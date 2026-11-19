@@ -1,4 +1,4 @@
-"""Tests for the command line, ``textkit/__main__.py`` (plan task T2.6).
+"""Tests for the command line, ``textkit/__main__.py`` (plan tasks T2.6 and T2.7).
 
 The expected command set is computed here from the public-function definition of phase 1,
 independently of ``textkit.__main__``, so a discovery bug there cannot hide behind the same
@@ -189,6 +189,43 @@ class MainTest(unittest.TestCase):
             cwd=REPO_ROOT, capture_output=True, text=True, check=False,
         )
         self.assertEqual((proc.returncode, proc.stdout, proc.stderr), (0, "", ""))
+
+
+class VersionTest(unittest.TestCase):
+    """``python3 -m textkit --version`` (plan task T2.7)."""
+
+    def test_version_option_prints_the_package_version(self):
+        proc = run_cli(["--version"])
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual(proc.stderr, "")
+        self.assertEqual(proc.stdout, f"textkit {textkit.__version__}\n")
+
+    def test_package_version_is_0_1_0(self):
+        self.assertEqual(textkit.__version__, "0.1.0")
+
+    def test_version_works_alongside_the_required_function(self):
+        # The function stays required without --version, and --version wins when given
+        # before a function: argparse handles it as soon as it is parsed.
+        self.assertEqual(run_cli([]).returncode, 2)
+        proc = run_cli(["--version", "slugify", "x"])
+        self.assertEqual((proc.returncode, proc.stdout),
+                         (0, f"textkit {textkit.__version__}\n"))
+        self.assertEqual(run_cli(["slugify", "Hello, World!"]).stdout, "hello-world\n")
+
+    def test_help_mentions_version(self):
+        self.assertIn("--version", run_cli(["--help"]).stdout)
+
+    def test_main_in_process_returns_0(self):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self.assertEqual(cli._main(["--version"]), 0)
+        self.assertEqual(out.getvalue(), f"textkit {textkit.__version__}\n")
+
+    def test_version_string_is_written_only_in_init(self):
+        package = REPO_ROOT / "textkit"
+        holders = sorted(path.name for path in package.glob("*.py")
+                         if textkit.__version__ in path.read_text(encoding="utf-8"))
+        self.assertEqual(holders, ["__init__.py"])
 
 
 if __name__ == "__main__":
