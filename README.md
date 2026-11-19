@@ -13,6 +13,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 |----------|--------|--------------|
 | `slugify` | `textkit.strings` | Turns text into a lower-case ASCII slug (`"Hello, World!"` -> `"hello-world"`) |
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
+| `strip_accents` | `textkit.strings` | Removes combining marks (accents, diacritics) |
 | `truncate` | `textkit.strings` | Shortens text to a width, ending with a suffix when cut |
 | `wrap` | `textkit.strings` | Splits text into lines of at most `width` characters at spaces |
 | `word_count` | `textkit.counts` | Counts the words of a text (rule: [0002-what-counts-as-a-word](docs/decisions/0002-what-counts-as-a-word.md)) |

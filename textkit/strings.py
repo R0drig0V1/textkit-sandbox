@@ -1,6 +1,7 @@
 """String helpers. Every public function is listed in the README's function table."""
 
 import re
+import unicodedata
 
 # Runs of characters that cannot appear in a slug (used by slugify).
 _NON_SLUG_RUN = re.compile(r"[^a-z0-9]+")
@@ -92,3 +93,19 @@ def truncate(text: str, width: int, suffix: str = "...") -> str:
     if len(text) <= width:
         return text
     return text[: width - len(suffix)] + suffix
+
+
+def strip_accents(text: str) -> str:
+    """Remove combining marks such as accents and diacritics from ``text``.
+
+    The text is decomposed to NFD, every character with a non-zero canonical combining
+    class (``unicodedata.combining``) is dropped, and the rest is recomposed to NFC:
+    ``"Ñandú"`` -> ``"Nandu"``, whether the input is NFC or NFD. Recomposing keeps scripts
+    whose NFD form is not marks (Hangul syllables, for example) as they were.
+
+    Letters with no canonical decomposition are kept unchanged (``"ø"``, ``"ł"``, ``"ß"``),
+    as are marks whose combining class is 0. Never raises for a ``str``; ``""`` gives ``""``.
+    """
+    decomposed = unicodedata.normalize("NFD", text)
+    kept = "".join(c for c in decomposed if not unicodedata.combining(c))
+    return unicodedata.normalize("NFC", kept)
