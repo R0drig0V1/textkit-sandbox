@@ -66,3 +66,20 @@ def to_camel_case(name: str) -> str:
     if not words:
         return ""
     return words[0].lower() + "".join(word.capitalize() for word in words[1:])
+
+
+def to_kebab_case(name: str) -> str:
+    """Convert a camelCase, PascalCase or snake_case identifier to kebab-case.
+
+    Built on :func:`to_snake_case`: the words are split by the rule of ADR 0001 (acronyms,
+    digits, ASCII-only boundaries), lower-cased, and every ``_`` of the result becomes ``-``
+    (``HTTPServer`` -> ``http-server``, ``parseURL2`` -> ``parse-url2``).
+
+    Underscores already in the input are treated like hyphens: each one becomes exactly one
+    ``-``, with no collapsing or stripping, so ``snake_case`` -> ``snake-case``,
+    ``a__b`` -> ``a--b`` and ``_private`` -> ``-private``. kebab-case input is only
+    lower-cased. The limits of ADR 0001 carry over (``parseURLs`` -> ``parse-ur-ls``).
+    ``""`` gives ``""``. Never raises for a ``str`` argument.
+    """
+    # Reusing to_snake_case keeps a single word-boundary rule (ADR 0001) for every case style.
+    return to_snake_case(name).replace("_", "-")

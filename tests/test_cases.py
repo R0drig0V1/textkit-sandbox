@@ -2,7 +2,7 @@
 
 import unittest
 
-from textkit.cases import to_camel_case, to_snake_case
+from textkit.cases import to_camel_case, to_kebab_case, to_snake_case
 
 # The case table of docs/decisions/0001-snake-case-word-boundaries.md, in the same order.
 # Keep the two in sync: every row of the ADR is one entry here.
@@ -76,6 +76,35 @@ class ToCamelCaseTest(unittest.TestCase):
     def test_digits(self):
         self.assertEqual(to_camel_case("utf8_encode"), "utf8Encode")
         self.assertEqual(to_camel_case("version_2"), "version2")
+
+
+class ToKebabCaseTest(unittest.TestCase):
+    def test_adr_case_table_with_hyphens(self):
+        # Same word boundaries as to_snake_case (ADR 0001), joined with "-" instead of "_".
+        for name, snake in SNAKE_CASE_TABLE:
+            with self.subTest(name=name):
+                self.assertEqual(to_kebab_case(name), snake.replace("_", "-"))
+
+    def test_examples(self):
+        self.assertEqual(to_kebab_case("HTTPServer"), "http-server")
+        self.assertEqual(to_kebab_case("parseURL2"), "parse-url2")
+        self.assertEqual(to_kebab_case("camelCase"), "camel-case")
+        self.assertEqual(to_kebab_case(""), "")
+
+    def test_kebab_input_is_only_lower_cased(self):
+        self.assertEqual(to_kebab_case("already-kebab"), "already-kebab")
+        self.assertEqual(to_kebab_case("Mixed-Kebab"), "mixed-kebab")
+
+    def test_each_input_underscore_becomes_one_hyphen(self):
+        # Underscores are neither collapsed nor stripped, like in to_snake_case.
+        self.assertEqual(to_kebab_case("snake_case"), "snake-case")
+        self.assertEqual(to_kebab_case("SCREAMING_SNAKE"), "screaming-snake")
+        self.assertEqual(to_kebab_case("a__b"), "a--b")
+        self.assertEqual(to_kebab_case("_private"), "-private")
+        self.assertEqual(to_kebab_case("trailing_"), "trailing-")
+
+    def test_non_ascii_letters_make_no_boundary(self):
+        self.assertEqual(to_kebab_case("ÑandúÉclair"), "ñandúéclair")
 
 
 if __name__ == "__main__":
