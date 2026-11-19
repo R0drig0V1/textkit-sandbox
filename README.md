@@ -13,6 +13,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 |----------|--------|--------------|
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
 | `truncate` | `textkit.strings` | Shortens text to a width, suffix included |
+| `word_count` | `textkit.counts` | Counts the words in a text (rule: ADR "What counts as a word") |
 
 ## Commands
 
