@@ -19,6 +19,7 @@ import subprocess
 import sys
 import unittest
 
+import textkit
 from textkit.__main__ import _main
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -193,6 +194,23 @@ class InProcessMainTest(unittest.TestCase):
         status, out, err = call_main()
         self.assertEqual((status, out), (2, ""))
         self.assertIn("usage:", err)
+
+
+
+class VersionTest(unittest.TestCase):
+    """``python3 -m textkit --version`` and ``textkit.__version__`` (T2.7)."""
+
+    def test_version_flag_prints_the_package_version(self):
+        proc = run_cli("--version")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual(proc.stdout, f"textkit {textkit.__version__}\n")
+        self.assertEqual(proc.stderr, "")
+
+    def test_version_is_0_1_0(self):
+        self.assertEqual(textkit.__version__, "0.1.0")
+
+    def test_version_flag_in_process_returns_0(self):
+        self.assertEqual(call_main("--version"), (0, "textkit 0.1.0\n", ""))
 
 
 if __name__ == "__main__":
