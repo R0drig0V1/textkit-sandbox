@@ -97,3 +97,99 @@ def reading_time(text: str, wpm: int = 200) -> int:
         raise ValueError(f"wpm must be at least 1, got {wpm!r}")
     # Ceiling division without floats: -(-a // b) == ceil(a / b) for integers, b > 0.
     return -(-word_count(text) // wpm)
+
+
+# Sentence boundaries: ADR 0005 (docs/decisions/0005-sentence-boundaries.md) decides the
+# rule; the constants below are its lists, and its table of cases is tested row by row.
+_TERMINATORS = frozenset(".!?…")
+# Closing quotes and brackets that may follow a terminator and still belong to its sentence.
+_CLOSERS = frozenset("\"'’”»)]}")
+# Opening quotes and brackets skipped when looking at the first letter after an ellipsis.
+_OPENERS = frozenset("\"'‘“«([{")
+# Abbreviations whose final period never ends a sentence, compared after casefold(). Titles
+# almost always precede a name, and the Latin ones introduce something; "etc." is left out
+# on purpose because it usually does end a sentence (ADR 0005).
+_ABBREVIATIONS = frozenset({"mr", "mrs", "ms", "dr", "prof", "sr", "jr", "vs", "cf", "e.g", "i.e"})
+
+
+def _abbreviation_before(text: str, i: int) -> bool:
+    """Return True if the period at ``text[i]`` ends one of ``_ABBREVIATIONS``."""
+    j = i
+    while j > 0 and (text[j - 1].isalpha() or text[j - 1] == "."):
+        j -= 1
+    if j > 0 and text[j - 1].isalnum():
+        # A digit glued to the letters ("2dr."): not a standalone abbreviation.
+        return False
+    return text[j:i].lstrip(".").casefold() in _ABBREVIATIONS
+
+
+def _capital_follows(text: str, k: int) -> bool:
+    """Return True if the next sentence after position ``k`` starts with a capital letter.
+
+    Whitespace and opening quotes or brackets are skipped; the end of the text counts as a
+    capital, since nothing follows that could continue the sentence.
+    """
+    n = len(text)
+    while k < n and (text[k].isspace() or text[k] in _OPENERS):
+        k += 1
+    return k == n or text[k].isupper()
+
+
+def _ends_sentence(text: str, i: int, j: int, k: int) -> bool:
+    """Return True if the terminator run ``text[i:j]`` ends a sentence.
+
+    ``text[j:k]`` are the closing quotes and brackets that follow the run.
+    """
+    if k < len(text) and not text[k].isspace():
+        # "3.14", "example.com", "e.g.,", "One.Two": no space after, no boundary.
+        return False
+    run = text[i:j]
+    if run == ".":
+        return not _abbreviation_before(text, i)
+    if set(run) <= {".", "…"}:
+        # An ellipsis ("...", "…"): a pause unless the next sentence starts with a capital.
+        return _capital_follows(text, k)
+    # Any run with "!" or "?" in it ("?!", "!!", "?...").
+    return True
+
+
+def sentence_count(text: str) -> int:
+    """Return the number of sentences in ``text``.
+
+    The text is cut after each run of terminators (``.``, ``!``, ``?``, ``…``) that is
+    followed, after any closing quotes or brackets, by whitespace or the end of the text.
+    Each piece that contains at least one word (ADR 0002, so ``word_count`` > 0) is one
+    sentence; text with no terminator at the end still counts. Exceptions (ADR 0005):
+
+    - a single ``.`` after a known abbreviation (``Mr``, ``Mrs``, ``Ms``, ``Dr``, ``Prof``,
+      ``Sr``, ``Jr``, ``vs``, ``cf``, ``e.g``, ``i.e``; any case) does not cut;
+    - an ellipsis (a run of only ``.`` and ``…``, other than a single ``.``) cuts only when
+      the next non-space character, after any opening quotes or brackets, is upper-case.
+
+    Newlines are not boundaries, and ``"U.S. and"`` is cut after ``"U.S."``: see ADR 0005
+    for these limits and the table of cases.
+
+    Never raises for a ``str``; ``""``, whitespace-only and punctuation-only text give 0.
+    """
+    count = 0
+    start = 0
+    n = len(text)
+    i = 0
+    while i < n:
+        if text[i] not in _TERMINATORS:
+            i += 1
+            continue
+        j = i
+        while j < n and text[j] in _TERMINATORS:
+            j += 1
+        k = j
+        while k < n and text[k] in _CLOSERS:
+            k += 1
+        if _ends_sentence(text, i, j, k):
+            if word_count(text[start:k]) > 0:
+                count += 1
+            start = k
+        i = k
+    if word_count(text[start:]) > 0:
+        count += 1
+    return count

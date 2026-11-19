@@ -2,7 +2,7 @@
 
 import unittest
 
-from textkit.counts import char_freq, reading_time, word_count
+from textkit.counts import char_freq, reading_time, sentence_count, word_count
 
 # The table of cases at the end of docs/decisions/0002-what-counts-as-a-word.md, row by row
 # and in the same order. Keep the two in sync.
@@ -111,6 +111,63 @@ class ReadingTimeTest(unittest.TestCase):
     def test_wpm_checked_even_for_empty_text(self):
         with self.assertRaises(ValueError):
             reading_time("", 0)
+
+
+# The table of cases at the end of docs/decisions/0005-sentence-boundaries.md, row by row
+# and in the same order. Keep the two in sync.
+ADR_0005_CASES = [
+    ("", 0),
+    ("Hello", 1),
+    ("Hello world. Bye.", 2),
+    ("Really?! Yes!!", 2),
+    ("It costs 3.14 dollars.", 1),
+    ("Visit example.com today.", 1),
+    ("One.Two", 1),
+    ("I met Dr. Smith. He was kind.", 2),
+    ("Mr. and Mrs. Smith left.", 1),
+    ("DR. NO is a film.", 1),
+    ("Use a tool, e.g. a hammer.", 1),
+    ("Fruit, i.e. apples, is good.", 1),
+    ("Cats vs. dogs.", 1),
+    ("Bring pens, paper, etc. Then sit.", 2),
+    ("I live in the U.S. and it is big.", 2),
+    ("Wait... what happened?", 1),
+    ("I waited... Nobody came.", 2),
+    ("I waited\u2026 Nobody came.", 2),
+    ("The end...", 1),
+    ("He said \"Stop.\" Then he left.", 2),
+    ("\"Why?\" he asked.", 2),
+    ("!!! ... ?", 0),
+    ("Hi. ... Bye.", 2),
+    ("Line one\nLine two", 1),
+    ("First. \n\n Second.", 2),
+]
+
+
+class SentenceCountTest(unittest.TestCase):
+    def test_adr_0005_table(self):
+        for text, expected in ADR_0005_CASES:
+            with self.subTest(text=text):
+                self.assertEqual(sentence_count(text), expected)
+
+    def test_whitespace_only(self):
+        self.assertEqual(sentence_count(" \t\n "), 0)
+
+    def test_abbreviation_must_stand_alone(self):
+        # "2dr." is not the title "Dr.", so its period cuts like any other.
+        self.assertEqual(sentence_count("Model 2dr. It is red."), 2)
+        self.assertEqual(sentence_count("(Dr. Who) is on. Watch it."), 2)
+
+    def test_ellipsis_before_quoted_capital(self):
+        # Opening quotes are skipped when looking for the capital after an ellipsis.
+        self.assertEqual(sentence_count("So... \"Yes,\" she said."), 2)
+        self.assertEqual(sentence_count("So... \"yes,\" she said."), 1)
+
+    def test_closing_bracket_after_terminator(self):
+        self.assertEqual(sentence_count("It worked (mostly.) Then it broke."), 2)
+
+    def test_run_with_question_mark_always_cuts(self):
+        self.assertEqual(sentence_count("Really?... maybe not."), 2)
 
 
 if __name__ == "__main__":
