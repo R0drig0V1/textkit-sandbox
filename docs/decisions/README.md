@@ -5,3 +5,4 @@ One file per decision, `NNNN-title.md`, with Context / Decision / Consequences.
 
 | # | Decision |
 |---|----------|
+| [0001](0001-snake-case-word-boundaries.md) | Word boundaries in `to_snake_case`: acronym runs, digits, separators |

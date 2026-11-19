@@ -3,3 +3,4 @@
 ## Unreleased
 
 - Added `squeeze`: collapses runs of whitespace into single spaces.
+- Added `to_snake_case`: converts camelCase, PascalCase or kebab-case identifiers to snake_case (word boundaries in ADR 0001).
