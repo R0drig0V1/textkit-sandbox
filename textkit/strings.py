@@ -32,3 +32,21 @@ def slugify(text: str) -> str:
     # and digits; removing them first also keeps lower() from producing non-ASCII output.
     ascii_text = "".join(ch for ch in text if ord(ch) < 128)
     return _SLUG_SEPARATORS.sub("-", ascii_text.lower()).strip("-")
+
+
+def truncate(text: str, width: int, suffix: str = "...") -> str:
+    """Shorten ``text`` to at most ``width`` code points, ending it with ``suffix`` if cut.
+
+    ``text`` is returned unchanged when it fits (``len(text) <= width``). Otherwise the start
+    of ``text`` is kept and ``suffix`` appended, so that the result, suffix included, is
+    exactly ``width`` long. Lengths are counted in code points, as ``len`` does.
+
+    Raises ``ValueError`` when ``width < len(suffix)``, even if ``text`` would fit: the check
+    depends only on the arguments' shape, so a caller's bad ``width`` fails on every input
+    instead of only on long ones. With ``suffix=""`` this means a negative ``width`` raises.
+    """
+    if width < len(suffix):
+        raise ValueError(f"width {width} is smaller than the suffix length {len(suffix)}")
+    if len(text) <= width:
+        return text
+    return text[: width - len(suffix)] + suffix
