@@ -9,3 +9,4 @@ One file per decision, `NNNN-title.md`, with Context / Decision / Consequences.
 | [0002](0002-to-snake-case-capital-runs.md) | How `to_snake_case` splits runs of capitals and digits |
 | [0003](0003-wrap-reflows-existing-newlines.md) | `wrap` treats existing newlines as spaces (reflow) |
 | [0004](0004-reading-time-rounds-up.md) | `reading_time` rounds up to whole minutes; 0 only for text with no words |
+| [0005](0005-sentence-boundaries.md) | Where `sentence_count` ends a sentence (abbreviations, ellipses, closing quotes) |
