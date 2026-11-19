@@ -8,7 +8,11 @@ python3 -m unittest discover -s tests -t . -q
 
 python3 - <<'PY'
 import ast, pathlib, re, sys
+# Public function = top-level def not starting with "_", in a module of textkit/ whose
+# name does not start with "_" (phase 1 "Rules for every task"): private modules such as
+# _tokens.py and __main__.py, and __init__.py, contain no public functions.
 funcs = sorted(n.name for p in pathlib.Path("textkit").glob("*.py")
+               if not p.name.startswith("_")
                for n in ast.parse(p.read_text()).body
                if isinstance(n, ast.FunctionDef) and not n.name.startswith("_"))
 errors = []

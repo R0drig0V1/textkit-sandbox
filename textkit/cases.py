@@ -8,6 +8,11 @@ splits runs of capitals" (docs/decisions/NNNN-snake-case-capital-runs.md).
 import re
 
 # `_` and `-` separate words; a run of them counts as one separator.
+# This module deliberately does not use the prose tokenizer `textkit._tokens.words`
+# (ADR 0001): it splits identifiers differently at every step of ADR 0002. A single `-`
+# between word characters joins in ADR 0001 ("kebab-case" is one word) but separates
+# here; ADR 0001 drops spaces and punctuation, which ADR 0002 keeps; and ADR 0001 has no
+# case boundaries ("camelCase" is one word).
 _SEPARATORS = re.compile(r"[-_]+")
 
 
