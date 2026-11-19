@@ -66,7 +66,7 @@ anything else). Tasks with no "Depends on" can start at once.
       word is lower-cased and the rest capitalized (`"HTTP_server"` -> `"httpServer"`); input
       with no separator is returned with only its first character lower-cased.
       Depends on T1.7 (it creates `textkit/cases.py` and `tests/test_cases.py`).
-- [ ] **T1.9 `slug_title`** in `textkit/strings.py`: `slug_title(text, max_len) -> str`, a
+- [x] **T1.9 `slug_title`** in `textkit/strings.py`: `slug_title(text, max_len) -> str`, a
       slug of at most `max_len` characters that never ends in `-`: exactly
       `truncate(slugify(text), max_len, suffix="")` with trailing `-` stripped (a character
       cut, not a word cut). `max_len < 0` raises `ValueError`; the result may be `""`.
