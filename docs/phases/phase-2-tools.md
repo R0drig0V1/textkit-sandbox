@@ -25,7 +25,7 @@ start at once.
       `typing.get_type_hints` (so an annotation that does not evaluate on the running Python
       fails), and asserts the discovered set equals the README function table.
       Depends on T1.1 to T1.8.
-- [ ] **T2.6 command line**: `textkit/__main__.py` so that `python3 -m textkit <function>
+- [x] **T2.6 command line**: `textkit/__main__.py` so that `python3 -m textkit <function>
       <text>` prints the result of any public function of one text argument, and lists them
       with `--help`. Entry point `_main(argv: Optional[List[str]] = None) -> int`, called
       under `if __name__ == "__main__":` (importing the module has no side effects).
