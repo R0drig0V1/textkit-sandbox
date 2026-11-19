@@ -3,7 +3,7 @@
 import unicodedata
 import unittest
 
-from textkit.strings import slugify, squeeze, truncate
+from textkit.strings import slugify, squeeze, strip_accents, truncate
 
 
 class SqueezeTest(unittest.TestCase):
@@ -90,6 +90,38 @@ class TruncateTest(unittest.TestCase):
     def test_negative_width_raises(self):
         with self.assertRaises(ValueError):
             truncate("", -1, suffix="")
+
+
+class StripAccentsTest(unittest.TestCase):
+    def test_removes_accents_from_nfc_input(self):
+        self.assertEqual(strip_accents("\u00d1and\u00fa"), "Nandu")
+
+    def test_removes_accents_from_nfd_input(self):
+        self.assertEqual(strip_accents("N\u0303andu\u0301"), "Nandu")
+
+    def test_mixed_text(self):
+        self.assertEqual(
+            strip_accents("Cr\u00e8me br\u00fbl\u00e9e, na\u00efve!"), "Creme brulee, naive!"
+        )
+
+    def test_ascii_and_empty_unchanged(self):
+        self.assertEqual(strip_accents("Hello, World! 123"), "Hello, World! 123")
+        self.assertEqual(strip_accents(""), "")
+
+    def test_lone_combining_mark_removed(self):
+        self.assertEqual(strip_accents("a\u0301\u0308"), "a")
+        self.assertEqual(strip_accents("\u0301"), "")
+
+    def test_letters_without_decomposition_kept(self):
+        self.assertEqual(strip_accents("\u00f8\u0142\u00df"), "\u00f8\u0142\u00df")
+
+    def test_hangul_recomposed(self):
+        self.assertEqual(strip_accents("\ud55c\uad6d\uc5b4"), "\ud55c\uad6d\uc5b4")
+
+    def test_result_is_nfc(self):
+        result = strip_accents("e\u0301 \u00e9")
+        self.assertEqual(result, "e e")
+        self.assertEqual(result, unicodedata.normalize("NFC", result))
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 """String helpers. Every public function is listed in the README's function table."""
 
 import re
+import unicodedata
 
 # Runs of anything outside the slug alphabet. An explicit ASCII class is used on purpose:
 # str.isalnum and \w accept non-ASCII letters, which slugs must not contain.
@@ -53,3 +54,23 @@ def truncate(text: str, width: int, suffix: str = "...") -> str:
     if len(text) <= width:
         return text
     return text[: width - len(suffix)] + suffix
+
+
+def strip_accents(text: str) -> str:
+    """Remove combining marks (accents, diacritics) from ``text``.
+
+    The text is decomposed to NFD, every character with a non-zero canonical combining class
+    (``unicodedata.combining``) is dropped, and the rest is recomposed to NFC, so
+    ``"Ñandú"`` gives ``"Nandu"`` whether the input is NFC or NFD.
+
+    Recomposing matters for scripts whose NFD form is not made of combining marks: Hangul
+    syllables decompose into jamo, which are kept and must be joined back.
+
+    Letters that are distinct characters rather than a base plus a mark (``"ø"``, ``"ł"``,
+    ``"ß"``) have no decomposition and are returned unchanged; this is not a transliterator.
+    Marks with combining class 0 (for example some Thai vowel signs) are kept too, since
+    removing them would change the word rather than its accents. Never raises for a ``str``.
+    """
+    decomposed = unicodedata.normalize("NFD", text)
+    kept = "".join(c for c in decomposed if not unicodedata.combining(c))
+    return unicodedata.normalize("NFC", kept)
