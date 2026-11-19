@@ -107,7 +107,7 @@ and 2.
       0, `"01h"` -> 3600). Everything else raises `ValueError`; tests: `""`, `"1H"`,
       `"1h 30m"`, `" 45s"`, `"30m1h"`, `"1h1h"`, `"1.5h"`, `"-1h"`, `"45"`, `"45s\n"`,
       `"١h"`.
-- [ ] **T3.12 `render`** in `textkit/templates.py`:
+- [x] **T3.12 `render`** in `textkit/templates.py`:
       `render(template: str, values: Mapping[str, object]) -> str` (`typing.Mapping`).
       Scanning left to right, `{{` and `}}` are literal braces. A placeholder is `{` + a name
       matching `[A-Za-z_][A-Za-z0-9_]*` + `}` and is replaced with `str(values[name])`. Any
