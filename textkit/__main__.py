@@ -1,8 +1,9 @@
 """Command line for textkit: ``python3 -m textkit <function> "<text>"``.
 
 Runs one public function of one text argument and prints its result; ``--help`` lists the
-functions. The commands are discovered at run time, never hard-coded, so a public function
-added to any module of ``textkit/`` becomes a command with no change here.
+functions and ``--version`` prints ``textkit <version>`` (read from ``textkit.__version__``).
+The commands are discovered at run time, never hard-coded, so a public function added to any
+module of ``textkit/`` becomes a command with no change here.
 
 A command is every public function (the definition in "Rules for every task" of
 docs/phases/phase-1-core-helpers.md: a top-level ``def`` not starting with ``_``, in a module
@@ -12,8 +13,9 @@ other parameter keeps its default.
 
 Output: a ``str`` is printed as is; a ``dict`` or ``list`` as
 ``json.dumps(result, ensure_ascii=False, sort_keys=True)``; anything else (``bool``, ``int``)
-with ``print()``. Exit status: 0 on success; 2 on an unknown function, a wrong number of
-arguments or no arguments at all, with the message (and the usage) on stderr.
+with ``print()``. Exit status: 0 on success (``--help`` and ``--version`` included); 2 on an
+unknown function, a wrong number of arguments or no arguments at all, with the message (and
+the usage) on stderr.
 
 This module has no public functions (its name starts with ``_``) and importing it has no
 side effects: the command line only runs under ``if __name__ == "__main__":``.
@@ -102,6 +104,11 @@ def _parser(commands: Dict[str, Callable[..., Any]]) -> argparse.ArgumentParser:
         epilog='Quote the text: python3 -m textkit slugify "Hello, World!". '
         "Put -- before a text that starts with -.",
     )
+    # The version is read from the package, never repeated here (plan task T2.7). argparse
+    # prints it to stdout and exits 0 before checking that a command was given.
+    parser.add_argument(
+        "--version", action="version", version=f"textkit {textkit.__version__}"
+    )
     # dest is mandatory with required=True on Python 3.9: without it, the error message for
     # a missing command crashes argparse instead of printing the usage.
     sub = parser.add_subparsers(
@@ -118,9 +125,9 @@ def _parser(commands: Dict[str, Callable[..., Any]]) -> argparse.ArgumentParser:
 def _main(argv: Optional[List[str]] = None) -> int:
     """Run the command line on ``argv`` (default ``sys.argv[1:]``) and return the exit status.
 
-    Returns 0 after printing the result (or the ``--help`` text), and 2 when argparse rejects
-    the arguments (unknown function, wrong argument count, none at all), after it has
-    written the usage and the message to stderr. argparse signals both by raising
+    Returns 0 after printing the result (or the ``--help`` or ``--version`` text), and 2 when
+    argparse rejects the arguments (unknown function, wrong argument count, none at all),
+    after it has written the usage and the message to stderr. argparse signals both by raising
     ``SystemExit``; it is caught here so that callers and tests always get an ``int``.
     An exception raised by the function itself is not caught: it is a bug, not bad input.
     """

@@ -1,4 +1,5 @@
-"""Tests for textkit/__main__.py, the ``python3 -m textkit`` command line (plan task T2.6).
+"""Tests for textkit/__main__.py, the ``python3 -m textkit`` command line (plan tasks T2.6
+and T2.7, ``--version``).
 
 The expected commands are computed here from the public-function definition of
 docs/phases/phase-1-core-helpers.md, independently of the CLI's own discovery, so that a
@@ -162,6 +163,23 @@ class MainTest(unittest.TestCase):
             check=False,
         )
         self.assertEqual((proc.returncode, proc.stdout, proc.stderr), (0, "", ""))
+
+
+
+class VersionTest(unittest.TestCase):
+    """``python3 -m textkit --version`` and ``textkit.__version__`` (plan task T2.7)."""
+
+    def test_version_flag_prints_the_package_version_and_exits_0(self):
+        proc = _run_cli("--version")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual(proc.stdout, f"textkit {textkit.__version__}\n")
+        self.assertEqual(proc.stderr, "")
+
+    def test_package_version_is_0_1_0(self):
+        self.assertEqual(textkit.__version__, "0.1.0")
+
+    def test_version_flag_in_process(self):
+        self.assertEqual(_main_in_process("--version"), (0, "textkit 0.1.0\n", ""))
 
 
 if __name__ == "__main__":

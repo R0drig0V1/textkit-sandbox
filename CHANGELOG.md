@@ -10,6 +10,7 @@
   punctuation and accents (via `strip_accents`); digits count, `""` gives `True`.
 - Added `reading_time` in `textkit.counts`: whole minutes to read a text, from `word_count`, rounded up (ADR "Reading time rounding").
 - Added the `python3 -m textkit` command line.
+- Added `python3 -m textkit --version`.
 - Added `sentence_count` in `textkit.counts`: counts sentences; listed abbreviations such as `Dr.` and `e.g.` never end one, and ellipses and `etc.` end one unless a lower-case word follows (ADR "Sentence boundaries: abbreviations and ellipses").
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (`"Ñandú"` -> `"Nandu"`).
