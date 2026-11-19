@@ -71,3 +71,24 @@ def wrap(text: str, width: int) -> list[str]:
     if current:
         lines.append(current)
     return lines
+
+
+def truncate(text: str, width: int, suffix: str = "...") -> str:
+    """Shorten ``text`` to at most ``width`` code points, ending with ``suffix`` if cut.
+
+    ``text`` is returned unchanged when it fits, that is when ``len(text) <= width``.
+    Otherwise the start of ``text`` is kept and ``suffix`` appended so that the result is
+    exactly ``width`` long.
+
+    Raises:
+        ValueError: if ``width < len(suffix)``, even when ``text`` would fit. The check comes
+            first so that a bad ``width``/``suffix`` pair fails the same way for every input,
+            instead of only when a long text happens to arrive.
+    """
+    if width < len(suffix):
+        raise ValueError(
+            f"width ({width}) must be at least the length of suffix ({len(suffix)})"
+        )
+    if len(text) <= width:
+        return text
+    return text[: width - len(suffix)] + suffix
