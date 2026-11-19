@@ -1,6 +1,8 @@
 import unittest
 
-from textkit.strings import squeeze, truncate
+import unicodedata
+
+from textkit.strings import squeeze, strip_accents, truncate
 
 
 class SqueezeTest(unittest.TestCase):
@@ -51,6 +53,32 @@ class TruncateTest(unittest.TestCase):
         # "e" + combining acute is two code points, so it does not fit in width 1.
         self.assertEqual(truncate("e\u0301x", 2, suffix=""), "e\u0301")
         self.assertEqual(truncate("\u00f1and\u00fa", 5), "\u00f1and\u00fa")
+
+
+class StripAccentsTest(unittest.TestCase):
+    def test_removes_marks_nfc_input(self):
+        self.assertEqual(strip_accents("Ñandú"), "Nandu")
+
+    def test_removes_marks_nfd_input(self):
+        self.assertEqual(strip_accents(unicodedata.normalize("NFD", "Ñandú")), "Nandu")
+
+    def test_several_marks(self):
+        self.assertEqual(strip_accents("naïve café Ångström"), "naive cafe Angstrom")
+
+    def test_stacked_marks(self):
+        self.assertEqual(strip_accents("e\u0301\u0302"), "e")
+
+    def test_plain_ascii_unchanged(self):
+        self.assertEqual(strip_accents("Hello, World! 123"), "Hello, World! 123")
+
+    def test_empty(self):
+        self.assertEqual(strip_accents(""), "")
+
+    def test_letters_without_decomposition_kept(self):
+        self.assertEqual(strip_accents("ßøæ"), "ßøæ")
+
+    def test_lone_combining_mark_removed(self):
+        self.assertEqual(strip_accents("\u0301"), "")
 
 
 if __name__ == "__main__":
