@@ -17,3 +17,4 @@
 - Added `reading_time` in `textkit.counts`: whole minutes to read a text, `ceil(word_count / wpm)` with exact arithmetic; raises `ValueError` for a non-positive or non-finite `wpm` and `TypeError` for a `bool` or non-numeric `wpm` (ADR 0005).
 - Added `to_kebab_case` in `textkit.cases`: converts camelCase, PascalCase and snake_case names to kebab-case; words are split as in `to_snake_case` (ADR 0002), joined with `-`.
 - Added the command line `python3 -m textkit <function> <text>` (`textkit/__main__.py`): every public one-text function is a command, found at run time; `--help` lists them; `-` reads the text from stdin; exit codes 0, 1 (the function rejected the text) and 2 (usage error).
+- Changed: `word_count` and `to_snake_case` share the private tokenizer `textkit._tokens` (ADR 0001's word rule and character classes); no change in their results.

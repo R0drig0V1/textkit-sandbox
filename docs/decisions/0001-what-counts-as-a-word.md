@@ -42,8 +42,8 @@ A **word** is a maximal run of characters that:
 Every other character separates words and belongs to none. The words of a text are its
 maximal runs in order, left to right; `word_count(text)` is how many there are. Over the
 string of class letters (`D` digit, `L` letter, `M` mark, `J` joiner, `S` number separator,
-`O` other) the rule is exactly this regular expression, which is how `textkit/counts.py`
-implements it:
+`O` other) the rule is exactly this regular expression, which is how the shared tokenizer
+`textkit/_tokens.py` implements it (`word_count` counts its `words`):
 
 ```
 [LD][LDM]*(?:(?:J[LD]|(?<=D)SD)[LDM]*)*
@@ -73,8 +73,9 @@ What this means for the cases the plan asks about:
 
 ### Examples
 
-Each row is checked by `tests/test_counts.py`, which reads this table: the first column is
-a Python string literal, the second the list of words, the third the count.
+Each row is checked by `tests/test_counts.py` and `tests/test_tokens.py`, which read this
+table: the first column is a Python string literal, the second the list of words, the third
+the count.
 
 | Text | Words | Count |
 |------|-------|-------|
@@ -127,8 +128,8 @@ a Python string literal, the second the list of words, the third the count.
 - `word_count` gives the counts a reader expects for English prose with contractions,
   compounds and numbers, and works for any script that separates words with spaces.
 - The rule is a character classification plus one regular expression, so the shared
-  tokenizer (T1.10) can move `_words` from `textkit/counts.py` to `textkit/_tokens.py`
-  as is, and the example table above becomes its test as well.
+  tokenizer (T1.10) took `_words` over from `textkit/counts.py` unchanged, as
+  `textkit._tokens.words`, and the example table above is its test as well.
 - Known limits, accepted for now: no word segmentation for Chinese, Japanese or Thai;
   `"e.g."` and `"U.S."` count as two words; `"1,2"` in a list without spaces reads as one
   number; a hyphenated line break (`"exam-\nple"`) counts as two words. Changing any of
