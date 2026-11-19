@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `char_freq`: counts each non-whitespace character (case-sensitive).
 - Added `slugify`: turns text into a lower-case ASCII slug.
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (`"Ñandú"` -> `"Nandu"`).
