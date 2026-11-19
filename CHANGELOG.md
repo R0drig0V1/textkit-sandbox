@@ -12,6 +12,7 @@
 - Added `parse_duration`: seconds in a duration made of optional `h`, `m` and `s` parts in that order (`1h30m` -> 5400); anything else raises `ValueError`.
 - Added `pluralize`: English plural of a singular noun (rules in docs/decisions/0004-pluralize-rules.md).
 - Added `reading_time`: whole minutes to read a text at `wpm` words per minute (default 200), from `word_count`, rounded up (docs/decisions/0006-reading-time-rounding.md).
+- Added the `python3 -m textkit` command line.
 - Added `slug_title`: the slug of a text cut to at most `max_len` characters, never ending in `-`.
 - Added `slugify`: lower-case ASCII slug of a text, runs of other characters become one `-`.
 - Added `soundex`: the four-character American Soundex code of a name.
