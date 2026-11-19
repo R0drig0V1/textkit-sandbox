@@ -7,7 +7,7 @@ start at once.
 - [x] **T2.1 `reading_time`** in `textkit/counts.py`: `reading_time(text, wpm=200) -> int`,
       whole minutes, from `word_count`. Write an ADR on rounding (an empty text, under one
       minute). `wpm < 1` raises `ValueError`. Depends on T1.5.
-- [ ] **T2.2 `sentence_count`** in `textkit/counts.py`: `sentence_count(text) -> int`.
+- [x] **T2.2 `sentence_count`** in `textkit/counts.py`: `sentence_count(text) -> int`.
       Write an ADR on abbreviations (`"e.g."`, `"Dr."`) and ellipses. Depends on T1.5 (it
       creates `textkit/counts.py`).
 - [x] **T2.3 `to_kebab_case`** in `textkit/cases.py`: `to_kebab_case(name) -> str`, built on
@@ -16,7 +16,7 @@ start at once.
       ignoring case, spaces, punctuation and accents (use `strip_accents`). Only characters
       with `str.isalnum()` are kept after `strip_accents` and `casefold()`; digits count; `""`
       and text with no alphanumerics return `True`. Depends on T1.3.
-- [ ] **T2.5 API contract test**: `tests/test_api.py` checks that every public function of
+- [x] **T2.5 API contract test**: `tests/test_api.py` checks that every public function of
       every `textkit` module has a docstring and type hints for all parameters and the
       return value, and fix any function that does not. No hard-coded lists: the test
       discovers modules with `pkgutil.iter_modules(textkit.__path__)` and functions with
@@ -25,7 +25,7 @@ start at once.
       `typing.get_type_hints` (so an annotation that does not evaluate on the running Python
       fails), and asserts the discovered set equals the README function table.
       Depends on T1.1 to T1.8.
-- [ ] **T2.6 command line**: `textkit/__main__.py` so that `python3 -m textkit <function>
+- [x] **T2.6 command line**: `textkit/__main__.py` so that `python3 -m textkit <function>
       <text>` prints the result of any public function of one text argument, and lists them
       with `--help`. Entry point `_main(argv: Optional[List[str]] = None) -> int`, called
       under `if __name__ == "__main__":` (importing the module has no side effects).

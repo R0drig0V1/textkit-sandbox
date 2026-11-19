@@ -6,5 +6,5 @@ sessions list completed tasks in their PR body instead of ticking them here.
 
 | Phase | File | Status |
 |-------|------|--------|
-| 1. Core helpers | [phase-1-core-helpers.md](phase-1-core-helpers.md) | in progress |
+| 1. Core helpers | [phase-1-core-helpers.md](phase-1-core-helpers.md) | done |
 | 2. Tools | [phase-2-tools.md](phase-2-tools.md) | in progress |
