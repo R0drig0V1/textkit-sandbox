@@ -6,3 +6,4 @@ One file per decision, `NNNN-title.md`, with Context / Decision / Consequences.
 | # | Decision |
 |---|----------|
 | [0001](0001-wrap-reflows-existing-newlines.md) | `wrap` treats existing newlines as spaces and reflows the text |
+| [0001](0001-what-counts-as-a-word.md) | What counts as a word (`word_count`): hyphens, apostrophes and digit separators join, everything else separates |
