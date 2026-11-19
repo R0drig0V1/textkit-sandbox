@@ -219,6 +219,8 @@ SENTENCE_COUNT_CASES = [
     ("end.Next", 1),
     ('He said "Stop." Then he left.', 2),
     ("'Really?' she asked.", 1),
+    ("Hi. *really* bad.", 1),
+    ("Hi. -and then.", 1),
     ("Hi. !!! Bye.", 2),
     ("\U0001f642.", 0),
 ]
@@ -268,6 +270,21 @@ class SentenceCountTest(unittest.TestCase):
     def test_opening_quote_before_the_next_word(self):
         self.assertEqual(sentence_count('Hi. "Bye."'), 2)
         self.assertEqual(sentence_count('Hi... "maybe" later.'), 1)
+
+    def test_any_non_alphanumeric_before_the_next_word_is_skipped(self):
+        # Rule 3 looks at the first alphanumeric character, whatever comes before it.
+        for lead in ("*", "-", "\u2014", "#", "\U0001f642 ", "( [", "!!! "):
+            with self.subTest(lead=lead):
+                self.assertEqual(sentence_count(f"Hi. {lead}more here."), 1)
+                self.assertEqual(sentence_count(f"Hi. {lead}More here."), 2)
+
+    def test_digits_and_uncased_letters_do_not_continue(self):
+        self.assertEqual(sentence_count("It rose. 5 more fell."), 2)
+        self.assertEqual(sentence_count("It rose. \u65e5\u672c is far."), 2)
+
+    def test_many_runs_with_no_word_after_them(self):
+        # The look-ahead for rule 3 must not rescan the text once per run.
+        self.assertEqual(sentence_count("Hi. " + ". " * 50000), 1)
 
     def test_a_sentence_needs_a_word_by_word_count(self):
         # A piece is a sentence only if word_count (ADR 0002) finds a word in it.

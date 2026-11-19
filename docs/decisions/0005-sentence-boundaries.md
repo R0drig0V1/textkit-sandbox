@@ -20,10 +20,13 @@ contain at least one word.
 2. A candidate is a **boundary** only when, after the run and any closing quotes or brackets
    (`"` `'` `”` `’` `)` `]` `}` `»`), comes whitespace or the end of the text. So `"3.14"`,
    `"U.S.A"` and `"end.Next"` contain no boundary.
-3. It is **not** a boundary when the next word starts with a lowercase letter
-   (`str.islower()` on the first alphanumeric character after the whitespace and any
-   opening quotes or brackets). This is how ellipses and quoted questions continue a
-   sentence: `"Wait... what happened?"` and `"'Really?' she asked."` are one sentence each.
+3. It is **not** a boundary when the next word starts with a lowercase letter:
+   `str.islower()` on the first alphanumeric character (`str.isalnum`) after the run,
+   skipping everything that is not alphanumeric (whitespace, quotes, brackets, `*`, `-` and
+   any other punctuation or symbol). This is how ellipses and quoted questions continue a
+   sentence: `"Wait... what happened?"`, `"'Really?' she asked."` and
+   `"Hi. *really* bad."` are one sentence each. A digit or an uncased letter (`日`) is not
+   lowercase, so it does not continue the sentence.
 4. **Abbreviations.** When the run is a single `.`, it is not a boundary if the
    whitespace-delimited token just before it (opening quotes and brackets removed) is:
    - one of `Dr`, `Mr`, `Mrs`, `Ms`, `Prof`, `vs`, compared case-insensitively
@@ -100,5 +103,7 @@ table and its own list of cases are the same.
 | `"end.Next"` | 1 | a terminator not followed by whitespace is not a boundary |
 | `'He said "Stop." Then he left.'` | 2 | closing quotes may follow the terminator |
 | `"'Really?' she asked."` | 1 | a lowercase word after the quote continues the sentence |
+| `"Hi. *really* bad."` | 1 | punctuation before the next word is skipped: `r` is lowercase |
+| `"Hi. -and then."` | 1 | a dash before the next word is skipped too |
 | `"Hi. !!! Bye."` | 2 | a piece with no word is not a sentence |
 | `"🙂."` | 0 | emoji are not words (ADR 0002), so this is not a sentence |
