@@ -2,7 +2,7 @@
 
 import unittest
 
-from textkit.counts import char_freq, word_count
+from textkit.counts import char_freq, reading_time, word_count
 
 # The table of cases at the end of docs/decisions/0002-what-counts-as-a-word.md, row by row
 # and in the same order. Keep the two in sync.
@@ -67,6 +67,50 @@ class CharFreqTest(unittest.TestCase):
         # NFC "é" is one code point; NFD is "e" plus a combining acute accent.
         self.assertEqual(char_freq("\u00e9"), {"\u00e9": 1})
         self.assertEqual(char_freq("e\u0301"), {"e": 1, "\u0301": 1})
+
+
+# The table of cases at the end of docs/decisions/0004-reading-time-rounding.md, row by row
+# and in the same order: (text, wpm, minutes). Keep the two in sync.
+ADR_0004_CASES = [
+    ("", 200, 0),
+    ("!!! ... ?", 200, 0),
+    ("word", 200, 1),
+    ("w " * 199, 200, 1),
+    ("w " * 200, 200, 1),
+    ("w " * 201, 200, 2),
+    ("w " * 400, 200, 2),
+    ("w " * 401, 200, 3),
+    ("one two three", 1, 3),
+    ("well-known don't 3.14", 3, 1),
+]
+
+
+class ReadingTimeTest(unittest.TestCase):
+    def test_adr_0004_table(self):
+        for text, wpm, expected in ADR_0004_CASES:
+            with self.subTest(text=text[:20], wpm=wpm):
+                self.assertEqual(reading_time(text, wpm), expected)
+
+    def test_default_wpm_is_200(self):
+        self.assertEqual(reading_time("w " * 200), 1)
+        self.assertEqual(reading_time("w " * 201), 2)
+
+    def test_counts_words_with_word_count(self):
+        # "a - b" is two words under ADR 0002 but three with str.split().
+        self.assertEqual(reading_time("a - b", wpm=2), 1)
+
+    def test_returns_int(self):
+        self.assertIs(type(reading_time("one two three", 2)), int)
+
+    def test_wpm_below_one_raises(self):
+        for wpm in (0, -1, -200):
+            with self.subTest(wpm=wpm):
+                with self.assertRaises(ValueError):
+                    reading_time("some words", wpm)
+
+    def test_wpm_checked_even_for_empty_text(self):
+        with self.assertRaises(ValueError):
+            reading_time("", 0)
 
 
 if __name__ == "__main__":
