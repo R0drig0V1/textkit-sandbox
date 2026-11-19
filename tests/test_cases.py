@@ -2,6 +2,7 @@
 
 import pathlib
 import re
+import unicodedata
 import unittest
 
 from textkit.cases import to_snake_case
@@ -28,8 +29,12 @@ class AdrExamplesTest(unittest.TestCase):
         # Guard against the table parser silently matching nothing.
         self.assertGreaterEqual(len(examples), 20)
         for src, expected in examples:
-            with self.subTest(src=src):
-                self.assertEqual(to_snake_case(src), expected)
+            for form in ("NFC", "NFD"):
+                with self.subTest(src=src, form=form):
+                    self.assertEqual(
+                        to_snake_case(unicodedata.normalize(form, src)),
+                        unicodedata.normalize(form, expected),
+                    )
 
 
 class ToSnakeCaseTest(unittest.TestCase):
@@ -90,6 +95,34 @@ class ToSnakeCaseTest(unittest.TestCase):
 
     def test_non_ascii_letters(self):
         self.check([("caféAuLait", "café_au_lait"), ("ÉtéFini", "été_fini")])
+
+    def test_decomposed_marks_continue_the_word(self):
+        # Written decomposed on purpose: "e" + U+0301 COMBINING ACUTE ACCENT.
+        self.check([
+            ("re\u0301sume\u0301File", "re\u0301sume\u0301_file"),
+            ("cafe\u0301AuLait", "cafe\u0301_au_lait"),
+            # The mark sits between capitals: still one run of capitals.
+            ("E\u0301TE\u0301Fini", "e\u0301te\u0301_fini"),
+            # The mark sits between the capital and its lower-case letter.
+            ("XMLE\u0301tude", "xml_e\u0301tude"),
+            ("user_e\u0301t\u00e9", "user_e\u0301t\u00e9"),  # mixed forms, unchanged
+        ])
+
+    def test_nfc_and_nfd_give_the_same_words(self):
+        for name in ("résuméFile", "ÉTÉFini", "XMLÉtude", "naïve-Über", "ÅngströmUnit",
+                     "हिन्दीText"):
+            with self.subTest(name=name):
+                nfc = to_snake_case(unicodedata.normalize("NFC", name))
+                nfd = to_snake_case(unicodedata.normalize("NFD", name))
+                self.assertEqual(unicodedata.normalize("NFC", nfd), nfc)
+
+    def test_mark_without_a_word_is_dropped(self):
+        self.check([
+            ("\u0301abc", "abc"),
+            ("a-\u0301b", "a_b"),
+            ("\u0301", ""),
+            ("a_\u0301\u0301_b", "a_b"),
+        ])
 
     def test_non_str_raises_type_error(self):
         for bad in (None, 42, b"camelCase", ["a", "B"]):

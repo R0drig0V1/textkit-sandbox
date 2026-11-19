@@ -14,9 +14,13 @@ will be built on `to_snake_case`, so it inherits these rules too.
 A name is split into words, the words are lower-cased and joined with `_`. A new word
 starts:
 
-1. **After separators.** Any run of characters that are neither letters nor digits (`-`,
-   `_`, spaces, dots, ...) ends the current word and is dropped. Runs collapse to one `_`
-   and separators at either end disappear, leading underscores included.
+1. **After separators.** Any run of characters that are neither letters, digits nor
+   combining marks (`-`, `_`, spaces, dots, ...) ends the current word and is dropped. Runs
+   collapse to one `_` and separators at either end disappear, leading underscores
+   included. A **combining mark** (Unicode category `M*`) is never a separator: it
+   continues the word it follows and never starts one, exactly as in ADR 0001. A mark with
+   no word to attach to (at the start of the name, or right after a separator) has no base
+   letter and is dropped.
 2. **At a lower-to-upper change.** An upper-case letter that follows a lower-case letter or
    a digit starts a word.
 3. **Before the last capital of an acronym.** In a run of two or more capitals followed by
@@ -28,7 +32,15 @@ follow. Text with no case change and no separators is never split, so snake_case
 plain lower-case) input comes back unchanged. Letters that are not upper case, including
 caseless scripts, count as lower case. Input that is not a `str` raises `TypeError`.
 
-Examples (each row is checked by `tests/test_cases.py`):
+Rules 2 and 3 compare *base letters*: when they look at the character before or after a
+capital, they skip combining marks. In decomposed (NFD) text `"É"` is `"E"` + U+0301, and
+the accent must not hide the capital (`ÉTÉFini`) or the lower-case letter after it
+(`XMLÉtude`). So composed (NFC) and decomposed input give the same words. The text is
+not normalised: the result keeps the input's form (NFD in, NFD out), which is what lets
+snake_case input come back unchanged in either form.
+
+Examples (each row is checked by `tests/test_cases.py`, once as written, which is NFC,
+and once with input and output decomposed to NFD):
 
 | Input | Output | Rule |
 |-------|--------|------|
@@ -53,6 +65,11 @@ Examples (each row is checked by `tests/test_cases.py`):
 | `user--id` | `user_id` | 1, runs collapse |
 | `_private` | `private` | 1, ends dropped |
 | `user name.v2` | `user_name_v2` | 1, any non-alphanumeric |
+| `résuméFile` | `résumé_file` | 2; accents stay in the word |
+| `caféAuLait` | `café_au_lait` | 2 |
+| `ÉTÉFini` | `été_fini` | 3; marks skipped before a capital |
+| `XMLÉtude` | `xml_étude` | 3; marks skipped after a capital |
+| `naïve-Über` | `naïve_über` | 1 |
 | (empty) | (empty) | nothing to split |
 
 ## Consequences
@@ -66,4 +83,8 @@ Examples (each row is checked by `tests/test_cases.py`):
   dunder or private names must keep them themselves.
 - `to_kebab_case` (T2.3) can be `to_snake_case(name).replace("_", "-")`.
 - T1.10 may move rule 1 onto the shared tokenizer `textkit._tokens.words`; it must keep
-  every example above unchanged.
+  every example above unchanged. The mark rule already agrees with ADR 0001's. The joiner
+  and number-separator rules do not apply here: in an identifier `-` and `.` always
+  separate (`kebab-case` is two words), so `to_snake_case` can share the character
+  classes but not ADR 0001's word regex as is.
+- A stray combining mark at the start of a name or after a separator is lost.
