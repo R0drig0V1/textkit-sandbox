@@ -2,7 +2,7 @@
 
 import unittest
 
-from textkit.strings import slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -169,6 +169,37 @@ class WrapTest(unittest.TestCase):
     def test_no_line_contains_a_newline(self):
         for line in wrap("para one\n\npara two\n", 4):
             self.assertNotIn("\n", line)
+
+
+class SlugTitleTest(unittest.TestCase):
+    def test_cut_inside_a_word_keeps_the_partial_word(self):
+        self.assertEqual(slug_title("Hello, World!", 8), "hello-wo")
+
+    def test_cut_after_a_separator_drops_the_trailing_dash(self):
+        self.assertEqual(slug_title("Hello, World!", 6), "hello")
+
+    def test_slug_that_fits_is_returned_whole(self):
+        self.assertEqual(slug_title("Hello, World!", 11), "hello-world")
+        self.assertEqual(slug_title("Hello, World!", 50), "hello-world")
+
+    def test_zero_max_len_gives_empty(self):
+        self.assertEqual(slug_title("x", 0), "")
+
+    def test_empty_slug_gives_empty(self):
+        self.assertEqual(slug_title("!!!", 5), "")
+        self.assertEqual(slug_title("", 0), "")
+
+    def test_never_longer_than_max_len_nor_ending_in_dash(self):
+        for max_len in range(0, 20):
+            result = slug_title("A b  c--d, e!", max_len)
+            self.assertLessEqual(len(result), max_len)
+            self.assertFalse(result.endswith("-"))
+
+    def test_negative_max_len_raises(self):
+        with self.assertRaises(ValueError):
+            slug_title("Hello, World!", -1)
+        with self.assertRaises(ValueError):
+            slug_title("", -1)
 
 
 if __name__ == "__main__":

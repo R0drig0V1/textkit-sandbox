@@ -106,3 +106,19 @@ def wrap(text: str, width: int) -> list[str]:
     if current:
         lines.append(current)
     return lines
+
+
+def slug_title(text: str, max_len: int) -> str:
+    """Return the slug of ``text`` cut to at most ``max_len`` characters, never ending in ``-``.
+
+    Exactly ``truncate(slugify(text), max_len, suffix="")`` with trailing ``-`` stripped.
+    The cut is by character, not by word: ``slug_title("Hello, World!", 8)`` gives
+    ``"hello-wo"``, while a cut that lands right after a separator drops it
+    (``slug_title("Hello, World!", 6)`` gives ``"hello"``). The result may be ``""``, for
+    ``max_len == 0`` or when :func:`slugify` gives ``""``.
+
+    Raises ``ValueError`` when ``max_len < 0``, raised by :func:`truncate`.
+    """
+    # Only trailing `-` can appear: slugify already strips both ends, and the cut keeps the
+    # start, so the leading end is untouched.
+    return truncate(slugify(text), max_len, suffix="").rstrip("-")
