@@ -4,6 +4,7 @@ import unittest
 from textkit.strings import squeeze, truncate
 from textkit.strings import strip_accents
 from textkit.strings import slugify
+from textkit.strings import wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -128,6 +129,62 @@ class SlugifyTest(unittest.TestCase):
 
     def test_punctuation_only(self):
         self.assertEqual(slugify("!!!"), "")
+
+
+class WrapTest(unittest.TestCase):
+    def test_packs_words_greedily_at_spaces(self):
+        self.assertEqual(
+            wrap("the quick brown fox jumps", 10), ["the quick", "brown fox", "jumps"]
+        )
+
+    def test_line_may_be_exactly_width(self):
+        self.assertEqual(wrap("abc def", 7), ["abc def"])
+        self.assertEqual(wrap("abc def", 6), ["abc", "def"])
+
+    def test_lines_never_exceed_width_or_contain_edge_spaces(self):
+        for line in wrap("lorem ipsum dolor sit amet consectetur adipiscing elit", 12):
+            self.assertLessEqual(len(line), 12)
+            self.assertEqual(line, line.strip(" "))
+
+    def test_long_word_gets_its_own_line(self):
+        self.assertEqual(wrap("a extraordinary b", 5), ["a", "extraordinary", "b"])
+        self.assertEqual(wrap("extraordinary", 5), ["extraordinary"])
+
+    def test_runs_of_spaces_collapse(self):
+        self.assertEqual(wrap("a    b     c", 80), ["a b c"])
+
+    def test_leading_and_trailing_spaces_dropped(self):
+        self.assertEqual(wrap("   a b   ", 80), ["a b"])
+
+    def test_empty_and_blank_text_give_no_lines(self):
+        self.assertEqual(wrap("", 5), [])
+        self.assertEqual(wrap("     ", 5), [])
+
+    def test_width_one(self):
+        self.assertEqual(wrap("a b cd", 1), ["a", "b", "cd"])
+
+    def test_width_below_one_raises(self):
+        with self.assertRaises(ValueError):
+            wrap("abc", 0)
+        with self.assertRaises(ValueError):
+            wrap("abc", -3)
+        with self.assertRaises(ValueError):
+            wrap("", 0)
+
+    def test_newlines_are_treated_as_spaces(self):
+        # ADR 0003: existing line breaks are reflowed, never kept.
+        self.assertEqual(wrap("one\ntwo three", 80), ["one two three"])
+        self.assertEqual(wrap("one\r\ntwo\rthree", 80), ["one two three"])
+        self.assertEqual(wrap("one\n\ntwo", 80), ["one two"])
+        self.assertEqual(wrap("\nab cd\n", 2), ["ab", "cd"])
+        self.assertEqual(wrap("\n\n", 5), [])
+
+    def test_other_whitespace_is_not_a_break_point(self):
+        self.assertEqual(wrap("a\tb c", 3), ["a\tb", "c"])
+        self.assertEqual(wrap("a\u00a0b c", 3), ["a\u00a0b", "c"])
+
+    def test_counts_code_points(self):
+        self.assertEqual(wrap("ñandú ñu", 8), ["ñandú ñu"])
 
 
 if __name__ == "__main__":
