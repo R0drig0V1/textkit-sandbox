@@ -37,7 +37,7 @@ and 2.
 - [x] **T3.1 `levenshtein`** in `textkit/distance.py`: `levenshtein(a, b) -> int`, the edit
       distance with insertions, deletions and substitutions of cost 1. `levenshtein("", "")`
       is 0; `levenshtein("kitten", "sitting")` is 3.
-- [ ] **T3.2 `rot13`** in `textkit/ciphers.py`: `rot13(text) -> str`; ASCII letters rotate
+- [x] **T3.2 `rot13`** in `textkit/ciphers.py`: `rot13(text) -> str`; ASCII letters rotate
       by 13 keeping their case, every other character is unchanged; `rot13(rot13(s)) == s`.
 - [x] **T3.3 `to_roman`** in `textkit/roman.py`: `to_roman(n) -> str` for `1 <= n <= 3999`
       in standard subtractive form (`1994` -> `"MCMXCIV"`); any other `n`, or a non-`int`
@@ -88,7 +88,7 @@ and 2.
       `111` -> `"111th"`, `112` -> `"112th"`, `113` -> `"113th"`, `1011` -> `"1011th"`,
       `1021` -> `"1021st"`); a negative `n` or a non-`int` (a `bool` included) raises
       `ValueError`.
-- [ ] **T3.10 `human_bytes`** in `textkit/sizes.py`: `human_bytes(n) -> str` in binary units.
+- [x] **T3.10 `human_bytes`** in `textkit/sizes.py`: `human_bytes(n) -> str` in binary units.
       The unit is the largest of B, KiB, MiB, GiB, TiB with `n >= 1024**k`, chosen before
       rounding. Below 1024 the result is `f"{n} B"`; from KiB up it is
       `f"{n / 1024**k:.1f} <unit>"`. A negative `n`, or a non-`int` (a `bool` included),
@@ -97,7 +97,7 @@ and 2.
       `"1024.0 KiB"`, `1048576` -> `"1.0 MiB"`, `1024**4` -> `"1.0 TiB"`, `1024**5` ->
       `"1024.0 TiB"`; `-1`, `1.5`, `True` raise. An `n` for which `n / 1024**k` overflows a float
       raises `ValueError` (catch `OverflowError`); test `10**400`.
-- [ ] **T3.11 `parse_duration`** in `textkit/durations.py`: `parse_duration(text) -> int`,
+- [x] **T3.11 `parse_duration`** in `textkit/durations.py`: `parse_duration(text) -> int`,
       seconds from `h`, `m` and `s` parts in that order, each optional but at least one
       (`"1h30m"` -> `5400`, `"45s"` -> `45`, `"2h5s"` -> `7205`). The whole text must match
       `re.fullmatch(r"(?:([0-9]+)h)?(?:([0-9]+)m)?(?:([0-9]+)s)?", text)` with at least one
