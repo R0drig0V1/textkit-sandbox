@@ -8,6 +8,7 @@ tiny synthetic project. Nothing here matters; it can be wiped at any time.
 ## Functions
 
 Every public function is listed here, once (checked by `scripts/check.sh`).
+[docs/usage.md](docs/usage.md) has a runnable example of each.
 
 | Function | Module | What it does |
 |----------|--------|--------------|
