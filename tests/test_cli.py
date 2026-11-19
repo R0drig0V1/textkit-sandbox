@@ -1,4 +1,5 @@
-"""Tests for textkit/__main__.py, the ``python3 -m textkit`` command line (plan task T2.6).
+"""Tests for textkit/__main__.py, the ``python3 -m textkit`` command line (plan tasks T2.6
+and T2.7, ``--version``).
 
 The expected command set is computed here from the public-function definition of
 docs/phases/phase-1-core-helpers.md, independently of ``textkit.__main__``, so the test
@@ -155,6 +156,36 @@ class MainTest(unittest.TestCase):
             self.assertEqual(_main([]), 2)
         self.assertEqual(out.getvalue(), "a-b\n")
         self.assertIn("usage:", err.getvalue())
+
+
+class VersionTest(unittest.TestCase):
+    """``python3 -m textkit --version`` (plan task T2.7)."""
+
+    def test_version_value(self) -> None:
+        self.assertEqual(textkit.__version__, "0.1.0")
+
+    def test_version_flag_prints_name_and_version(self) -> None:
+        result = _run("--version")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, f"textkit {textkit.__version__}\n")
+        self.assertEqual(result.stderr, "")
+
+    def test_version_in_process(self) -> None:
+        from textkit.__main__ import _main
+
+        out = io.StringIO()
+        with redirect_stdout(out):
+            self.assertEqual(_main(["--version"]), 0)
+        self.assertEqual(out.getvalue(), f"textkit {textkit.__version__}\n")
+
+    def test_version_string_only_in_init(self) -> None:
+        # The plan allows exactly one copy of the version string in textkit/.
+        holders = [
+            p.name
+            for p in sorted((ROOT / "textkit").glob("*.py"))
+            if textkit.__version__ in p.read_text(encoding="utf-8")
+        ]
+        self.assertEqual(holders, ["__init__.py"])
 
 
 if __name__ == "__main__":

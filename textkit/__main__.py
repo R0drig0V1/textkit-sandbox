@@ -12,6 +12,8 @@ Output: a ``str`` is printed as is; a ``dict`` or ``list`` as
 ``int``) with ``print()``. Exit status: 0 on success; 2, with the message on stderr, on an
 unknown function, a wrong number of arguments or no arguments at all (argparse's own
 errors). Text that starts with ``-`` goes after ``--``: ``python3 -m textkit slugify -- -x``.
+``python3 -m textkit --version`` prints ``textkit <textkit.__version__>`` and exits 0; it needs
+no function argument.
 
 Every name defined here starts with ``_``, so this module holds no public functions and
 ``scripts/check.sh`` asks for no README row. Importing it has no side effects.
@@ -92,6 +94,12 @@ def _parser(commands: Dict[str, Callable[..., Any]]) -> argparse.ArgumentParser:
         description="Print the result of a textkit function applied to one text argument.",
         epilog="Quote the text; text that starts with '-' goes after '--'.",
     )
+    # argparse runs the "version" action while parsing and exits 0 right away, before it
+    # checks the required sub-command, so `--version` works without a function argument.
+    # The string comes from textkit.__version__, the only copy of the version in textkit/.
+    parser.add_argument(
+        "--version", action="version", version=f"textkit {textkit.__version__}"
+    )
     # On Python 3.9 `required=True` needs `dest`, or the "no arguments" error itself crashes.
     sub = parser.add_subparsers(
         dest="command", required=True, metavar="function", title="functions"
@@ -111,7 +119,7 @@ def _parser(commands: Dict[str, Callable[..., Any]]) -> argparse.ArgumentParser:
 def _main(argv: Optional[List[str]] = None) -> int:
     """Run the command line on ``argv`` (``sys.argv[1:]`` when None); return the exit status.
 
-    Returns 0 after printing the result (or the help), and 2 after argparse has printed a
+    Returns 0 after printing the result (or the help, or the version), and 2 after argparse has printed a
     usage error on stderr: unknown function, wrong argument count, no arguments.
     Exceptions raised by the function itself are not caught.
     """

@@ -32,3 +32,4 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 - `python3 -m textkit <function> "<text>"`: prints the result of any function above that
   takes one text argument (`python3 -m textkit slugify "Hello, World!"` -> `hello-world`);
   `python3 -m textkit --help` lists them. Lists and dicts print as JSON; usage errors exit 2.
+- `python3 -m textkit --version`: prints `textkit <version>` (`textkit.__version__`).
