@@ -6,52 +6,11 @@ needs "words", it uses the single word rule of ADR 0001
 word is.
 """
 
-import unicodedata
-
-# Characters that join two word runs into one word: the ASCII hyphen-minus, the ASCII
-# apostrophe and the typographic apostrophe U+2019 (what most editors type for "don't").
-_JOINERS = "-'’"
-# Characters that join two runs only between decimal digits ("3.14", "1,000").
-_DIGIT_JOINERS = ".,"
-
-
-def _is_word_char(ch: str) -> bool:
-    """Return True for letters, numbers and combining marks (Unicode categories L, N, M).
-
-    Combining marks count so that decomposed (NFD) text such as "cafe\\u0301" stays one word.
-    """
-    return unicodedata.category(ch)[0] in "LNM"
-
-
-def _joins(text: str, i: int) -> bool:
-    """Return True if ``text[i]`` joins the word run before it to the one after it.
-
-    The caller guarantees that ``text[i - 1]`` is a word character.
-    """
-    if i + 1 >= len(text) or not _is_word_char(text[i + 1]):
-        return False
-    ch = text[i]
-    if ch in _JOINERS:
-        return True
-    if ch in _DIGIT_JOINERS:
-        return text[i - 1].isdecimal() and text[i + 1].isdecimal()
-    return False
-
-
-def _words(text: str) -> list[str]:
-    """Split ``text`` into words following ADR 0001; see ``word_count`` for the rule."""
-    words = []
-    start = None
-    for i, ch in enumerate(text):
-        if _is_word_char(ch):
-            if start is None:
-                start = i
-        elif start is not None and not _joins(text, i):
-            words.append(text[start:i])
-            start = None
-    if start is not None:
-        words.append(text[start:])
-    return words
+# The word rule of ADR 0001 lives in textkit/_tokens.py, shared with the rest of textkit.
+# is_word_char keeps its old private name here so helpers in this module that test single
+# characters still call _is_word_char, and so counts does not re-export it as a public name.
+from textkit._tokens import is_word_char as _is_word_char  # noqa: F401
+from textkit._tokens import words
 
 
 def word_count(text: str) -> int:
@@ -72,7 +31,7 @@ def word_count(text: str) -> int:
     """
     if not isinstance(text, str):
         raise TypeError(f"word_count() expects str, got {type(text).__name__}")
-    return len(_words(text))
+    return len(words(text))
 
 
 def char_freq(text: str) -> dict[str, int]:
