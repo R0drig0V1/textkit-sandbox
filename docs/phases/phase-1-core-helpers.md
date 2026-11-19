@@ -16,7 +16,7 @@ CHANGELOG line. Tasks with no "Depends on" can start at once.
 - [ ] **T1.4 `wrap`** in `textkit/strings.py`: `wrap(text, width) -> list[str]` splits text
       into lines of at most `width` characters at spaces; a word longer than `width` gets a
       line of its own. Write an ADR on what happens to existing newlines.
-- [ ] **T1.5 `word_count`** in a new module `textkit/counts.py`: `word_count(text) -> int`.
+- [x] **T1.5 `word_count`** in a new module `textkit/counts.py`: `word_count(text) -> int`.
       Write an ADR on what counts as a word (hyphenated words, numbers, apostrophes).
 - [ ] **T1.6 `char_freq`** in `textkit/counts.py`: `char_freq(text) -> dict[str, int]`,
       counts of each non-space character, case-sensitive.
