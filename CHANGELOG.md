@@ -6,5 +6,6 @@
 - Added `slugify`: turns text into a lower-case ASCII slug (`"Hello, World!"` -> `"hello-world"`).
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (`"Ñandú"` -> `"Nandu"`).
+- Added `to_camel_case`: converts snake_case or kebab-case identifiers to camelCase (`"user_id"` -> `"userId"`), splitting only on the separators of ADR 0002.
 - Added `to_snake_case`: converts camelCase, PascalCase or kebab-case identifiers to snake_case, splitting runs of capitals as in ADR 0002.
 - Added `word_count`: counts the words in a text, following the word rule of ADR 0001.
