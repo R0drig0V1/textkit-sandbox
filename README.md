@@ -11,6 +11,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 
 | Function | Module | What it does |
 |----------|--------|--------------|
+| `pluralize` | `textkit.plural` | English plural of a singular noun, with a few irregulars |
 | `slugify` | `textkit.strings` | Lower-case ASCII slug, runs of other characters become one `-` |
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
 

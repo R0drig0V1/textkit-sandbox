@@ -5,3 +5,4 @@ One file per decision, `NNNN-title.md`, with Context / Decision / Consequences.
 
 | # | Decision |
 |---|----------|
+| [0001](0001-pluralize-rules.md) | Rules and case handling of `pluralize` |
