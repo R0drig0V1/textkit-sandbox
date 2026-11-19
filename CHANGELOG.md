@@ -4,6 +4,7 @@
 
 - Added `char_freq`: counts each non-whitespace character of a text, case-sensitive, in order of first occurrence.
 - Added `reading_time`: estimates the reading time of a text in whole minutes, rounded up as in ADR 0004 (`wpm < 1` raises `ValueError`).
+- Added `sentence_count`: counts the sentences in a text; abbreviations (`"Dr."`, `"e.g."`) and ellipses follow the rule of ADR 0005.
 - Added `slug_title`: a slug cut to at most `max_len` characters that never ends in `-` (`slug_title("Hello, World!", 8)` -> `"hello-wo"`).
 - Added `slugify`: turns text into a lower-case ASCII slug (`"Hello, World!"` -> `"hello-world"`).
 - Added `squeeze`: collapses runs of whitespace into single spaces.
