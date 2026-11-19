@@ -2,7 +2,9 @@
 
 import unittest
 
-from textkit.strings import slugify, squeeze
+import unicodedata
+
+from textkit.strings import slugify, squeeze, strip_accents
 
 
 class SqueezeTest(unittest.TestCase):
@@ -44,6 +46,39 @@ class SlugifyTest(unittest.TestCase):
     def test_non_ascii_removed_before_lowercasing(self):
         # U+212A KELVIN SIGN lower-cases to ASCII "k"; it must be removed, not kept.
         self.assertEqual(slugify("5K run"), "5-run")
+
+
+class StripAccentsTest(unittest.TestCase):
+    def test_plan_example(self):
+        self.assertEqual(strip_accents("Ñandú"), "Nandu")
+
+    def test_nfd_input_gives_same_result(self):
+        self.assertEqual(strip_accents(unicodedata.normalize("NFD", "Ñandú")), "Nandu")
+
+    def test_several_marks(self):
+        self.assertEqual(strip_accents("crème brûlée, naïve, Ångström"),
+                         "creme brulee, naive, Angstrom")
+
+    def test_stacked_marks_on_one_letter(self):
+        # "ệ" carries two marks (circumflex and dot below).
+        self.assertEqual(strip_accents("Việt"), "Viet")
+
+    def test_letters_without_combining_marks_are_kept(self):
+        self.assertEqual(strip_accents("ø ł ß"), "ø ł ß")
+
+    def test_plain_and_empty_text_unchanged(self):
+        self.assertEqual(strip_accents("plain ASCII 123"), "plain ASCII 123")
+        self.assertEqual(strip_accents(""), "")
+
+    def test_lone_combining_mark_removed(self):
+        self.assertEqual(strip_accents("a\u0301\u0301"), "a")
+
+    def test_non_mark_decompositions_are_recomposed(self):
+        self.assertEqual(strip_accents("한국어"), "한국어")
+
+    def test_non_str_raises_type_error(self):
+        with self.assertRaises(TypeError):
+            strip_accents(None)  # type: ignore[arg-type]
 
 
 if __name__ == "__main__":
