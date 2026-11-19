@@ -42,7 +42,7 @@ and 2.
 - [ ] **T3.3 `to_roman`** in `textkit/roman.py`: `to_roman(n) -> str` for `1 <= n <= 3999`
       in standard subtractive form (`1994` -> `"MCMXCIV"`); any other `n`, or a non-`int`
       (a `bool` included), raises `ValueError`.
-- [ ] **T3.4 `number_to_words`** in `textkit/numwords.py` (not `numbers.py`: it would shadow
+- [x] **T3.4 `number_to_words`** in `textkit/numwords.py` (not `numbers.py`: it would shadow
       the standard library's `numbers` whenever `textkit/` is on `sys.path`):
       `number_to_words(n) -> str` in English for `0 <= n <= 999`, lower case, hyphenated tens,
       no "and" (`0` -> `"zero"`, `13` -> `"thirteen"`, `20` -> `"twenty"`, `42` ->
