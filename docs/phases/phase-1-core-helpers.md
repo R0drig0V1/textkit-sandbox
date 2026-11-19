@@ -41,7 +41,7 @@ anything else). Tasks with no "Depends on" can start at once.
       `len(text) <= width` (code points); the cut keeps the start of `text`.
 - [x] **T1.3 `strip_accents`** in `textkit/strings.py`: `strip_accents(text) -> str` removes
       combining marks (`"Ñandú"` -> `"Nandu"`) with `unicodedata`.
-- [ ] **T1.4 `wrap`** in `textkit/strings.py`: `wrap(text, width) -> list[str]` splits text
+- [x] **T1.4 `wrap`** in `textkit/strings.py`: `wrap(text, width) -> list[str]` splits text
       into lines of at most `width` characters at spaces; a word longer than `width` gets a
       line of its own. Runs of spaces between words collapse to one; leading and trailing
       spaces are dropped; `wrap("", w) == []`; `width < 1` raises `ValueError`; lines never
@@ -51,7 +51,7 @@ anything else). Tasks with no "Depends on" can start at once.
       ends with a table of cases (input -> count), at least: a hyphenated word, a number, a
       word with an apostrophe, `""`, punctuation only, several spaces/newlines;
       `tests/test_counts.py` tests every row.
-- [ ] **T1.6 `char_freq`** in `textkit/counts.py`: `char_freq(text) -> dict[str, int]`,
+- [x] **T1.6 `char_freq`** in `textkit/counts.py`: `char_freq(text) -> dict[str, int]`,
       counts of each non-space character, case-sensitive. Characters for which
       `str.isspace()` is true are not counted; keys appear in order of first occurrence.
       Depends on T1.5 (it creates `textkit/counts.py` and `tests/test_counts.py`).
@@ -66,7 +66,7 @@ anything else). Tasks with no "Depends on" can start at once.
       word is lower-cased and the rest capitalized (`"HTTP_server"` -> `"httpServer"`); input
       with no separator is returned with only its first character lower-cased.
       Depends on T1.7 (it creates `textkit/cases.py` and `tests/test_cases.py`).
-- [ ] **T1.9 `slug_title`** in `textkit/strings.py`: `slug_title(text, max_len) -> str`, a
+- [x] **T1.9 `slug_title`** in `textkit/strings.py`: `slug_title(text, max_len) -> str`, a
       slug of at most `max_len` characters that never ends in `-`: exactly
       `truncate(slugify(text), max_len, suffix="")` with trailing `-` stripped (a character
       cut, not a word cut). `max_len < 0` raises `ValueError`; the result may be `""`.
