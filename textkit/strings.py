@@ -125,3 +125,23 @@ def wrap(text: str, width: int) -> list[str]:
     if current:
         lines.append(current)
     return lines
+
+
+def is_palindrome(text: str) -> bool:
+    """Tell whether ``text`` reads the same forwards and backwards.
+
+    Case, spaces, punctuation and accents are ignored: ``text`` goes through
+    ``strip_accents`` and then ``str.casefold``, and only the characters for which
+    ``str.isalnum()`` is true are compared. Digits count (``"12321"`` is a palindrome,
+    ``"a1"`` is not); letters outside ASCII are kept (``"ø"`` stays ``"ø"``).
+    ``"A man, a plan, a canal: Panama"`` and ``"Dábale arroz a la zorra el abad"`` give
+    ``True``. ``""`` and text with no alphanumeric characters (``"!!!"``) give ``True``:
+    the empty sequence reads the same both ways.
+    Never raises for a ``str`` argument.
+    """
+    # Accents are stripped before casefold so that the combining marks NFD splits off are
+    # gone before comparison; casefold (not lower) so that "ß" matches "ss". Any combining
+    # mark casefold itself introduces ("İ" -> "i" + U+0307) is not alphanumeric, so the
+    # isalnum filter drops it.
+    kept = [ch for ch in strip_accents(text).casefold() if ch.isalnum()]
+    return kept == kept[::-1]

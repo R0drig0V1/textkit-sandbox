@@ -4,6 +4,7 @@
 
 - Added `slug_title`: builds a slug of at most `max_len` characters that never ends in `-`.
 - Added `char_freq` in `textkit.counts`: counts each non-whitespace character, case-sensitive, keys in order of first occurrence.
+- Added `is_palindrome`: tells whether text reads the same both ways, ignoring case, spaces, punctuation and accents (via `strip_accents`).
 - Added `slugify`: turns text into a lower-case ASCII slug.
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `to_camel_case`: converts snake_case or kebab-case identifiers to camelCase (separators as in ADR 0001).
