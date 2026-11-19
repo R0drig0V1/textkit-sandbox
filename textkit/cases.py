@@ -1,7 +1,8 @@
 """Identifier case conversion. Every public function is listed in the README's function table.
 
 How word boundaries are found inside an identifier (runs of capitals, digits, separators) is
-decided in docs/decisions/0003-snake-case-capital-runs.md.
+decided in docs/decisions/0003-snake-case-capital-runs.md. ``to_camel_case`` splits only at
+``-`` and ``_`` (plan task T1.8), so that ADR's capital-run rules do not apply to it.
 """
 
 import re
@@ -31,3 +32,25 @@ def to_snake_case(name: str) -> str:
     spaced = _ACRONYM_THEN_WORD.sub(r"\1_\2", name)
     spaced = _LOWER_OR_DIGIT_THEN_UPPER.sub(r"\1_\2", spaced)
     return _SEPARATORS.sub("_", spaced).strip("_").lower()
+
+
+def to_camel_case(name: str) -> str:
+    """Convert a snake_case or kebab-case identifier to camelCase.
+
+    ``-`` and ``_`` are separators, and a run of them counts as one (``"user__id"`` ->
+    ``"userId"``). Separators at either end are dropped. The first word is lower-cased and
+    every following word is capitalized with ``str.capitalize`` (first character upper-case,
+    the rest lower-case): ``"user_id"`` -> ``"userId"``, ``"HTTP_server"`` -> ``"httpServer"``.
+
+    Input with no separator is assumed to be a single word or already camelCase/PascalCase,
+    so only its first character is lower-cased and the rest is kept as is
+    (``"PascalCase"`` -> ``"pascalCase"``, ``"HTTPServer"`` -> ``"hTTPServer"``). Input made
+    only of separators gives ``""``, and so does ``""``. Never raises for a ``str`` argument.
+    """
+    if not _SEPARATORS.search(name):
+        # No word boundaries to work with: keep the caller's casing except the first letter.
+        return name[:1].lower() + name[1:]
+    words = [word for word in _SEPARATORS.split(name) if word]
+    if not words:
+        return ""
+    return words[0].lower() + "".join(word.capitalize() for word in words[1:])
