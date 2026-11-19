@@ -11,7 +11,7 @@ CHANGELOG line. Tasks with no "Depends on" can start at once.
       returns `text` unchanged when it fits in `width`, else cuts it so that the result,
       suffix included, is exactly `width` long. `width` smaller than the suffix raises
       `ValueError`.
-- [ ] **T1.3 `strip_accents`** in `textkit/strings.py`: `strip_accents(text) -> str` removes
+- [x] **T1.3 `strip_accents`** in `textkit/strings.py`: `strip_accents(text) -> str` removes
       combining marks (`"Ñandú"` -> `"Nandu"`) with `unicodedata`.
 - [ ] **T1.4 `wrap`** in `textkit/strings.py`: `wrap(text, width) -> list[str]` splits text
       into lines of at most `width` characters at spaces; a word longer than `width` gets a
@@ -20,7 +20,7 @@ CHANGELOG line. Tasks with no "Depends on" can start at once.
       Write an ADR on what counts as a word (hyphenated words, numbers, apostrophes).
 - [ ] **T1.6 `char_freq`** in `textkit/counts.py`: `char_freq(text) -> dict[str, int]`,
       counts of each non-space character, case-sensitive.
-- [ ] **T1.7 `to_snake_case`** in a new module `textkit/cases.py`:
+- [x] **T1.7 `to_snake_case`** in a new module `textkit/cases.py`:
       `to_snake_case(name) -> str` for camelCase, PascalCase and kebab-case input. Write an
       ADR on how runs of capitals are split (`HTTPServer`, `parseURL2`).
 - [ ] **T1.8 `to_camel_case`** in `textkit/cases.py`: `to_camel_case(name) -> str` for
