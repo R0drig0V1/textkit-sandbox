@@ -54,3 +54,17 @@ def to_camel_case(name: str) -> str:
     if not words:
         return ""
     return words[0].lower() + "".join(word.capitalize() for word in words[1:])
+
+
+def to_kebab_case(name: str) -> str:
+    """Convert a camelCase, PascalCase, snake_case or kebab-case identifier to kebab-case.
+
+    Words are split exactly as in :func:`to_snake_case` (rules in
+    docs/decisions/0003-snake-case-capital-runs.md) and joined with ``-`` instead of ``_``:
+    ``"HTTPServer"`` -> ``"http-server"``, ``"parseURL2"`` -> ``"parse-url2"``,
+    ``"SCREAMING_SNAKE"`` -> ``"screaming-snake"``. The result is lower-cased, and ``""``
+    gives ``""``. Never raises for a ``str`` argument.
+    """
+    # Every "_" in to_snake_case's output is a word boundary (runs of separators are already
+    # collapsed and the ends stripped), so swapping the joiner keeps the same words.
+    return to_snake_case(name).replace("_", "-")

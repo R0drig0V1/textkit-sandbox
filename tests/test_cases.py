@@ -1,10 +1,10 @@
-"""Tests for textkit.cases. ToSnakeCaseTest covers every row of the case table in
-docs/decisions/0003-snake-case-capital-runs.md, in the same order; ToCamelCaseTest covers the
-rules of plan task T1.8 (docs/phases/phase-1-core-helpers.md)."""
+"""Tests for textkit.cases. ToSnakeCaseTest and ToKebabCaseTest cover every row of the case
+table in docs/decisions/0003-snake-case-capital-runs.md, in the same order; ToCamelCaseTest
+covers the rules of plan task T1.8 (docs/phases/phase-1-core-helpers.md)."""
 
 import unittest
 
-from textkit.cases import to_camel_case, to_snake_case
+from textkit.cases import to_camel_case, to_kebab_case, to_snake_case
 
 # The ADR's case table (input -> output). Keep the two in sync.
 ADR_CASES = [
@@ -82,6 +82,27 @@ class ToCamelCaseTest(unittest.TestCase):
 
     def test_non_ascii_words(self):
         self.assertEqual(to_camel_case("été_case"), "étéCase")
+
+
+class ToKebabCaseTest(unittest.TestCase):
+    def test_adr_case_table(self):
+        # Same word boundaries as to_snake_case, joined with "-": the expected output is the
+        # ADR's snake_case output with "_" swapped for "-".
+        for name, snake in ADR_CASES:
+            with self.subTest(name=name):
+                self.assertEqual(to_kebab_case(name), snake.replace("_", "-"))
+
+    def test_examples(self):
+        self.assertEqual(to_kebab_case("HTTPServer"), "http-server")
+        self.assertEqual(to_kebab_case("getHTTPResponseCode"), "get-http-response-code")
+        self.assertEqual(to_kebab_case("kebab--snake__mixed-_case"), "kebab-snake-mixed-case")
+        self.assertEqual(to_kebab_case("-leading_and_trailing-"), "leading-and-trailing")
+
+    def test_is_idempotent(self):
+        for name, _ in ADR_CASES:
+            with self.subTest(name=name):
+                once = to_kebab_case(name)
+                self.assertEqual(to_kebab_case(once), once)
 
 
 if __name__ == "__main__":
