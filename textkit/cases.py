@@ -3,9 +3,15 @@
 The word-splitting rules (runs of capitals, digits, separators) are fixed by
 docs/decisions/0002-snake-case-word-splitting.md; change that ADR before changing them here.
 to_camel_case shares only its separator rule (rule 1): it never splits at case changes.
+
+to_snake_case takes rule 1 from the shared tokenizer (textkit/_tokens.py, ADR 0001) only for
+names made of word characters and `_`, the one case where both ADRs split the same way;
+everything else keeps the regex below. _split_words explains the difference.
 """
 
 import re
+
+from textkit._tokens import is_word_char, words
 
 # Runs of `-` and `_` are one separator; empty chunks (leading, trailing) are dropped.
 _SEPARATORS = re.compile(r"[-_]+")
@@ -19,15 +25,22 @@ _LOWER_THEN_UPPER = re.compile(r"([a-z0-9])([A-Z])")
 
 def _split_words(name: str) -> list[str]:
     """Split an identifier into words, keeping their original case (rules in ADR 0002)."""
-    words = []
-    for chunk in _SEPARATORS.split(name):
-        if not chunk:
-            continue
+    # Rule 1 (separators) agrees with ADR 0001's word rule only for names made of word
+    # characters and `_`: both rules cut at every run of `_`, drop the empty ends, and find
+    # nothing else to join or split. Elsewhere they disagree: ADR 0001 joins "kebab-case" into
+    # one word and splits at spaces and punctuation, which ADR 0002 keeps inside words.
+    # Rules 2 and 3 (case changes) have no counterpart in ADR 0001 and run on each chunk.
+    if all(is_word_char(ch) or ch == "_" for ch in name):
+        chunks = words(name)
+    else:
+        chunks = [chunk for chunk in _SEPARATORS.split(name) if chunk]
+    found = []
+    for chunk in chunks:
         # The acronym rule runs first so that "HTTPServer" is cut before "S", not after "P".
         chunk = _ACRONYM_THEN_WORD.sub(r"\1_\2", chunk)
         chunk = _LOWER_THEN_UPPER.sub(r"\1_\2", chunk)
-        words.extend(chunk.split("_"))
-    return words
+        found.extend(chunk.split("_"))
+    return found
 
 
 def to_snake_case(name: str) -> str:
