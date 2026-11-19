@@ -1,6 +1,6 @@
 {
   "$comment": "herdr-agent-pool settings (docs/reference.md, Configuration). These are the defaults, except integrator_name, which defaults to integrator-<repository directory name> (herdr names are unique per server); set it only to override that. Change base_branch when pull requests target an integration branch such as dev. Add an \"integrators\" object (for example {\"max\": 3, \"scale_up_when_active_agents_gt\": 5}) to switch to pool mode: a coordinator plus N parallel integrators (docs/multi-integrator.md).",
-  "base_branch": "run9",
+  "base_branch": "run10",
   "protected_branches": [],
   "numbered_files": {
     "adr": "docs/decisions/(\\d{4})-.*\\.md"
