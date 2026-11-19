@@ -1,4 +1,4 @@
-"""Tests for textkit.__main__, the ``python3 -m textkit`` command line (plan task T2.6).
+"""Tests for textkit.__main__, the ``python3 -m textkit`` command line (plan tasks T2.6, T2.7).
 
 Two kinds of test:
 
@@ -9,6 +9,8 @@ Two kinds of test:
   later functions need no change to this file.
 - In-process, with stub commands patched in over ``textkit.__main__._commands``: argument
   conversion, ``--``, output formats and exit codes. Argparse's exit 2 is a ``SystemExit``.
+- ``--version`` (T2.7): through ``subprocess`` its output equals
+  ``f"textkit {textkit.__version__}\n"``, and ``textkit.__version__`` is ``"0.1.0"``.
 
 No test writes files under ``textkit/``.
 """
@@ -344,6 +346,29 @@ class ImportTest(unittest.TestCase):
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
             importlib.reload(cli)
         self.assertEqual((out.getvalue(), err.getvalue()), ("", ""))
+
+
+
+class VersionTest(unittest.TestCase):
+    """``--version`` prints ``textkit <version>`` from ``textkit.__version__`` (T2.7)."""
+
+    def test_version_flag_prints_the_package_version(self):
+        result = _run_module("--version")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, f"textkit {textkit.__version__}\n")
+        self.assertEqual(result.stderr, "")
+
+    def test_package_version_is_0_1_0(self):
+        self.assertEqual(textkit.__version__, "0.1.0")
+
+    def test_version_string_appears_only_in_init(self):
+        # __main__.py must read textkit.__version__, not repeat the literal.
+        holders = sorted(
+            path.name
+            for path in (REPO_ROOT / "textkit").glob("*.py")
+            if textkit.__version__ in path.read_text(encoding="utf-8")
+        )
+        self.assertEqual(holders, ["__init__.py"])
 
 
 if __name__ == "__main__":
