@@ -10,3 +10,4 @@ One file per decision, `NNNN-title.md`, with Context / Decision / Consequences.
 | [0003](0003-snake-case-capital-runs.md) | How `to_snake_case` splits runs of capitals, digits and separators |
 | [0004](0004-reading-time-rounding.md) | `reading_time` rounds the word count up to whole minutes; text with no words is 0 |
 | [0005](0005-sentence-boundaries.md) | Where a sentence ends (`sentence_count`): abbreviations, ellipses and decimals |
+| [0006](0006-pluralize-rules.md) | Which plural rules `pluralize` covers (`-s`, `-es`, `-ies`, an irregular table) and how it keeps the input's case |

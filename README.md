@@ -14,6 +14,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive, in order of first occurrence |
 | `is_palindrome` | `textkit.strings` | Tells whether text reads the same backwards, ignoring case, spaces, punctuation and accents |
 | `parse_duration` | `textkit.durations` | Parses a compact duration such as `"1h30m"` into whole seconds |
+| `pluralize` | `textkit.plural` | Returns the plural of an English noun, keeping the input's case (rules: [0006-pluralize-rules](docs/decisions/0006-pluralize-rules.md)) |
 | `reading_time` | `textkit.counts` | Estimates the whole minutes needed to read a text (rounding: [0004-reading-time-rounding](docs/decisions/0004-reading-time-rounding.md)) |
 | `sentence_count` | `textkit.counts` | Counts the sentences of a text (rule: [0005-sentence-boundaries](docs/decisions/0005-sentence-boundaries.md)) |
 | `slug_title` | `textkit.strings` | Makes a slug of at most `max_len` characters that never ends in `-` |
