@@ -41,7 +41,7 @@ anything else). Tasks with no "Depends on" can start at once.
       `len(text) <= width` (code points); the cut keeps the start of `text`.
 - [ ] **T1.3 `strip_accents`** in `textkit/strings.py`: `strip_accents(text) -> str` removes
       combining marks (`"Ñandú"` -> `"Nandu"`) with `unicodedata`.
-- [ ] **T1.4 `wrap`** in `textkit/strings.py`: `wrap(text, width) -> list[str]` splits text
+- [x] **T1.4 `wrap`** in `textkit/strings.py`: `wrap(text, width) -> list[str]` splits text
       into lines of at most `width` characters at spaces; a word longer than `width` gets a
       line of its own. Runs of spaces between words collapse to one; leading and trailing
       spaces are dropped; `wrap("", w) == []`; `width < 1` raises `ValueError`; lines never
