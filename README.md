@@ -35,4 +35,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 
 ## Commands
 
-- `scripts/check.sh`: unit tests, this table, the changelog, ADR numbering.
+- `scripts/check.sh`: unit tests, this table, the changelog, ADR numbering. The unit tests
+  include the API contract (`tests/test_api.py`): every public function has a docstring and
+  type hints for every parameter and its return value, and is listed in this table with its
+  module.
