@@ -8,6 +8,8 @@ ADR's separator rule (rule 1). Every public function is listed in the README's f
 
 import re
 
+from textkit import _tokens
+
 # Characters that separate words explicitly. A run of them counts as one separator.
 _SEPARATORS = "_-"
 
@@ -68,7 +70,17 @@ def to_snake_case(name: str) -> str:
     """
     if not isinstance(name, str):
         raise TypeError(f"name must be a str, not {type(name).__name__}")
-    return "_".join(word.lower() for word in _split_identifier(name))
+    # ADR 0001 (the shared tokenizer) and ADR 0002 rule 1 split the same way only on names
+    # made of letters, digits and "_": both end a word at a run of "_" and drop leading and
+    # trailing ones. They disagree on "-" (a joiner in 0001, a separator here) and on any
+    # other character (a separator in 0001, part of the word here), so such names keep the
+    # ADR 0002 splitter for separators too. Rules 2-4 (case and digits) are identifier
+    # rules with no ADR 0001 counterpart and always run on each chunk.
+    if all(char.isalnum() or char == "_" for char in name):
+        chunks = _tokens.words(name)
+    else:
+        chunks = [name]
+    return "_".join(word.lower() for chunk in chunks for word in _split_identifier(chunk))
 
 
 def to_camel_case(name: str) -> str:
