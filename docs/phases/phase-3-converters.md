@@ -83,7 +83,7 @@ and 2.
       `"  jean--luc  picard "` -> `"JLP"`, `"o'brien"` -> `"O"`, `"élodie durand"` -> `"ÉD"`,
       `"3d printer"` -> `"DP"`, `"- -"` -> `""`, `"ßa"` -> `"SS"`. No Unicode normalization:
       NFD input gives the bare base letter (NFD `"élodie"` -> `"E"`); test both forms.
-- [ ] **T3.9 `ordinal`** in `textkit/ordinals.py`: `ordinal(n) -> str` for `int` `n >= 0`
+- [x] **T3.9 `ordinal`** in `textkit/ordinals.py`: `ordinal(n) -> str` for `int` `n >= 0`
       (`0` -> `"0th"`, `1` -> `"1st"`, `2` -> `"2nd"`, `11` -> `"11th"`, `101` -> `"101st"`,
       `111` -> `"111th"`, `112` -> `"112th"`, `113` -> `"113th"`, `1011` -> `"1011th"`,
       `1021` -> `"1021st"`); a negative `n` or a non-`int` (a `bool` included) raises
