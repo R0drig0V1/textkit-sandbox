@@ -4,6 +4,8 @@ WordCountTest tests every row of the case table that ends the word-rule ADR
 (docs/decisions/*-what-counts-as-a-word.md) and checks that the table and CASES stay
 identical, so neither can drift from the other. CharFreqTest pins the T1.6 contract:
 case-sensitive, str.isspace() characters skipped, keys in order of first occurrence.
+ReadingTimeTest tests every row of the case table of the rounding ADR
+(docs/decisions/*-reading-time-rounding.md) and checks it against READING_TIME_CASES.
 """
 
 import ast
@@ -12,7 +14,7 @@ import re
 import unicodedata
 import unittest
 
-from textkit.counts import char_freq, word_count
+from textkit.counts import char_freq, reading_time, word_count
 
 # Mirror of the case table in docs/decisions/*-what-counts-as-a-word.md: (input, count).
 CASES = [
@@ -110,6 +112,63 @@ class CharFreqTest(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(TypeError):
                     char_freq(value)
+
+
+# Mirror of the case table in docs/decisions/*-reading-time-rounding.md: (input, wpm, minutes).
+READING_TIME_CASES = [
+    ("", 200, 0),
+    ("   \n\t  ", 200, 0),
+    ("!!! ... ?", 200, 0),
+    ("hello", 200, 1),
+    ("hello world", 200, 1),
+    ("one two three", 3, 1),
+    ("one two three four", 3, 2),
+    ("one two three four five six", 3, 2),
+    ("one two three four five six seven", 3, 3),
+    ("well-known don't", 1, 2),
+    ("a - b", 1, 2),
+    ("hello", 1, 1),
+]
+
+
+def _reading_time_adr_cases() -> list:
+    """Parse the case table of the rounding ADR. Glob on the slug: the number may change at merge."""
+    (adr,) = sorted((_ROOT / "docs" / "decisions").glob("*-reading-time-rounding.md"))
+    rows = re.findall(r"^\| `(.*)` \| (\d+) \| (\d+) \|", adr.read_text(encoding="utf-8"), re.M)
+    return [(ast.literal_eval(literal), int(wpm), int(minutes)) for literal, wpm, minutes in rows]
+
+
+class ReadingTimeTest(unittest.TestCase):
+    def test_adr_table(self):
+        for text, wpm, expected in READING_TIME_CASES:
+            with self.subTest(text=text, wpm=wpm):
+                self.assertEqual(reading_time(text, wpm), expected)
+
+    def test_cases_match_adr_table(self):
+        self.assertEqual(_reading_time_adr_cases(), READING_TIME_CASES)
+
+    def test_default_wpm_is_200(self):
+        self.assertEqual(reading_time(" ".join(["word"] * 200)), 1)
+        self.assertEqual(reading_time(" ".join(["word"] * 201)), 2)
+        self.assertEqual(reading_time(" ".join(["word"] * 400)), 2)
+
+    def test_wpm_below_one_raises(self):
+        for wpm in (0, -1, -200):
+            with self.subTest(wpm=wpm):
+                with self.assertRaises(ValueError):
+                    reading_time("hello", wpm)
+
+    def test_rejects_non_int_wpm(self):
+        for wpm in (200.0, "200", None, True):
+            with self.subTest(wpm=wpm):
+                with self.assertRaises(TypeError):
+                    reading_time("hello", wpm)
+
+    def test_rejects_non_str_text(self):
+        for value in (None, 42, b"bytes"):
+            with self.subTest(value=value):
+                with self.assertRaises(TypeError):
+                    reading_time(value)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,8 @@
 """Counting helpers. Every public function is listed in the README's function table.
 
 The word rule is the word-rule ADR, docs/decisions/0002-what-counts-as-a-word.md, implemented
-once in the shared tokenizer ``textkit._tokens.words``.
+once in the shared tokenizer ``textkit._tokens.words``;
+the rounding of ``reading_time`` is docs/decisions/0004-reading-time-rounding.md.
 """
 
 from textkit._tokens import words
@@ -46,3 +47,23 @@ def char_freq(text: str) -> dict[str, int]:
         if not char.isspace():
             counts[char] = counts.get(char, 0) + 1
     return counts
+
+
+def reading_time(text: str, wpm: int = 200) -> int:
+    """Return the whole minutes needed to read ``text`` at ``wpm`` words per minute.
+
+    Words are counted with ``word_count``. The result is the word count divided by ``wpm``,
+    rounded up: text with no words (empty, whitespace or punctuation only) gives 0, any text
+    with at least one word gives at least 1, and exactly ``wpm`` words give 1. The rule and
+    its case table are in docs/decisions/0004-reading-time-rounding.md.
+
+    Raises ``TypeError`` if ``text`` is not a ``str`` or ``wpm`` is not an ``int`` (``bool``
+    is rejected too), and ``ValueError`` if ``wpm < 1``.
+    """
+    # bool is a subclass of int, but reading_time(text, True) is a mistake, not 1 wpm.
+    if not isinstance(wpm, int) or isinstance(wpm, bool):
+        raise TypeError(f"reading_time() expects an int wpm, got {type(wpm).__name__}")
+    if wpm < 1:
+        raise ValueError(f"reading_time() needs wpm >= 1, got {wpm}")
+    # Ceiling division in integers: exact for any size, unlike math.ceil on a float.
+    return -(-word_count(text) // wpm)
