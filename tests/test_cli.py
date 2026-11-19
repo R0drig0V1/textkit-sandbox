@@ -1,4 +1,5 @@
-"""Tests for textkit/__main__.py, the ``python3 -m textkit`` command line (plan task T2.6).
+"""Tests for textkit/__main__.py, the ``python3 -m textkit`` command line (plan tasks T2.6 and
+T2.7: ``--version``).
 
 Nothing here names a textkit function: the expected commands are computed from the source
 files with ``ast``, independently of the ``inspect``-based discovery in ``__main__``, so a
@@ -20,6 +21,7 @@ import unittest
 import unittest.mock
 from typing import Any, Callable, Dict, List, Tuple
 
+import textkit
 from textkit.__main__ import _format, _main
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -206,6 +208,28 @@ class MainTest(unittest.TestCase):
             [sys.executable, "-c", code], cwd=ROOT, capture_output=True, text=True
         )
         self.assertEqual((result.returncode, result.stdout, result.stderr), (0, "", ""))
+
+
+class VersionTest(unittest.TestCase):
+    """Acceptance tests of T2.7: ``python3 -m textkit --version`` and ``__version__``."""
+
+    def test_version_prints_name_and_version_and_exits_0(self):
+        result = _run_cli("--version")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, f"textkit {textkit.__version__}\n")
+        self.assertEqual(result.stderr, "")
+
+    def test_version_is_0_1_0(self):
+        self.assertEqual(textkit.__version__, "0.1.0")
+
+    def test_version_string_appears_only_in_init(self):
+        # The plan makes __init__.py the single source of the version inside textkit/.
+        holders = [
+            path.relative_to(ROOT).as_posix()
+            for path in sorted((ROOT / "textkit").rglob("*.py"))
+            if textkit.__version__ in path.read_text(encoding="utf-8")
+        ]
+        self.assertEqual(holders, ["textkit/__init__.py"])
 
 
 if __name__ == "__main__":
