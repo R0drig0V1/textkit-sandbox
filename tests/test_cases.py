@@ -1,11 +1,12 @@
-"""Tests for textkit.cases: to_snake_case, the examples of ADR 0002, and to_camel_case."""
+"""Tests for textkit.cases: to_snake_case, the examples of ADR 0002, to_camel_case and
+to_kebab_case."""
 
 import pathlib
 import re
 import unicodedata
 import unittest
 
-from textkit.cases import to_camel_case, to_snake_case
+from textkit.cases import to_camel_case, to_kebab_case, to_snake_case
 
 ADR = pathlib.Path(__file__).resolve().parent.parent / "docs" / "decisions" / (
     "0002-snake-case-word-boundaries.md"
@@ -229,6 +230,81 @@ class ToCamelCaseTest(unittest.TestCase):
             with self.subTest(bad=bad):
                 with self.assertRaisesRegex(TypeError, "to_camel_case"):
                     to_camel_case(bad)  # type: ignore[arg-type]
+
+
+class ToKebabCaseTest(unittest.TestCase):
+    def check(self, cases):
+        for src, expected in cases:
+            with self.subTest(src=src):
+                self.assertEqual(to_kebab_case(src), expected)
+
+    def test_every_adr_example(self):
+        # The ADR 0002 table, with "_" mapped to "-" in the expected output.
+        examples = _adr_examples()
+        self.assertGreaterEqual(len(examples), 20)
+        for src, snake in examples:
+            expected = snake.replace("_", "-")
+            for form in ("NFC", "NFD"):
+                with self.subTest(src=src, form=form):
+                    self.assertEqual(
+                        to_kebab_case(unicodedata.normalize(form, src)),
+                        unicodedata.normalize(form, expected),
+                    )
+
+    def test_already_kebab_is_unchanged(self):
+        for name in ("user-id", "a", "http-server-v2", "already-kebab-case", "naïve-über"):
+            with self.subTest(name=name):
+                self.assertEqual(to_kebab_case(name), name)
+
+    def test_snake_input(self):
+        self.check([
+            ("user_id", "user-id"),
+            ("SCREAMING_SNAKE", "screaming-snake"),
+            ("__init__", "init"),
+            ("user__id_", "user-id"),
+            ("mixed_kebab-and snake", "mixed-kebab-and-snake"),
+        ])
+
+    def test_camel_and_pascal_input(self):
+        self.check([
+            ("userId", "user-id"),
+            ("parseUrl", "parse-url"),
+            ("PascalCase", "pascal-case"),
+            ("HTTPServer", "http-server"),
+            ("getHTTPResponseCode", "get-http-response-code"),
+            ("utf8Decode", "utf8-decode"),
+        ])
+
+    def test_matches_snake_case_with_hyphens(self):
+        for name in ("HTTPServer", "user name.v2", "-_- ", "XMLÉtude", "ABC2def", "日本_語"):
+            with self.subTest(name=name):
+                self.assertEqual(to_kebab_case(name), to_snake_case(name).replace("_", "-"))
+                self.assertNotIn("_", to_kebab_case(name))
+
+    def test_idempotent(self):
+        for name in ("HTTPServer", "parseURL2", "my-HTTPServer", "user_id", "naïve-Über"):
+            with self.subTest(name=name):
+                once = to_kebab_case(name)
+                self.assertEqual(to_kebab_case(once), once)
+
+    def test_nfc_and_nfd_give_the_same_words(self):
+        for name in ("résuméFile", "ÉTÉFini", "XMLÉtude", "naïve-Über", "ÅngströmUnit"):
+            with self.subTest(name=name):
+                nfc = to_kebab_case(unicodedata.normalize("NFC", name))
+                nfd = to_kebab_case(unicodedata.normalize("NFD", name))
+                self.assertEqual(unicodedata.normalize("NFC", nfd), nfc)
+                # The result keeps the input's form.
+                self.assertEqual(nfd, unicodedata.normalize("NFD", nfd))
+                self.assertEqual(nfc, unicodedata.normalize("NFC", nfc))
+
+    def test_empty(self):
+        self.assertEqual(to_kebab_case(""), "")
+
+    def test_non_str_raises_type_error(self):
+        for bad in (None, 42, b"user_id", ["user", "id"]):
+            with self.subTest(bad=bad):
+                with self.assertRaisesRegex(TypeError, "to_kebab_case"):
+                    to_kebab_case(bad)  # type: ignore[arg-type]
 
 
 if __name__ == "__main__":

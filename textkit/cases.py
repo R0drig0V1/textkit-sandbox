@@ -2,8 +2,8 @@
 
 The word-boundary rules used here are recorded in
 docs/decisions/0002-snake-case-word-boundaries.md; every example in that ADR is tested in
-tests/test_cases.py. ``to_camel_case`` splits names with ``to_snake_case``, so it follows
-the same rules. Every public function is listed in the README's function table.
+tests/test_cases.py. ``to_camel_case`` and ``to_kebab_case`` split names with
+``to_snake_case``, so they follow the same rules. Every public function is listed in the README's function table.
 """
 
 import unicodedata
@@ -154,3 +154,41 @@ def to_camel_case(name: str) -> str:
     # The words are already lower case; capitalize() only title-cases the first
     # character, which in NFD text is the base letter, never a mark.
     return words[0] + "".join(word.capitalize() for word in words[1:])
+
+
+def to_kebab_case(name: str) -> str:
+    """Convert a camelCase, PascalCase, snake_case or kebab-case name to kebab-case.
+
+    The name is split into words and lower-cased exactly as ``to_snake_case`` does (ADR
+    0002), and the words are joined with ``-`` instead of ``_``. So every rule of ADR 0002
+    applies unchanged:
+
+    - Separators (any run of characters that are neither letters, digits nor combining
+      marks) are dropped, so ``-`` never repeats and never appears at either end
+      (``"user__id"`` -> ``"user-id"``, ``"_private"`` -> ``"private"``,
+      ``"-_- "`` -> ``""``).
+    - camelCase and PascalCase are split at case changes and acronyms stay whole
+      (``"parseUrl"`` -> ``"parse-url"``, ``"HTTPServer"`` -> ``"http-server"``).
+    - Digits stay with the word they follow (``"parseURL2"`` -> ``"parse-url2"``).
+    - kebab-case input comes back unchanged (``"user-id"`` -> ``"user-id"``), and
+      snake_case input only has its ``_`` replaced (``"user_id"`` -> ``"user-id"``).
+    - Combining marks stay with their letter, so composed (NFC) and decomposed (NFD) input
+      give the same words; the text is not normalised and keeps the input's form.
+
+    Args:
+        name: The identifier to convert. Any string is accepted; an empty string, or one
+            with no letters or digits, gives ``""``.
+
+    Returns:
+        The kebab-case form of ``name``: lower-case words joined by single hyphens.
+
+    Raises:
+        TypeError: If ``name`` is not a ``str``.
+    """
+    if not isinstance(name, str):
+        # Checked here too so the message names this function, not to_snake_case.
+        raise TypeError(f"to_kebab_case() expects a str, got {type(name).__name__}")
+
+    # Safe as a plain replace: to_snake_case drops every character that is not a letter,
+    # digit or mark, "_" included, so in its output "_" only ever joins two words.
+    return to_snake_case(name).replace("_", "-")

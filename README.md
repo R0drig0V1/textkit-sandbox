@@ -17,6 +17,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `truncate` | `textkit.strings` | Shortens text to a width, ending in a suffix (`...` by default) |
 | `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase and kebab-case names to snake_case (ADR 0002) |
 | `to_camel_case` | `textkit.cases` | Converts snake_case and kebab-case names to camelCase (`"user_id"` -> `"userId"`), splitting as `to_snake_case` does |
+| `to_kebab_case` | `textkit.cases` | Converts camelCase, PascalCase and snake_case names to kebab-case (`"parseURL"` -> `"parse-url"`), splitting as `to_snake_case` does |
 | `strip_accents` | `textkit.strings` | Removes combining marks (`"Ñandú"` -> `"Nandu"`) |
 | `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive, no Unicode normalisation |
 | `sentence_count` | `textkit.counts` | Counts sentences: `"?!"` ends one, `"Dr."`, `"e.g."` and `"3.14"` do not, `"..."` only before a capital ([ADR 0004](docs/decisions/0004-where-a-sentence-ends.md)) |
