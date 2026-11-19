@@ -28,6 +28,6 @@ CHANGELOG line. Tasks with no "Depends on" can start at once.
 - [x] **T1.9 `slug_title`** in `textkit/strings.py`: `slug_title(text, max_len) -> str`, a
       slug of at most `max_len` characters that never ends in `-`, built from `slugify`
       (and `truncate` if it fits). Depends on T1.1 and T1.2.
-- [ ] **T1.10 shared tokenizer**: add `textkit/_tokens.py` with `words(text) -> list[str]`
+- [x] **T1.10 shared tokenizer**: add `textkit/_tokens.py` with `words(text) -> list[str]`
       implementing the word rule of T1.5's ADR, and make `word_count` and `to_snake_case`
       use it where it applies, with no change in their results. Depends on T1.5 and T1.7.
