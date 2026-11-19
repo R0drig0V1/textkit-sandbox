@@ -31,8 +31,8 @@ start at once.
       under `if __name__ == "__main__":` (importing the module has no side effects).
       Commands are discovered at run time, never hard-coded: every public function (phase 1
       definition) whose `f.__module__` is its own module and that has exactly one parameter
-      without a default (parameters with defaults keep their default). Exactly one text
-      argument (quote it). Output: `str` printed as is; `bool` and `int` with `print()`;
+      without a default (parameters with defaults keep their default). Exactly one
+      argument (quote it; precede it with `--` when it starts with `-` and is not an integer). Output: `str` printed as is; `bool` and `int` with `print()`;
       `dict` and `list` as `json.dumps(result, ensure_ascii=False, sort_keys=True)`. Exit 0
       on success, 2 on an unknown function or a wrong argument count, with the message on
       stderr. With no arguments it prints the usage to stderr and exits 2 (argparse on 3.9:
@@ -42,14 +42,19 @@ start at once.
       public-function definition, and runs every command once via `subprocess` with
       `sys.executable -m textkit`.
       **Argument conversion**: when the required parameter is annotated `int`, the argument
-      must match `-?[0-9]+` (ASCII digits) and is converted with `int(arg)`; otherwise exit 2
-      with the message on stderr. A `ValueError`, `KeyError` or `TypeError` raised by the
-      function prints `error: <message>` on stderr (no traceback) and exits 1. The
+      must satisfy `re.fullmatch(r"-?[0-9]+", arg)` (ASCII digits) and is converted with
+      `int(arg)`; otherwise, or when `int(arg)` raises `ValueError`, exit 2 with the message on
+      stderr. A `ValueError`, `KeyError` or `TypeError` raised by the
+      function, or by printing its result (`UnicodeEncodeError` is a `ValueError`), prints
+      `error: <message>` on stderr (no traceback) and exits 1. The
       per-command subprocess run passes `"1"` for an `int` parameter and `"a"` otherwise and
       asserts exit code 0 or 1 with no `Traceback` in stderr. No per-function input is
       hard-coded, so later functions (phase 3 included) need no change to `tests/test_cli.py`;
-      the conversion and the exit-1 path are tested with a stub function the test registers
-      itself (not a real textkit function). Add the CHANGELOG line "Added the `python3 -m textkit`
+      discovery lives in `_commands() -> Dict[str, Callable[..., object]]`, which `_main` calls;
+      the conversion, `--` and exit-1 paths are tested in-process with a stub patched in by
+      `unittest.mock.patch.object(textkit.__main__, "_commands", ...)` calling `_main([...])`
+      (catch `SystemExit` for argparse's exit 2): stub `-- -x` exits 0, `"1a"` for an `int`
+      parameter exits 2. No test writes files under `textkit/`. Add the CHANGELOG line "Added the `python3 -m textkit`
       command line." (no README row). Depends on T1.1 to T1.8.
 - [ ] **T2.7 `--version`**: `__version__ = "0.1.0"` in `textkit/__init__.py` (the only place
       in `textkit/` the version string appears; `__main__.py` reads `textkit.__version__`);
