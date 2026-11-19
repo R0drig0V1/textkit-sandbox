@@ -12,6 +12,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | Function | Module | What it does |
 |----------|--------|--------------|
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
+| `truncate` | `textkit.strings` | Shortens text to a width, suffix included |
 
 ## Commands
 
