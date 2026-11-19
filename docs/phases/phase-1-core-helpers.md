@@ -66,14 +66,14 @@ anything else). Tasks with no "Depends on" can start at once.
       word is lower-cased and the rest capitalized (`"HTTP_server"` -> `"httpServer"`); input
       with no separator is returned with only its first character lower-cased.
       Depends on T1.7 (it creates `textkit/cases.py` and `tests/test_cases.py`).
-- [ ] **T1.9 `slug_title`** in `textkit/strings.py`: `slug_title(text, max_len) -> str`, a
+- [x] **T1.9 `slug_title`** in `textkit/strings.py`: `slug_title(text, max_len) -> str`, a
       slug of at most `max_len` characters that never ends in `-`: exactly
       `truncate(slugify(text), max_len, suffix="")` with trailing `-` stripped (a character
       cut, not a word cut). `max_len < 0` raises `ValueError`; the result may be `""`.
       Examples to test: `("Hello, World!", 8)` -> `"hello-wo"`, `("Hello, World!", 6)` ->
       `"hello"`, `("Hello, World!", 11)` -> `"hello-world"`, `("x", 0)` -> `""`.
       Depends on T1.1 and T1.2.
-- [ ] **T1.10 shared tokenizer**: add `textkit/_tokens.py` (a private module: no README row,
+- [x] **T1.10 shared tokenizer**: add `textkit/_tokens.py` (a private module: no README row,
       no CHANGELOG line) with `words(text) -> list[str]` implementing exactly the word rule of
       T1.5's ADR, and make `word_count` return `len(words(text))`. Make `to_snake_case` use
       `words` only for the parts where T1.5's rule and T1.7's ADR split the same way;
