@@ -1,4 +1,4 @@
-<!-- ADR 0001: the word rule of textkit.counts.word_count (plan task T1.5). -->
+<!-- ADR 0002-what-counts-as-a-word: the word rule of textkit.counts.word_count (plan task T1.5). -->
 # 0002. What counts as a word
 
 ## Context
@@ -36,7 +36,7 @@ No Unicode normalization is applied. A combining mark (`̈`) is not a letter, so
 decomposed (NFD) text a mark *inside* a word splits it; callers who need otherwise normalize
 to NFC first. Precomposed (NFC) text, the usual form, is unaffected.
 
-The rule is one regular expression in `textkit/counts.py`:
+The rule is one regular expression in `textkit/_tokens.py` (`words`, used by `word_count`):
 `[^\W_]+(?:(?:[-'’]|(?<=\d)[.,](?=\d))[^\W_]+)*`.
 
 ## Consequences

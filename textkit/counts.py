@@ -1,22 +1,17 @@
 """Counting helpers. Every public function is listed in the README's function table.
 
 What counts as a word is decided in docs/decisions/0002-what-counts-as-a-word.md; that ADR's
-case table is the specification, and tests/test_counts.py checks every row of it. How
-`reading_time` rounds to whole minutes is decided in docs/decisions/0006-reading-time-rounding.md.
+case table is the specification, and tests/test_counts.py checks every row of it. The rule
+itself lives in the shared tokenizer, textkit/_tokens.py, so every helper splits words alike.
+How `reading_time` rounds to whole minutes is decided in
+docs/decisions/0006-reading-time-rounding.md.
 """
 
-import re
-
-# A word is a run of letters and digits ([^\W_] is \w without the underscore, Unicode-aware
-# for str patterns). Runs are joined into one word by a single joiner with a letter or digit
-# on both sides: a hyphen or an apostrophe (ASCII ' or typographic U+2019) anywhere, and a
-# "." or "," only between two digits, so "3.14" and "1,000" stay whole but "end.Start" does
-# not. Anything else, the underscore included, separates words.
-_WORD = re.compile(r"[^\W_]+(?:(?:[-'’]|(?<=\d)[.,](?=\d))[^\W_]+)*")
+from textkit._tokens import words
 
 
 def word_count(text: str) -> int:
-    """Return the number of words in ``text``, following ADR 0001.
+    """Return the number of words in ``text``, following 0002-what-counts-as-a-word.
 
     A word is a maximal run of letters and digits (any script), where a single hyphen or
     apostrophe between two such characters, or a "." or "," between two digits, keeps the run
@@ -31,7 +26,7 @@ def word_count(text: str) -> int:
     if not isinstance(text, str):
         # re would accept some non-str objects with a confusing message; be explicit.
         raise TypeError(f"word_count() expects str, got {type(text).__name__}")
-    return sum(1 for _ in _WORD.finditer(text))
+    return len(words(text))
 
 
 def char_freq(text: str) -> dict[str, int]:
