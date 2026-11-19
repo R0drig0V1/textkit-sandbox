@@ -18,7 +18,7 @@ CHANGELOG line. Tasks with no "Depends on" can start at once.
       line of its own. Write an ADR on what happens to existing newlines.
 - [x] **T1.5 `word_count`** in a new module `textkit/counts.py`: `word_count(text) -> int`.
       Write an ADR on what counts as a word (hyphenated words, numbers, apostrophes).
-- [ ] **T1.6 `char_freq`** in `textkit/counts.py`: `char_freq(text) -> dict[str, int]`,
+- [x] **T1.6 `char_freq`** in `textkit/counts.py`: `char_freq(text) -> dict[str, int]`,
       counts of each non-space character, case-sensitive.
 - [x] **T1.7 `to_snake_case`** in a new module `textkit/cases.py`:
       `to_snake_case(name) -> str` for camelCase, PascalCase and kebab-case input. Write an
