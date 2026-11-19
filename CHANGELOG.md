@@ -5,6 +5,7 @@
 - Added `char_freq`: counts each non-whitespace character, case-sensitive, keys in order of first occurrence.
 - Added `is_palindrome`: tells whether text is a palindrome, ignoring case, accents (via `strip_accents`) and non-alphanumerics.
 - Added `reading_time`: whole minutes to read a text at `wpm` words per minute (default 200), rounded up; 0 only for a text with no words (ADR 0004).
+- Added `sentence_count`: counts the sentences in a text; abbreviations, initials and ellipses are handled by ADR 0005.
 - Added `slug_title`: a slug cut to at most `max_len` characters that never ends in `-`.
 - Added `slugify`: turns text into a lower-case ASCII slug.
 - Added `squeeze`: collapses runs of whitespace into single spaces.

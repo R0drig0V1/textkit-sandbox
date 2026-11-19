@@ -1,9 +1,12 @@
 """Tests for textkit.counts. One TestCase class per public function."""
 
+import ast
 import math
+import pathlib
+import re
 import unittest
 
-from textkit.counts import char_freq, reading_time, word_count
+from textkit.counts import char_freq, reading_time, sentence_count, word_count
 
 # The case table of ADR 0002 (docs/decisions/0002-what-counts-as-a-word.md), row by row:
 # (row number, input, count). Keep it in sync with the ADR; T1.10 checks the same rows
@@ -175,6 +178,89 @@ class ReadingTimeTest(unittest.TestCase):
                 with self.subTest(words=words, wpm=wpm):
                     expected = math.ceil(words / wpm)
                     self.assertEqual(reading_time(_n_words(words), wpm), expected)
+
+
+# The case table of ADR 0005 (docs/decisions/0005-sentence-boundaries.md), row by row:
+# (row number, input, count). test_matches_the_adr_table keeps it in sync with the ADR.
+SENTENCE_COUNT_CASES = [
+    (1, "", 0),
+    (2, " \n\t ", 0),
+    (3, "Hello world", 1),
+    (4, "Hello.", 1),
+    (5, "Hello. World.", 2),
+    (6, "Hello.\nWorld.", 2),
+    (7, "Title\n\nBody text.", 1),
+    (8, "Really?! Yes.", 2),
+    (9, "Hi!!!   ", 1),
+    (10, "!!! ... ?", 0),
+    (11, "I met Dr. Smith. He was kind.", 2),
+    (12, "Mr. and Mrs. Smith arrived.", 1),
+    (13, "DR. NO is a film.", 1),
+    (14, "Use a list, e.g. Python lists.", 1),
+    (15, "Fruit, i.e. apples. Done.", 2),
+    (16, "Apples, pears, etc. Then we left.", 2),
+    (17, "Apples, pears, etc. and more.", 1),
+    (18, "Wait... what?", 1),
+    (19, "Wait... What?", 2),
+    (20, "Wait… What?", 2),
+    (21, "wait...what", 1),
+    (22, "...and then it ended.", 1),
+    (23, "Dr.. Smith", 2),
+    (24, "Pi is 3.14. Next.", 2),
+    (25, "end.Next", 1),
+    (26, "J. R. R. Tolkien wrote it. He died in 1973.", 2),
+    (27, "I saw plan B. It worked.", 1),
+    (28, "In the U.S. Then we left.", 2),
+    (29, 'He said "Stop." Then he left.', 2),
+    (30, '"Stop!" he said.', 1),
+    (31, "(See Dr. Who.) Then more.", 2),
+    (32, "It costs $5. Fine.", 2),
+    (33, "¿Qué? ¡Sí!", 2),
+    (34, "Привет. Как дела?", 2),
+    (35, "東京。大阪。", 1),
+]
+
+SENTENCE_ADR = (pathlib.Path(__file__).resolve().parents[1]
+                / "docs" / "decisions" / "0005-sentence-boundaries.md")
+
+
+class SentenceCountTest(unittest.TestCase):
+    def test_adr_0005_case_table(self):
+        for row, text, expected in SENTENCE_COUNT_CASES:
+            with self.subTest(row=row, text=text):
+                self.assertEqual(sentence_count(text), expected)
+
+    def test_case_table_rows_are_numbered_in_order(self):
+        # Guards against a row being dropped or duplicated when the table is edited.
+        self.assertEqual([row for row, _, _ in SENTENCE_COUNT_CASES],
+                         list(range(1, len(SENTENCE_COUNT_CASES) + 1)))
+
+    def test_matches_the_adr_table(self):
+        # The ADR is the spec: its table rows, read as Python literals, must equal the list
+        # above, so neither can change without the other.
+        rows = re.findall(r"^\| (\d+) \| `(.+?)` \| (\d+) \|", SENTENCE_ADR.read_text(), re.M)
+        self.assertEqual([(int(n), ast.literal_eval(s), int(c)) for n, s, c in rows],
+                         SENTENCE_COUNT_CASES)
+
+    def test_every_listed_abbreviation_in_any_case(self):
+        # ADR 0005, rule 3: each listed abbreviation keeps the sentence going before a capital.
+        for abbr in ["Mr", "Mrs", "Ms", "Mx", "Dr", "Prof", "vs", "cf", "e.g", "i.e"]:
+            for form in (abbr, abbr.upper(), abbr.lower()):
+                with self.subTest(form=form):
+                    self.assertEqual(sentence_count(f"See {form}. Smith now. Done."), 2)
+
+    def test_closers_after_a_terminator(self):
+        # ADR 0005, rule 1: every closer may sit between the run and the whitespace.
+        for closer in "\"'”’»)]}":
+            with self.subTest(closer=closer):
+                self.assertEqual(sentence_count(f"One.{closer} Two."), 2)
+
+    def test_terminator_at_end_of_text_after_abbreviation(self):
+        # The last piece counts with or without a boundary, so a final "Dr." is still one.
+        self.assertEqual(sentence_count("Call the Dr."), 1)
+
+    def test_returns_int(self):
+        self.assertIs(type(sentence_count("A. B.")), int)
 
 
 if __name__ == "__main__":
