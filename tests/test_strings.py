@@ -1,7 +1,7 @@
 import unicodedata
 import unittest
 
-from textkit.strings import slugify, squeeze, strip_accents, truncate
+from textkit.strings import slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -138,6 +138,65 @@ class StripAccentsTest(unittest.TestCase):
     def test_plain_ascii_and_empty_unchanged(self):
         self.assertEqual(strip_accents("Hello, World! 123"), "Hello, World! 123")
         self.assertEqual(strip_accents(""), "")
+
+
+class WrapTest(unittest.TestCase):
+    def test_fills_lines_greedily(self):
+        self.assertEqual(wrap("the quick brown fox", 10), ["the quick", "brown fox"])
+
+    def test_line_may_be_exactly_width(self):
+        self.assertEqual(wrap("ab cd ef", 5), ["ab cd", "ef"])
+
+    def test_everything_fits_on_one_line(self):
+        self.assertEqual(wrap("hello world", 80), ["hello world"])
+
+    def test_long_word_gets_its_own_line(self):
+        self.assertEqual(wrap("a abcdefgh b", 3), ["a", "abcdefgh", "b"])
+        self.assertEqual(wrap("abcdefgh", 3), ["abcdefgh"])
+
+    def test_runs_of_spaces_collapse(self):
+        self.assertEqual(wrap("a    b     c", 80), ["a b c"])
+
+    def test_leading_and_trailing_spaces_dropped(self):
+        self.assertEqual(wrap("   a b   ", 80), ["a b"])
+
+    def test_lines_never_contain_the_separating_space(self):
+        for line in wrap("  aa   bb  cc dd   ee  ", 5):
+            self.assertEqual(line, line.strip())
+            self.assertLessEqual(len(line), 5)
+
+    def test_empty_and_whitespace_only(self):
+        self.assertEqual(wrap("", 5), [])
+        self.assertEqual(wrap("   ", 5), [])
+        self.assertEqual(wrap(" \t\n\r\n ", 5), [])
+
+    def test_width_below_one_raises(self):
+        for width in (0, -1):
+            with self.assertRaises(ValueError):
+                wrap("a b", width)
+        with self.assertRaises(ValueError):
+            wrap("", 0)
+
+    def test_width_one(self):
+        self.assertEqual(wrap("a b cd", 1), ["a", "b", "cd"])
+
+    # ADR 0003: existing newlines (and other whitespace) are separators; text is reflowed.
+    def test_newlines_are_reflowed_like_spaces(self):
+        self.assertEqual(wrap("one\ntwo\nthree", 80), ["one two three"])
+        self.assertEqual(wrap("para one\n\npara two", 80), ["para one para two"])
+        self.assertEqual(wrap("a\r\nb", 80), ["a b"])
+
+    def test_newline_does_not_force_a_break(self):
+        self.assertEqual(wrap("ab\ncd ef", 5), ["ab cd", "ef"])
+
+    def test_tabs_and_other_whitespace_are_separators(self):
+        self.assertEqual(wrap("a\tb\fc\vd", 80), ["a b c d"])
+        self.assertEqual(wrap("a\u2003b\u2028c\u3000d", 80), ["a b c d"])
+
+    def test_non_breaking_spaces_stay_inside_words(self):
+        for nbsp in ("\u00a0", "\u2007", "\u202f"):
+            word = "10" + nbsp + "km"
+            self.assertEqual(wrap("run " + word + " today", 6), ["run", word, "today"])
 
 
 if __name__ == "__main__":

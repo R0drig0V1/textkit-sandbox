@@ -90,3 +90,47 @@ def strip_accents(text: str) -> str:
     decomposed = unicodedata.normalize("NFD", text)
     kept = "".join(c for c in decomposed if not unicodedata.combining(c))
     return unicodedata.normalize("NFC", kept)
+
+
+# Where ``wrap`` may break: any run of whitespace (``str.isspace``; ``re``'s ``\s`` matches
+# the same set for ``str`` patterns), except the non-breaking spaces U+00A0, U+2007 and
+# U+202F, which by definition forbid a break and so stay inside their word. See ADR 0003.
+_BREAK = re.compile(r"[^\S\u00a0\u2007\u202f]+")
+
+
+def wrap(text: str, width: int) -> list[str]:
+    """Split ``text`` into lines of at most ``width`` characters, breaking between words.
+
+    Words are filled greedily: each line takes as many words as fit, joined by one space.
+    Lengths are counted in code points (``len``).
+
+    - Any run of whitespace separates words: spaces, tabs and newlines alike (ADR 0003).
+      Existing newlines are therefore *not* kept; the text is reflowed as one paragraph. To
+      keep paragraphs, split them first and wrap each one.
+    - The non-breaking spaces U+00A0, U+2007 and U+202F are not separators; they count as
+      ordinary characters of the word they are in.
+    - Runs of separators collapse, separators at both ends are dropped, and no line starts
+      or ends with whitespace that separated words.
+    - A word longer than ``width`` is never split: it gets a line of its own, longer than
+      ``width``.
+    - Text with no words (``""``, ``"  \\n "``) gives ``[]``.
+
+    Raises ``ValueError`` when ``width < 1``, even for empty ``text``.
+    """
+    if width < 1:
+        raise ValueError(f"width must be at least 1, got {width}")
+    lines: list[str] = []
+    current = ""
+    for word in _BREAK.split(text):
+        if not word:  # ``split`` yields "" when ``text`` starts or ends with a separator
+            continue
+        if not current:
+            current = word
+        elif len(current) + 1 + len(word) <= width:
+            current += " " + word
+        else:
+            lines.append(current)
+            current = word
+    if current:
+        lines.append(current)
+    return lines
