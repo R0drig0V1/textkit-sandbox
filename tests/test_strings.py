@@ -3,7 +3,7 @@
 import unicodedata
 import unittest
 
-from textkit.strings import slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -242,6 +242,64 @@ class WrapTest(unittest.TestCase):
         result = wrap("a b", 1)
         self.assertIsInstance(result, list)
         self.assertTrue(all(isinstance(line, str) for line in result))
+
+
+class SlugTitleTest(unittest.TestCase):
+    def assertWellFormed(self, result, max_len):
+        self.assertLessEqual(len(result), max_len)
+        self.assertFalse(result.startswith("-"), result)
+        self.assertFalse(result.endswith("-"), result)
+        self.assertNotIn("--", result)
+
+    def test_slug_that_fits_is_unchanged(self):
+        self.assertEqual(slug_title("Hello, World!", 11), "hello-world")
+        self.assertEqual(slug_title("Hello, World!", 50), "hello-world")
+
+    def test_cuts_at_a_word_boundary(self):
+        # Cuts that land inside "world" drop the partial word.
+        self.assertEqual(slug_title("Hello big world", 12), "hello-big")
+        self.assertEqual(slug_title("Hello big world", 14), "hello-big")
+
+    def test_cut_landing_right_before_a_dash(self):
+        # slug[9] is "-": the first 9 characters are whole words already.
+        self.assertEqual(slug_title("Hello big world", 9), "hello-big")
+
+    def test_cut_landing_right_after_a_dash_drops_it(self):
+        # "hello-big-" is the first 10 characters; the trailing "-" goes.
+        self.assertEqual(slug_title("Hello big world", 10), "hello-big")
+        self.assertEqual(slug_title("a b c", 2), "a")
+
+    def test_first_word_longer_than_max_len_is_cut_mid_word(self):
+        self.assertEqual(slug_title("Internationalization", 5), "inter")
+        self.assertEqual(slug_title("Internationalization rocks", 5), "inter")
+
+    def test_empty_slug_gives_empty_string(self):
+        self.assertEqual(slug_title("", 10), "")
+        self.assertEqual(slug_title("!?", 10), "")
+        self.assertEqual(slug_title("日本語", 10), "")
+        self.assertEqual(slug_title("!?", 0), "")
+
+    def test_max_len_zero_gives_empty_string(self):
+        self.assertEqual(slug_title("Hello", 0), "")
+
+    def test_negative_max_len_raises(self):
+        with self.assertRaises(ValueError):
+            slug_title("Hello", -1)
+
+    def test_negative_max_len_raises_even_for_an_empty_slug(self):
+        with self.assertRaises(ValueError):
+            slug_title("", -1)
+
+    def test_result_is_always_well_formed(self):
+        texts = ["", "!?", "a", "Hello big world", "  --Top 10--  ", "a b c d e",
+                 "Internationalization rocks", "x-y_z w", "v1.2.3 release notes"]
+        for text in texts:
+            slug = slugify(text)
+            for max_len in range(len(slug) + 2):
+                with self.subTest(text=text, max_len=max_len):
+                    result = slug_title(text, max_len)
+                    self.assertWellFormed(result, max_len)
+                    self.assertTrue(slug.startswith(result))
 
 
 if __name__ == "__main__":

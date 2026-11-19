@@ -19,6 +19,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `strip_accents` | `textkit.strings` | Removes combining marks (`"Ñandú"` -> `"Nandu"`) |
 | `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive, no Unicode normalisation |
 | `wrap` | `textkit.strings` | Splits text into lines of at most `width` characters, keeping line breaks |
+| `slug_title` | `textkit.strings` | Slug of at most `max_len` characters, cut at a word boundary when possible, never ending in `-` |
 
 ## Commands
 
