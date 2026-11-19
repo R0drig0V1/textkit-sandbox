@@ -2,7 +2,7 @@
 
 import unittest
 
-from textkit.counts import word_count
+from textkit.counts import char_freq, word_count
 
 # The table of cases at the end of docs/decisions/0002-what-counts-as-a-word.md, row by row
 # and in the same order. Keep the two in sync.
@@ -40,6 +40,33 @@ class WordCountTest(unittest.TestCase):
     def test_joiner_at_end_of_text(self):
         self.assertEqual(word_count("pre-"), 1)
         self.assertEqual(word_count("3."), 1)
+
+
+class CharFreqTest(unittest.TestCase):
+    def test_counts_each_character(self):
+        self.assertEqual(char_freq("banana"), {"b": 1, "a": 3, "n": 2})
+
+    def test_keys_in_order_of_first_occurrence(self):
+        self.assertEqual(list(char_freq("cabbage")), ["c", "a", "b", "g", "e"])
+
+    def test_case_sensitive(self):
+        self.assertEqual(char_freq("aAa"), {"a": 2, "A": 1})
+
+    def test_whitespace_is_not_counted(self):
+        # Every character here satisfies str.isspace(), including the no-break space.
+        self.assertEqual(char_freq(" a\tb\nc\r\u00a0\u2003a "), {"a": 2, "b": 1, "c": 1})
+
+    def test_punctuation_and_digits_are_counted(self):
+        self.assertEqual(char_freq("1, 1!"), {"1": 2, ",": 1, "!": 1})
+
+    def test_empty_and_whitespace_only(self):
+        self.assertEqual(char_freq(""), {})
+        self.assertEqual(char_freq(" \t\n "), {})
+
+    def test_no_unicode_normalization(self):
+        # NFC "é" is one code point; NFD is "e" plus a combining acute accent.
+        self.assertEqual(char_freq("\u00e9"), {"\u00e9": 1})
+        self.assertEqual(char_freq("e\u0301"), {"e": 1, "\u0301": 1})
 
 
 if __name__ == "__main__":

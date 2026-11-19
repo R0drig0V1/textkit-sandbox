@@ -60,3 +60,21 @@ def word_count(text: str) -> int:
         else:
             in_word = False
     return count
+
+
+def char_freq(text: str) -> dict[str, int]:
+    """Return how many times each non-whitespace character occurs in ``text``.
+
+    Counting is case-sensitive (``"a"`` and ``"A"`` are separate keys) and works on code
+    points: no Unicode normalization is applied, so a precomposed ``"é"`` and ``"e"`` plus a
+    combining acute accent are counted as different characters. Characters for which
+    ``str.isspace()`` is true (spaces, tabs, newlines, no-break spaces, ...) are skipped. Keys
+    appear in the order of their first occurrence, which ``dict`` preserves.
+
+    Never raises for a ``str``; ``""`` and whitespace-only text give ``{}``.
+    """
+    counts: dict[str, int] = {}
+    for ch in text:
+        if not ch.isspace():
+            counts[ch] = counts.get(ch, 0) + 1
+    return counts
