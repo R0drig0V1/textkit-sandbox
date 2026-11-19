@@ -3,7 +3,7 @@
 import unicodedata
 import unittest
 
-from textkit.strings import slugify, squeeze, truncate
+from textkit.strings import slugify, squeeze, strip_accents, truncate
 
 
 class SqueezeTest(unittest.TestCase):
@@ -98,6 +98,32 @@ class TruncateTest(unittest.TestCase):
     def test_negative_width_raises(self):
         with self.assertRaises(ValueError):
             truncate("", -1, suffix="")
+
+
+class StripAccentsTest(unittest.TestCase):
+    def test_spec_example(self):
+        self.assertEqual(strip_accents("Ñandú"), "Nandu")
+
+    def test_nfc_and_nfd_input_give_the_same_result(self):
+        nfc = unicodedata.normalize("NFC", "Ñandú café")
+        nfd = unicodedata.normalize("NFD", "Ñandú café")
+        self.assertNotEqual(nfc, nfd)
+        self.assertEqual(strip_accents(nfc), "Nandu cafe")
+        self.assertEqual(strip_accents(nfd), "Nandu cafe")
+
+    def test_several_marks_on_one_letter(self):
+        # Vietnamese "ệ" carries a circumflex and a dot below.
+        self.assertEqual(strip_accents("Việt"), "Viet")
+
+    def test_letters_without_decomposition_are_kept(self):
+        self.assertEqual(strip_accents("øß"), "øß")
+
+    def test_text_without_marks_is_not_decomposed(self):
+        self.assertEqual(strip_accents("한국어 日本"), "한국어 日本")
+
+    def test_ascii_and_empty_unchanged(self):
+        self.assertEqual(strip_accents("Hello, World! 123"), "Hello, World! 123")
+        self.assertEqual(strip_accents(""), "")
 
 
 if __name__ == "__main__":

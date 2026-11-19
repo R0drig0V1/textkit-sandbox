@@ -1,6 +1,7 @@
 """String helpers. Every public function is listed in the README's function table."""
 
 import re
+import unicodedata
 
 # Compiled once: slugify runs these on every call. Character classes are spelled out in
 # ASCII on purpose; `\w` and `str.isalnum` would accept non-ASCII letters and digits.
@@ -52,3 +53,24 @@ def truncate(text: str, width: int, suffix: str = "...") -> str:
     if len(text) <= width:
         return text
     return text[: width - len(suffix)] + suffix
+
+
+def strip_accents(text: str) -> str:
+    """Remove combining marks (accents, diacritics) from ``text``.
+
+    ``"Ñandú"`` -> ``"Nandu"``. The text is decomposed to NFD so that precomposed
+    characters (``"ú"``, U+00FA) split into a base character plus combining marks, then
+    every code point with a non-zero canonical combining class is dropped. Works the same
+    for NFC and NFD input. Characters with no decomposition (``"ø"``, ``"ß"``, ``"ł"``)
+    are kept as they are: they are distinct letters, not a base letter plus a mark.
+    The result is recomposed to NFC, so text with nothing to strip (Hangul, CJK, ASCII)
+    comes back in NFC form rather than split into decomposed pieces.
+    Never raises for a ``str`` argument; ``""`` gives ``""``.
+    """
+    # NFD first: a precomposed letter carries its accent inside one code point, so
+    # filtering combining marks without decomposing would miss it.
+    decomposed = unicodedata.normalize("NFD", text)
+    stripped = "".join(ch for ch in decomposed if not unicodedata.combining(ch))
+    # NFC again: NFD also splits characters that carry no accent (a Hangul syllable
+    # becomes its jamo), and callers expect those back untouched.
+    return unicodedata.normalize("NFC", stripped)
