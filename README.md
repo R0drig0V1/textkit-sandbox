@@ -23,6 +23,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `wrap` | `textkit.strings` | Splits text into lines of at most `width` characters, keeping line breaks |
 | `slug_title` | `textkit.strings` | Slug of at most `max_len` characters, cut at a word boundary when possible, never ending in `-` |
 | `is_palindrome` | `textkit.strings` | Whether text reads the same both ways, ignoring case (`casefold`), accents and anything not a letter or digit |
+| `reading_time` | `textkit.counts` | Estimates whole minutes to read a text (`wpm=200`), rounding up: 0 only for no words ([ADR 0005](docs/decisions/0005-reading-time-rounding.md)) |
 
 ## Commands
 

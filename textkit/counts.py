@@ -5,13 +5,17 @@ private ``_words`` below is the reference implementation of that rule, written s
 shared tokenizer (plan task T1.10, ``textkit/_tokens.py``) can take it over unchanged.
 Where a sentence ends is decided in docs/decisions/0004-where-a-sentence-ends.md; the
 private ``_sentences`` below implements it and ``sentence_count`` counts its result.
+``reading_time`` is built on ``word_count``; its rounding and argument rules are in
+docs/decisions/0005-reading-time-rounding.md.
 """
 
 from __future__ import annotations
 
+import math
 import re
 import unicodedata
-from typing import Dict, Iterator, List
+from fractions import Fraction
+from typing import Dict, Iterator, List, Union
 
 # Character classes of ADR 0001. Each character of the text is mapped to one class letter,
 # and the word rule is then a plain regular expression over that class string. This keeps
@@ -208,3 +212,37 @@ def sentence_count(text: str) -> int:
     if not isinstance(text, str):
         raise TypeError(f"sentence_count() expects str, got {type(text).__name__}")
     return len(_sentences(text))
+
+
+def reading_time(text: str, wpm: Union[int, float] = 200) -> int:
+    """Estimate how many whole minutes ``text`` takes to read at ``wpm`` words per minute.
+
+    The words are counted with ``word_count`` (ADR 0001) and the result is
+    ``ceil(words / wpm)``, rounded up as ADR 0005 decides: a text with no words takes 0
+    minutes, any text with at least one word takes at least 1 minute, and an exact multiple
+    of ``wpm`` is not rounded up further (200 words at 200 wpm is 1 minute, 201 words is 2).
+    The division is exact: a float ``wpm`` is taken as the shortest decimal that ``repr``
+    prints for it (the number as typed), so 3 words at ``0.3`` wpm is exactly 10 minutes,
+    neither 11 (the binary value of ``0.3`` is a little under 0.3) nor a float rounding.
+
+    ``wpm`` is an ``int`` or a ``float`` greater than zero; the default of 200 is a common
+    estimate for adult silent reading.
+
+    Raises:
+        TypeError: if ``text`` is not a ``str`` (checked first), or if ``wpm`` is not an
+            ``int`` or ``float``; ``bool`` is rejected although it is an ``int`` subclass.
+        ValueError: if ``wpm`` is zero, negative, NaN or infinite, even for an empty text.
+    """
+    if not isinstance(text, str):
+        raise TypeError(f"reading_time() expects str, got {type(text).__name__}")
+    # bool is an int subclass, but reading_time(text, True) is a bug, not 1 wpm.
+    if isinstance(wpm, bool) or not isinstance(wpm, (int, float)):
+        raise TypeError(f"reading_time() wpm must be int or float, got {type(wpm).__name__}")
+    # "not wpm > 0" also catches NaN, for which every comparison is false. Infinity would
+    # turn any text into 0 minutes, which contradicts "at least one word, at least 1 minute".
+    if not wpm > 0 or math.isinf(wpm):
+        raise ValueError(f"reading_time() wpm must be a positive finite number, got {wpm!r}")
+    # Exact arithmetic: a float wpm is read as the decimal repr() shows (0.3, not the binary
+    # 0.29999999999999998889...), so exact multiples of what the caller typed stay exact.
+    rate = Fraction(repr(wpm)) if isinstance(wpm, float) else Fraction(wpm)
+    return math.ceil(Fraction(word_count(text)) / rate)

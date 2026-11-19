@@ -6,14 +6,18 @@ run the same table against ``textkit._tokens.words``. ``char_freq`` is tested on
 its docstring documents: whitespace by ``str.isspace()``, case, NFC versus NFD, the type.
 ``sentence_count`` is tested the same way as the word rule, against the example table of
 ADR 0004 read from the ADR, plus the edges that a table row cannot show.
+``reading_time`` is tested against the two example tables of ADR 0005 (results and errors),
+also read from the ADR.
 """
 
 import ast
 import pathlib
 import re
 import unittest
+from decimal import Decimal
+from fractions import Fraction
 
-from textkit.counts import _sentences, _words, char_freq, sentence_count, word_count
+from textkit.counts import _sentences, _words, char_freq, reading_time, sentence_count, word_count
 
 DECISIONS = pathlib.Path(__file__).resolve().parent.parent / "docs/decisions"
 ADR = DECISIONS / "0001-what-counts-as-a-word.md"
@@ -177,6 +181,120 @@ class SentenceCountTest(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(TypeError):
                     sentence_count(value)
+
+
+READING_ADR = DECISIONS / "0005-reading-time-rounding.md"
+
+# One row of ADR 0005: | `<text expr>` | `<wpm expr>` | <minutes or exception name> |
+_READING_ROW = re.compile(r"^\| `(.+?)` \| `(.+?)` \| `?(\d+|ValueError|TypeError)`? \|$", re.M)
+
+
+def _table_value(expr):
+    """Evaluate one ADR 0005 table cell without eval().
+
+    Accepts a Python literal, ``"<str>" * <int>`` and ``float("nan")`` / ``float("inf")``,
+    the only forms the ADR uses; anything else fails the test loudly.
+    """
+    node = ast.parse(expr, mode="eval").body
+    if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Mult):
+        text, times = ast.literal_eval(node.left), ast.literal_eval(node.right)
+        if isinstance(text, str) and type(times) is int:
+            return text * times
+    if (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "float"
+        and len(node.args) == 1
+        and not node.keywords
+    ):
+        arg = ast.literal_eval(node.args[0])
+        if arg in ("nan", "inf"):
+            return float(arg)
+    return ast.literal_eval(node)
+
+
+def reading_examples():
+    """Return (text, wpm, expected) for every row of the ADR 0005 tables.
+
+    ``expected`` is an ``int`` of minutes, or the exception class the call must raise.
+    """
+    errors = {"ValueError": ValueError, "TypeError": TypeError}
+    return [
+        (_table_value(text), _table_value(wpm), errors.get(result) or int(result))
+        for text, wpm, result in _READING_ROW.findall(READING_ADR.read_text(encoding="utf-8"))
+    ]
+
+
+class ReadingTimeAdrExamplesTest(unittest.TestCase):
+    def test_tables_are_read(self):
+        # Guards against a reformatted table silently matching no rows.
+        examples = reading_examples()
+        self.assertGreaterEqual(sum(isinstance(e, int) for _, _, e in examples), 20)
+        self.assertGreaterEqual(sum(isinstance(e, type) for _, _, e in examples), 15)
+
+    def test_every_example(self):
+        for text, wpm, expected in reading_examples():
+            with self.subTest(text=text[:20] if isinstance(text, str) else text, wpm=wpm):
+                if isinstance(expected, int):
+                    self.assertEqual(reading_time(text, wpm), expected)
+                else:
+                    with self.assertRaises(expected):
+                        reading_time(text, wpm)
+
+
+class ReadingTimeTest(unittest.TestCase):
+    def test_default_wpm_is_200(self):
+        self.assertEqual(reading_time("w " * 200), 1)
+        self.assertEqual(reading_time("w " * 201), 2)
+
+    def test_wpm_by_keyword(self):
+        self.assertEqual(reading_time("w " * 10, wpm=5), 2)
+
+    def test_counts_words_like_word_count(self):
+        # Built on word_count, so punctuation, hyphens and numbers follow ADR 0001.
+        text = "State-of-the-art: 1,000 words... don't — 'quoted' — 😀 ok"
+        self.assertEqual(reading_time(text, 1), word_count(text))
+
+    def test_returns_plain_int(self):
+        self.assertIs(type(reading_time("w " * 3, 0.3)), int)
+        self.assertIs(type(reading_time("", 2.5)), int)
+
+    def test_int_subclass_wpm_is_accepted(self):
+        class Speed(int):
+            pass
+
+        self.assertEqual(reading_time("w " * 201, Speed(200)), 2)
+
+    def test_str_subclass_is_accepted(self):
+        class Text(str):
+            pass
+
+        self.assertEqual(reading_time(Text("two words"), 1), 2)
+
+    def test_other_numeric_types_raise_type_error(self):
+        for wpm in (Decimal("200"), Fraction(200), 200j):
+            with self.subTest(wpm=wpm):
+                with self.assertRaises(TypeError):
+                    reading_time("w", wpm)
+
+    def test_negative_infinity_and_negative_zero_raise_value_error(self):
+        for wpm in (float("-inf"), -0.0):
+            with self.subTest(wpm=wpm):
+                with self.assertRaises(ValueError):
+                    reading_time("w", wpm)
+
+    def test_tiny_and_huge_float_wpm(self):
+        self.assertEqual(reading_time("w", 1e-300), 10**300)
+        self.assertEqual(reading_time("w " * 5, 1e300), 1)
+
+    def test_every_decimal_wpm_is_exact(self):
+        # wpm = k / 10 typed as a float: the result is the exact ceiling of words * 10 / k,
+        # never one more because of the float's binary value.
+        for k in range(1, 50):
+            for words in range(1, 60):
+                expected = -(-words * 10 // k)
+                with self.subTest(words=words, wpm=k / 10):
+                    self.assertEqual(reading_time("w " * words, k / 10), expected)
 
 
 if __name__ == "__main__":
