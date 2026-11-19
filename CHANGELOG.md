@@ -4,6 +4,7 @@
 
 - Added `char_freq`: counts each non-whitespace character (case-sensitive), keys in order of first occurrence.
 - Added `slug_title`: a slug of at most `max_len` characters that never ends in `-`.
+- Added `reading_time`: whole minutes to read a text at `wpm` words per minute (default 200), rounded up; rounding in ADR 0004.
 - Added `slugify`: turns text into a lower-case ASCII slug such as `hello-world`.
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (`"Ñandú"` -> `"Nandu"`).
