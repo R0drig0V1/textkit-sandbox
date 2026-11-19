@@ -13,6 +13,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 |----------|--------|--------------|
 | `slugify` | `textkit.strings` | Lower-case ASCII slug, runs of other characters become one `-` |
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
+| `word_count` | `textkit.counts` | Counts the words in a text |
 
 ## Commands
 

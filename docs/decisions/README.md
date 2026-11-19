@@ -5,3 +5,4 @@ One file per decision, `NNNN-title.md`, with Context / Decision / Consequences.
 
 | # | Decision |
 |---|----------|
+| [0001](0001-what-counts-as-a-word.md) | What counts as a word in `word_count` |
