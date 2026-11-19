@@ -1,6 +1,7 @@
 """String helpers. Every public function is listed in the README's function table."""
 
 import re
+import unicodedata
 
 # Runs of anything outside lower-case ASCII letters and digits; used by slugify after the
 # text has been reduced to ASCII and lower-cased, so `_` and punctuation count as separators.
@@ -50,3 +51,21 @@ def truncate(text: str, width: int, suffix: str = "...") -> str:
     if len(text) <= width:
         return text
     return text[: width - len(suffix)] + suffix
+
+
+def strip_accents(text: str) -> str:
+    """Remove combining marks (accents, tildes, umlauts...) from ``text``.
+
+    The text is decomposed to NFD so that precomposed letters such as ``"ñ"`` split into a
+    base letter plus a combining mark, then every combining character (non-zero
+    ``unicodedata.combining`` class) is dropped: ``strip_accents("Ñandú") == "Nandu"``.
+
+    The result is recomposed to NFC. Without that step, characters that decompose into
+    parts that are not marks would come back split: Hangul syllables (``"한"``) would be
+    returned as separate jamo. Letters that are not a base letter plus a mark (``"ø"``,
+    ``"ß"``, ``"æ"``) are kept unchanged. Never raises for a ``str`` input; ``""`` gives
+    ``""``.
+    """
+    decomposed = unicodedata.normalize("NFD", text)
+    stripped = "".join(ch for ch in decomposed if not unicodedata.combining(ch))
+    return unicodedata.normalize("NFC", stripped)

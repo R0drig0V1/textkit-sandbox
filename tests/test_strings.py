@@ -2,7 +2,7 @@
 
 import unittest
 
-from textkit.strings import slugify, squeeze, truncate
+from textkit.strings import slugify, squeeze, strip_accents, truncate
 
 
 class SqueezeTest(unittest.TestCase):
@@ -91,6 +91,30 @@ class TruncateTest(unittest.TestCase):
     def test_negative_width_with_empty_suffix_raises(self):
         with self.assertRaises(ValueError):
             truncate("", -1, suffix="")
+
+
+class StripAccentsTest(unittest.TestCase):
+    def test_removes_marks_from_nfc_input(self):
+        self.assertEqual(strip_accents("Ñandú"), "Nandu")
+
+    def test_removes_marks_from_nfd_input(self):
+        self.assertEqual(strip_accents("Ñandú"), "Nandu")
+
+    def test_several_marks_on_one_letter(self):
+        # Vietnamese "ệ" carries two marks (circumflex and dot below).
+        self.assertEqual(strip_accents("Việt"), "Viet")
+
+    def test_plain_ascii_is_unchanged(self):
+        self.assertEqual(strip_accents("Hello, World!"), "Hello, World!")
+
+    def test_letters_without_decomposition_are_kept(self):
+        self.assertEqual(strip_accents("ø ß æ"), "ø ß æ")
+
+    def test_hangul_syllables_stay_composed(self):
+        self.assertEqual(strip_accents("\ud55c\uae00"), "\ud55c\uae00")
+
+    def test_empty_string(self):
+        self.assertEqual(strip_accents(""), "")
 
 
 if __name__ == "__main__":
