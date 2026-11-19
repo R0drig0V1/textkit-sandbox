@@ -2,7 +2,7 @@
 
 import unittest
 
-from textkit.cases import to_camel_case, to_snake_case
+from textkit.cases import to_camel_case, to_kebab_case, to_snake_case
 
 # The table of cases of ADR 0001 (docs/decisions/0001-to-snake-case-capital-runs.md), row by
 # row and in the same order: keep both in sync.
@@ -115,6 +115,44 @@ class ToCamelCaseTest(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(TypeError):
                     to_camel_case(value)
+
+
+class ToKebabCaseTest(unittest.TestCase):
+    def test_adr_0001_table_with_hyphens(self):
+        # Built on to_snake_case: every row of ADR 0001 holds with `-` in place of `_`.
+        for name, snake in ADR_0001_CASES:
+            with self.subTest(name=name):
+                self.assertEqual(to_kebab_case(name), snake.replace("_", "-"))
+
+    def test_common_inputs(self):
+        cases = [
+            ("camelCase", "camel-case"),
+            ("PascalCase", "pascal-case"),
+            ("snake_case_name", "snake-case-name"),
+            ("HTTPServer", "http-server"),
+            ("parseURL2", "parse-url2"),
+            ("_private", "private"),
+            ("SCREAMING_SNAKE", "screaming-snake"),
+        ]
+        for name, expected in cases:
+            with self.subTest(name=name):
+                self.assertEqual(to_kebab_case(name), expected)
+
+    def test_kebab_case_is_a_fixed_point(self):
+        for name in ("kebab-case", "a-b-c", "parse-url2", "été-à", ""):
+            with self.subTest(name=name):
+                self.assertEqual(to_kebab_case(name), name)
+
+    def test_never_leaves_underscores(self):
+        for name, _ in ADR_0001_CASES:
+            with self.subTest(name=name):
+                self.assertNotIn("_", to_kebab_case(name))
+
+    def test_rejects_non_str(self):
+        for value in (None, 42, b"camelCase"):
+            with self.subTest(value=value):
+                with self.assertRaises(TypeError):
+                    to_kebab_case(value)
 
 
 if __name__ == "__main__":
