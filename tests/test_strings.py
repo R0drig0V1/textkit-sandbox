@@ -3,7 +3,7 @@
 import unicodedata
 import unittest
 
-from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate
+from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -164,6 +164,76 @@ class SlugTitleTest(unittest.TestCase):
     def test_negative_max_len_raises_for_empty_text(self):
         with self.assertRaises(ValueError):
             slug_title("", -1)
+
+
+class WrapTest(unittest.TestCase):
+    def test_basic_example(self):
+        self.assertEqual(
+            wrap("the quick brown fox jumps", 10), ["the quick", "brown fox", "jumps"]
+        )
+
+    def test_line_of_exactly_width_fits(self):
+        self.assertEqual(wrap("ab cd ef", 5), ["ab cd", "ef"])
+
+    def test_text_that_fits_is_one_line(self):
+        self.assertEqual(wrap("hello world", 11), ["hello world"])
+
+    def test_lines_never_exceed_width_for_short_words(self):
+        text = "lorem ipsum dolor sit amet consectetur adipiscing elit sed do"
+        for width in range(11, 30):
+            with self.subTest(width=width):
+                lines = wrap(text, width)
+                self.assertTrue(all(len(line) <= width for line in lines))
+                self.assertEqual(" ".join(lines), text)
+
+    def test_long_word_gets_its_own_line(self):
+        self.assertEqual(
+            wrap("a extraordinarily b", 5), ["a", "extraordinarily", "b"]
+        )
+
+    def test_long_word_is_not_split(self):
+        self.assertEqual(wrap("abcdef", 3), ["abcdef"])
+
+    def test_runs_of_spaces_collapse(self):
+        self.assertEqual(wrap("a    b     c", 3), ["a b", "c"])
+
+    def test_leading_and_trailing_spaces_dropped(self):
+        self.assertEqual(wrap("   a b   ", 10), ["a b"])
+
+    def test_lines_never_contain_separating_space(self):
+        for line in wrap("aa bb cc dd ee", 4):
+            self.assertFalse(line.startswith(" ") or line.endswith(" "))
+
+    def test_empty_string(self):
+        self.assertEqual(wrap("", 5), [])
+
+    def test_whitespace_only(self):
+        self.assertEqual(wrap("   \n  ", 5), [])
+
+    def test_newlines_are_separators(self):
+        # ADR 0003: existing line breaks are reflowed like spaces.
+        self.assertEqual(wrap("one\ntwo three\n\nfour", 9), ["one two", "three", "four"])
+        self.assertEqual(wrap("a\r\nb", 3), ["a b"])
+
+    def test_other_whitespace_is_a_separator(self):
+        self.assertEqual(wrap("a\tb\u00a0c", 10), ["a b c"])
+
+    def test_no_line_contains_a_newline(self):
+        for line in wrap("x\ny\nz " * 5, 4):
+            self.assertNotIn("\n", line)
+
+    def test_width_one(self):
+        self.assertEqual(wrap("a b cd", 1), ["a", "b", "cd"])
+
+    def test_width_below_one_raises(self):
+        for width in (0, -1):
+            with self.subTest(width=width):
+                with self.assertRaises(ValueError):
+                    wrap("text", width)
+
+    def test_width_below_one_raises_for_empty_text(self):
+        with self.assertRaises(ValueError):
+            wrap("", 0)
 
 
 if __name__ == "__main__":

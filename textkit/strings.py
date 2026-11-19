@@ -93,3 +93,35 @@ def slug_title(text: str, max_len: int) -> str:
     if max_len < 0:
         raise ValueError(f"max_len ({max_len}) must not be negative")
     return truncate(slugify(text), max_len, suffix="").rstrip("-")
+
+
+def wrap(text: str, width: int) -> list[str]:
+    """Split ``text`` into lines of at most ``width`` characters, breaking at spaces.
+
+    Words are packed greedily: each line takes as many words as fit, joined by one space;
+    the separating space is never part of a line. Every whitespace character (as defined by
+    ``str.isspace``) separates words, newlines included, so existing line breaks are
+    reflowed, not kept (ADR 0003). Runs of whitespace collapse to one separator, and
+    leading and trailing whitespace is dropped.
+
+    A word longer than ``width`` is never split: it gets a line of its own, longer than
+    ``width``. ``""`` and whitespace-only input give ``[]``.
+
+    Raises ``ValueError`` when ``width < 1``, whatever ``text`` is.
+    """
+    if width < 1:
+        raise ValueError(f"width must be at least 1, got {width}")
+    lines: list[str] = []
+    current = ""
+    # str.split() with no argument does the collapsing and stripping (ADR 0003).
+    for word in text.split():
+        if not current:
+            current = word
+        elif len(current) + 1 + len(word) <= width:
+            current = f"{current} {word}"
+        else:
+            lines.append(current)
+            current = word
+    if current:
+        lines.append(current)
+    return lines
