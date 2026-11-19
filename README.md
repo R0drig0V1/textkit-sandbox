@@ -35,10 +35,14 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
   Strings print as is, numbers and booleans with `print()`, dicts and lists as JSON with
   sorted keys. Exit 0 on success, 2 on an unknown function or a wrong argument count (usage
   on stderr), 1 when the function rejects the text with `ValueError`.
+  `python3 -m textkit --version` prints `textkit <version>` (from `textkit.__version__`) and
+  exits 0.
 
   ```console
   $ python3 -m textkit slugify "Hello, World!"
   hello-world
   $ python3 -m textkit char_freq "banana"
   {"a": 3, "b": 1, "n": 2}
+  $ python3 -m textkit --version
+  textkit 0.1.0
   ```

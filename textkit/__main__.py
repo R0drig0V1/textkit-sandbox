@@ -11,6 +11,9 @@ defaults keep their default.
 Output: a ``str`` is printed as is, ``bool`` and ``int`` with ``print()``, ``dict`` and
 ``list`` as ``json.dumps(result, ensure_ascii=False, sort_keys=True)``.
 
+``--version`` prints ``textkit <version>`` (from ``textkit.__version__``, plan task T2.7) and
+exits 0; it works without a function, although a function is otherwise required.
+
 Exit codes: 0 on success; 2 (argparse) on an unknown function, a wrong argument count or no
 arguments at all, with the usage and the message on stderr; 1 when the function itself
 rejects the text with ``ValueError``, with ``textkit: error: <message>`` on stderr.
@@ -119,6 +122,12 @@ def _parser(commands: Dict[str, Callable[..., Any]]) -> argparse.ArgumentParser:
         # Keep the epilog's line breaks (the command list is pre-formatted).
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    # The version action prints and exits as soon as it is parsed, before argparse checks
+    # for the required subcommand, so "--version" alone is enough. The string is read from
+    # textkit.__version__, the only place it is written.
+    parser.add_argument(
+        "--version", action="version", version=f"textkit {textkit.__version__}",
+    )
     # On Python 3.9, required subparsers need a dest: without it a missing command raises
     # TypeError inside argparse instead of printing the usage.
     subparsers = parser.add_subparsers(
@@ -138,14 +147,14 @@ def _main(argv: Optional[List[str]] = None) -> int:
 
     Returns 0 after printing the result, 2 when argparse rejects the arguments (unknown
     function, wrong argument count, none at all; argparse prints the usage and the message
-    on stderr) and 1 when the function raises ``ValueError``. ``--help`` prints the help and
-    returns 0. Other exceptions propagate: they are bugs, and the traceback is the report.
+    on stderr) and 1 when the function raises ``ValueError``. ``--help`` and ``--version``
+    print the help or the version and return 0. Other exceptions propagate: they are bugs, and the traceback is the report.
     """
     commands = _commands()
     try:
         args = _parser(commands).parse_args(argv)
     except SystemExit as exit_:
-        # argparse exits on --help (0) and on errors (2); return the code instead so that
+        # argparse exits on --help and --version (0) and on errors (2); return the code instead so that
         # _main can be called in-process.
         return exit_.code if isinstance(exit_.code, int) else 2
     try:
