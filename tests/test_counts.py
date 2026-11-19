@@ -5,7 +5,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.counts import word_count
+from textkit.counts import char_freq, word_count
 
 ADR = pathlib.Path(__file__).resolve().parent.parent / "docs" / "decisions" / (
     "0001-what-counts-as-a-word.md"
@@ -62,6 +62,38 @@ class WordCountTest(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(TypeError):
                     word_count(value)
+
+
+class CharFreqTest(unittest.TestCase):
+    def test_counts_each_character(self):
+        self.assertEqual(char_freq("banana"), {"b": 1, "a": 3, "n": 2})
+
+    def test_is_case_sensitive(self):
+        self.assertEqual(char_freq("aAa"), {"a": 2, "A": 1})
+
+    def test_skips_whitespace(self):
+        # Every character here satisfies str.isspace(), including U+00A0 and U+3000.
+        self.assertEqual(char_freq(" a\tb\nc\r\x0b\x0c\u00a0\u3000"), {"a": 1, "b": 1, "c": 1})
+
+    def test_counts_punctuation_digits_and_non_ascii(self):
+        self.assertEqual(char_freq("ñ1!ñ"), {"ñ": 2, "1": 1, "!": 1})
+
+    def test_keys_in_order_of_first_occurrence(self):
+        self.assertEqual(list(char_freq("cabbac")), ["c", "a", "b"])
+
+    def test_no_normalization(self):
+        # NFD "é" is two code points, each counted on its own.
+        self.assertEqual(char_freq("e\u0301"), {"e": 1, "\u0301": 1})
+
+    def test_empty_and_whitespace_only(self):
+        self.assertEqual(char_freq(""), {})
+        self.assertEqual(char_freq(" \n\t "), {})
+
+    def test_rejects_non_str(self):
+        for value in (None, b"abc", 42, ["a", "b"]):
+            with self.subTest(value=value):
+                with self.assertRaises(TypeError):
+                    char_freq(value)
 
 
 if __name__ == "__main__":
