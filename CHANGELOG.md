@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `slugify`: lower-case ASCII slug (non-ASCII removed, other runs become `-`).
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (`"Ñandú"` -> `"Nandu"`).
 - Added `to_snake_case`: converts camelCase, PascalCase or kebab-case identifiers to snake_case.

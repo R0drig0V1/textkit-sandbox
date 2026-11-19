@@ -1,5 +1,6 @@
 """String helpers. Every public function is listed in the README's function table."""
 
+import re
 import unicodedata
 
 
@@ -46,3 +47,32 @@ def strip_accents(text: str) -> str:
     decomposed = unicodedata.normalize("NFD", text)
     kept = "".join(c for c in decomposed if unicodedata.category(c) != "Mn")
     return unicodedata.normalize("NFC", kept)
+
+
+# Compiled once: slugify runs these on every call. The second pattern works on the
+# lower-cased, ASCII-only text, so `_` and every other punctuation mark count as separators.
+_NON_ASCII = re.compile(r"[^\x00-\x7f]+")
+_NON_SLUG = re.compile(r"[^a-z0-9]+")
+
+
+def slugify(text: str) -> str:
+    """Turn ``text`` into a lower-case ASCII slug such as ``"hello-world"``.
+
+    Steps, in order:
+
+    1. Every character outside ASCII is removed, with no separator left in its place
+       (``"naïve"`` -> ``"nave"``). No Unicode normalization is applied, so the result
+       depends on the input's form: NFC ``"Ñandú"`` gives ``"and"``, while NFD ``"Ñandú"``
+       (base letters plus combining marks) gives ``"nandu"``. Callers who want accents
+       folded should pass the text through ``strip_accents`` first.
+    2. The text is lower-cased.
+    3. Every run of characters outside ``[a-z0-9]`` (``_`` included) becomes one ``-``.
+    4. Leading and trailing ``-`` are stripped.
+
+    ``str.isalnum`` is deliberately not used: it accepts non-ASCII letters and digits.
+
+    Never raises for a ``str`` argument; ``""`` or text with no ASCII letters or digits
+    (``"!!!"``) gives ``""``.
+    """
+    ascii_only = _NON_ASCII.sub("", text)
+    return _NON_SLUG.sub("-", ascii_only.lower()).strip("-")

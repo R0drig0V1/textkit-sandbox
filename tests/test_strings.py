@@ -3,6 +3,7 @@ import unittest
 
 from textkit.strings import squeeze, truncate
 from textkit.strings import strip_accents
+from textkit.strings import slugify
 
 
 class SqueezeTest(unittest.TestCase):
@@ -84,6 +85,49 @@ class StripAccentsTest(unittest.TestCase):
 
     def test_hangul_is_recomposed(self):
         self.assertEqual(strip_accents("한국어"), "한국어")
+
+
+class SlugifyTest(unittest.TestCase):
+    def test_basic_example(self):
+        self.assertEqual(slugify("Hello, World!"), "hello-world")
+
+    def test_run_of_separators_becomes_one_dash(self):
+        self.assertEqual(slugify("a  --  b...c"), "a-b-c")
+
+    def test_underscore_is_a_separator(self):
+        self.assertEqual(slugify("snake_case_name"), "snake-case-name")
+
+    def test_strips_dashes_at_both_ends(self):
+        self.assertEqual(slugify("--  Hello  --"), "hello")
+
+    def test_keeps_digits(self):
+        self.assertEqual(slugify("Python 3.9 Release"), "python-3-9-release")
+
+    def test_non_ascii_removed_without_separator(self):
+        self.assertEqual(slugify("na\u00efve"), "nave")
+
+    def test_nfc_input(self):
+        # "Nandu" with tilde and acute as typed (NFC): two single non-ASCII code points,
+        # both removed with no separator.
+        text = unicodedata.normalize("NFC", "\u00d1and\u00fa")
+        self.assertEqual(len(text), 5)
+        self.assertEqual(slugify(text), "and")
+
+    def test_nfd_input(self):
+        # The same word in NFD: ASCII base letters plus combining marks; only the marks go.
+        text = unicodedata.normalize("NFD", "\u00d1and\u00fa")
+        self.assertEqual(len(text), 7)
+        self.assertEqual(slugify(text), "nandu")
+
+    def test_non_ascii_digits_are_removed(self):
+        # ARABIC-INDIC DIGIT THREE passes str.isalnum but is not ASCII.
+        self.assertEqual(slugify("a\u0663b"), "ab")
+
+    def test_empty_string(self):
+        self.assertEqual(slugify(""), "")
+
+    def test_punctuation_only(self):
+        self.assertEqual(slugify("!!!"), "")
 
 
 if __name__ == "__main__":
