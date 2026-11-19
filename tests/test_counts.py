@@ -5,6 +5,8 @@
 drift apart. `CharFreqTest` checks `char_freq` (plan task T1.6). `ReadingTimeTest` checks
 every row of the case table that ends ADR 0004 (docs/decisions/0004-reading-time-rounding.md)
 the same way, plus the argument checks of `reading_time` (plan task T2.1).
+`SentenceCountTest` checks every row of the case table that ends ADR 0005
+(docs/decisions/0005-sentence-boundaries.md) the same way (plan task T2.2).
 """
 
 import ast
@@ -12,7 +14,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.counts import _words, char_freq, reading_time, word_count
+from textkit.counts import _words, char_freq, reading_time, sentence_count, word_count
 
 _ADR = pathlib.Path(__file__).resolve().parents[1] / "docs" / "decisions" / "0001-word-rule.md"
 # A table row: | `input literal` | count | `words literal` | description |
@@ -152,6 +154,48 @@ class ReadingTimeTest(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(TypeError):
                     reading_time(value)
+
+
+_SENTENCE_ADR = _ADR.with_name("0005-sentence-boundaries.md")
+# A table row of ADR 0005: | `input literal` | count | description |
+_SENTENCE_ROW = re.compile(r"^\| `(?P<input>[^`]*)` \| (?P<count>\d+) \| .+ \|$")
+
+
+def _sentence_cases() -> list[tuple[str, int]]:
+    """Return (input, count) for every row of ADR 0005's "Cases" table."""
+    text = _SENTENCE_ADR.read_text(encoding="utf-8")
+    section = text.split("\n## Cases\n", 1)[1]
+    return [
+        (ast.literal_eval(m["input"]), int(m["count"]))
+        for m in map(_SENTENCE_ROW.match, section.splitlines())
+        if m
+    ]
+
+
+class SentenceCountTest(unittest.TestCase):
+    def test_adr_table_is_present(self):
+        # The plan asks the ADR to cover abbreviations and ellipses; a parsing slip must not
+        # empty the table and pass vacuously.
+        inputs = [case[0] for case in _sentence_cases()]
+        for required in ["", "Hello", "Dr. Smith is here.", "Use e.g. apples.",
+                         "Wait... what?", "I see... Let us go.", "I see\u2026 Let us go."]:
+            self.assertIn(required, inputs)
+
+    def test_every_adr_row(self):
+        for text, count in _sentence_cases():
+            with self.subTest(text=text):
+                self.assertEqual(sentence_count(text), count)
+
+    def test_long_text_counts_every_sentence(self):
+        # Many boundaries in one text: guards the scan that looks ahead for the next word.
+        self.assertEqual(sentence_count("One. Two! Three? " * 1000), 3000)
+        self.assertEqual(sentence_count("! " * 1000 + "end"), 1)
+
+    def test_rejects_non_str(self):
+        for value in [None, b"One. Two.", ["One.", "Two."], 3]:
+            with self.subTest(value=value):
+                with self.assertRaises(TypeError):
+                    sentence_count(value)
 
 
 if __name__ == "__main__":

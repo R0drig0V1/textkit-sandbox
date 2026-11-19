@@ -14,6 +14,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive, in order of first occurrence |
 | `is_palindrome` | `textkit.strings` | Tells whether text reads the same backwards, ignoring case, spaces, punctuation and accents (`"Anita lava la tina"` -> `True`) |
 | `reading_time` | `textkit.counts` | Estimates reading time in whole minutes, rounded up (`wpm=200`; rule: ADR 0004) |
+| `sentence_count` | `textkit.counts` | Counts the sentences in a text, aware of abbreviations and ellipses (rule: ADR 0005) |
 | `slug_title` | `textkit.strings` | Slug of text cut to at most `max_len` characters, never ending in `-` (`("Hello, World!", 8)` -> `"hello-wo"`) |
 | `slugify` | `textkit.strings` | Turns text into a lower-case ASCII slug (`"Hello, World!"` -> `"hello-world"`) |
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |

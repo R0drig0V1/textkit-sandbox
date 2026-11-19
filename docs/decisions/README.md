@@ -9,3 +9,4 @@ One file per decision, `NNNN-title.md`, with Context / Decision / Consequences.
 | [0002](0002-splitting-runs-of-capitals.md) | How `to_snake_case` splits identifiers: runs of capitals, digits, `_`/`-` separators |
 | [0003](0003-wrap-newlines.md) | `wrap` reflows: newlines and other ASCII whitespace are break points, not kept; no-break space is not a break point |
 | [0004](0004-reading-time-rounding.md) | How `reading_time` rounds to whole minutes: ceiling, 0 for no words, at least 1 otherwise |
+| [0005](0005-sentence-boundaries.md) | Where a sentence ends: terminator runs before whitespace and a non-lower-case word, except after `Dr.`, `e.g.` and the other listed abbreviations; ellipses act like a dot (`sentence_count`) |
