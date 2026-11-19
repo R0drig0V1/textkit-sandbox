@@ -1,4 +1,4 @@
-"""Command line for textkit: ``python3 -m textkit <function> <text>`` (plan task T2.6).
+"""Command line for textkit: ``python3 -m textkit <function> <text>`` (plan tasks T2.6, T2.7).
 
 Every public function (phase 1 definition: a top-level ``def`` whose name does not start
 with ``_``, in a module of ``textkit/`` whose name does not start with ``_``) that has
@@ -11,6 +11,7 @@ Usage::
     python3 -m textkit to_roman 1994               # MCMXCIV
     python3 -m textkit slugify -- -x               # x  (`--` before a text starting with -)
     python3 -m textkit --help                      # every command and its summary
+    python3 -m textkit --version                   # textkit <textkit.__version__>
 
 Behaviour:
 
@@ -22,6 +23,8 @@ Behaviour:
   ``ValueError``, ``KeyError`` or ``TypeError`` (``error: <message>`` on stderr, no
   traceback); 2 for an unknown function, a wrong argument count, an argument that is not an
   integer where one is needed, or no arguments at all (argparse prints the usage on stderr).
+- ``--version`` prints ``textkit <textkit.__version__>`` on stdout and exits 0, before any
+  command is required.
 
 The module has no public functions (its name starts with ``_``), and importing it has no
 side effects: the command line only runs under ``if __name__ == "__main__":``.
@@ -157,6 +160,10 @@ def _build_parser(commands: Dict[str, Callable[..., object]]) -> argparse.Argume
         "Quote the argument; put `--` before it when it starts with `-` and is not an integer.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    # argparse's "version" action prints and exits 0 while parsing, so the required
+    # sub-command is never asked for. The string comes from textkit.__version__ (T2.7: the
+    # version appears nowhere else in textkit/).
+    parser.add_argument("--version", action="version", version=f"textkit {textkit.__version__}")
     # `dest` is mandatory with required=True on Python 3.9: without it, the error message
     # for a missing command crashes argparse with a TypeError.
     sub = parser.add_subparsers(
@@ -186,7 +193,7 @@ def _main(argv: Optional[List[str]] = None) -> int:
     ``UnicodeEncodeError`` from a stdout that cannot encode the result is a ``ValueError``).
     Usage errors (unknown function, wrong argument count, a non-integer for an ``int``
     parameter, no arguments) raise ``SystemExit(2)`` from argparse, after it prints the
-    usage and the message on stderr; ``--help`` raises ``SystemExit(0)``.
+    usage and the message on stderr; ``--help`` and ``--version`` raise ``SystemExit(0)``.
     """
     commands = _commands()
     args = _build_parser(commands).parse_args(argv)
