@@ -31,3 +31,4 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 - `python3 -m textkit <function> "<text>"`: runs any function of the table that takes one
   text argument and prints the result (`dict` and `list` as JSON); `python3 -m textkit
   --help` lists them.
+- `python3 -m textkit --version`: prints `textkit <version>` (`textkit.__version__`).

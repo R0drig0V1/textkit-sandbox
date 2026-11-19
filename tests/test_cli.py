@@ -1,4 +1,4 @@
-"""Tests for textkit/__main__.py, the ``python3 -m textkit`` command line (plan task T2.6).
+"""Tests for textkit/__main__.py, the ``python3 -m textkit`` command line (T2.6, T2.7).
 
 The expected command set is computed here from the plan's public-function definition, on its
 own and not through the CLI's discovery code, so the two are checked against each other.
@@ -189,6 +189,33 @@ class CliErrorsTest(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertEqual(result.stdout, "")
         self.assertIn("unrecognized arguments", result.stderr)
+
+
+
+class CliVersionTest(unittest.TestCase):
+    def test_version_prints_the_package_version_and_exits_0(self):
+        result = run_cli("--version")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, f"textkit {textkit.__version__}\n")
+        self.assertEqual(result.stderr, "")
+
+    def test_package_version_is_0_1_0(self):
+        self.assertEqual(textkit.__version__, "0.1.0")
+
+
+class CliHelpPercentTest(unittest.TestCase):
+    def test_percent_in_a_summary_is_shown_literally(self):
+        # argparse %-formats help strings: an unescaped "%" would raise or be garbled.
+        def fake(text: str) -> str:
+            """Rounds 50% of the text (and keeps %(prog)s as is)."""
+            return text
+
+        with mock.patch("textkit.__main__._commands", return_value={"fake": fake}):
+            code, out, _ = run_main(["--help"])
+        self.assertEqual(code, 0)
+        self.assertEqual(
+            help_commands(out), {"fake": "Rounds 50% of the text (and keeps %(prog)s as is)."}
+        )
 
 
 if __name__ == "__main__":
