@@ -4,6 +4,7 @@
 
 - Added `char_freq` in `textkit.counts`: counts each character that is not `str.isspace()`, case-sensitive, keys in order of first occurrence.
 - Added `human_bytes` in the new module `textkit.sizes`: formats a byte count in binary units B, KiB, MiB, GiB, TiB (`1536` -> `"1.5 KiB"`), the unit chosen before rounding; raises `ValueError` for a negative or non-`int` `n` (a `bool` included) or one too large for a float.
+- Added `initials` in the new module `textkit.names`: upper-case initials of a name split on runs of spaces and hyphens (`"jean-luc picard"` -> `"JLP"`), taking the first `str.isalpha()` character of each part (`"3d printer"` -> `"DP"`); no Unicode normalization, and `""` returns `""`.
 - Added `is_palindrome`: tells whether text reads the same backwards, ignoring case, spaces, punctuation and accents; digits count, and `""` or text with no letters or digits gives `True`.
 - Added `parse_duration` in the new module `textkit.durations`: seconds from `h`, `m` and `s` parts in that order (`"1h30m"` -> 5400); ASCII digits and lower-case units only, no whitespace; raises `ValueError` otherwise.
 - Added `number_to_words` in the new module `textkit.numwords`: spells `0 <= n <= 999` in lower-case English words with hyphenated tens and no "and" (`105` -> `"one hundred five"`); raises `ValueError` outside the range or for a non-`int`, `bool` included.
