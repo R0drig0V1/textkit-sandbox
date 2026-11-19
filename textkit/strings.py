@@ -1,6 +1,7 @@
 """String helpers. Every public function is listed in the README's function table."""
 
 import re
+import unicodedata
 
 # Runs of anything that is not an ASCII lower-case letter or digit; slugify applies it after
 # dropping non-ASCII characters and lower-casing, so this is exactly "a separator run".
@@ -62,3 +63,37 @@ def truncate(text: str, width: int, suffix: str = "...") -> str:
     # width - len(suffix) >= 0 here, so the slice never goes negative (which would count
     # from the end of the text instead of the start).
     return text[: width - len(suffix)] + suffix
+
+
+def strip_accents(text: str) -> str:
+    """Remove combining marks from ``text`` (``"Ñandú"`` -> ``"Nandu"``).
+
+    The text is decomposed with Unicode NFD, every character of category ``Mn``
+    (nonspacing combining mark) is dropped, and the rest is recomposed with NFC.
+
+    Normalization form: NFD, not NFKD. NFKD also applies compatibility mappings
+    (``"ﬁ"`` -> ``"fi"``, ``"²"`` -> ``"2"``, full-width letters -> ASCII), which
+    change characters that carry no accent; this function only removes marks.
+    The final NFC step matters for scripts that NFD splits without producing
+    marks: Hangul syllables decompose into conjoining jamo (category ``Lo``), and
+    without recomposition ``"한국"`` would come back as a different, longer string.
+
+    Behaviour worth knowing:
+
+    - Already-decomposed input (base letter + combining mark) gives the same
+      result as precomposed input.
+    - Text with no combining marks is returned unchanged (in NFC form).
+    - Marks are removed in every script, not only Latin: Greek tonos
+      (``"ά"`` -> ``"α"``), Cyrillic breve (``"й"`` -> ``"и"``) and Japanese
+      dakuten (``"が"`` -> ``"か"``) are all ``Mn``. In those scripts this can
+      change the letter, not just drop an accent.
+    - Letters whose stroke or slash is part of the base character do not
+      decompose and are kept: ``"ø"``, ``"ł"``, ``"đ"``, ``"ß"``.
+    - Spacing combining marks (``Mc``, e.g. Devanagari vowel signs) and
+      enclosing marks (``Me``) are kept, since removing them breaks the text.
+
+    Never raises for a ``str`` argument; the empty string returns ``""``.
+    """
+    decomposed = unicodedata.normalize("NFD", text)
+    kept = "".join(ch for ch in decomposed if unicodedata.category(ch) != "Mn")
+    return unicodedata.normalize("NFC", kept)
