@@ -107,3 +107,29 @@ def to_camel_case(name: str) -> str:
     if not words:
         return ""
     return words[0].lower() + "".join(word.capitalize() for word in words[1:])
+
+
+def to_kebab_case(name: str) -> str:
+    """Convert a camelCase, PascalCase or snake_case identifier to kebab-case.
+
+    Definition: ``to_kebab_case(name) == to_snake_case(name).replace("_", "-")``. The
+    identifier is split into words exactly as ``to_snake_case`` splits it (ADR 0002), then
+    the words are lower-cased and joined with ``-``:
+
+    - ``"camelCase"`` -> ``"camel-case"``, ``"PascalCase"`` -> ``"pascal-case"``,
+      ``"already_snake"`` -> ``"already-snake"``, ``"kebab-case"`` -> ``"kebab-case"``.
+    - Runs of capitals and digits follow ADR 0002: ``"HTTPServer"`` -> ``"http-server"``,
+      ``"parseURL2"`` -> ``"parse-url2"``.
+    - ``_`` and ``-`` are separators; a run of them counts as one and leading or trailing
+      ones are dropped (``"__init__"`` -> ``"init"``). Any other character, spaces included,
+      is kept as part of its word.
+
+    The replacement is safe because ``to_snake_case`` drops every ``_`` of the input, so
+    each ``_`` in its output is a word boundary it added. ``""`` (or separators only) gives
+    ``""``.
+
+    Raises:
+        TypeError: if ``name`` is not a ``str`` (raised by ``to_snake_case``).
+    """
+    # Built on to_snake_case so both functions always split words the same way (T2.3).
+    return to_snake_case(name).replace("_", "-")

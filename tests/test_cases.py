@@ -11,7 +11,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.cases import to_camel_case, to_snake_case
+from textkit.cases import to_camel_case, to_kebab_case, to_snake_case
 
 ADR = pathlib.Path(__file__).resolve().parent.parent / "docs" / "decisions" / (
     "0002-splitting-runs-of-capitals.md"
@@ -117,6 +117,33 @@ class ToCamelCaseTest(unittest.TestCase):
     def test_non_str_raises_type_error(self):
         with self.assertRaises(TypeError):
             to_camel_case(None)  # type: ignore[arg-type]
+
+
+class ToKebabCaseTest(unittest.TestCase):
+    """to_kebab_case is to_snake_case with "_" replaced by "-" (plan task T2.3, ADR 0002)."""
+
+    def test_every_case_of_adr_0002_converted(self):
+        # CASES is kept equal to the ADR 0002 table by ToSnakeCaseTest.
+        for name, snake in CASES:
+            with self.subTest(name=name):
+                self.assertEqual(to_kebab_case(name), snake.replace("_", "-"))
+
+    def test_examples_spelled_out(self):
+        self.assertEqual(to_kebab_case("HTTPServer"), "http-server")
+        self.assertEqual(to_kebab_case("parseURL2"), "parse-url2")
+        self.assertEqual(to_kebab_case("camelCase"), "camel-case")
+        self.assertEqual(to_kebab_case("already_snake"), "already-snake")
+        self.assertEqual(to_kebab_case("kebab-case"), "kebab-case")
+        self.assertEqual(to_kebab_case("mixed-kebab_snakeCase"), "mixed-kebab-snake-case")
+        self.assertEqual(to_kebab_case("__init__"), "init")
+        self.assertEqual(to_kebab_case(""), "")
+
+    def test_other_characters_stay_in_their_word(self):
+        self.assertEqual(to_kebab_case("my var.Name"), "my var.name")
+
+    def test_non_str_raises_type_error(self):
+        with self.assertRaises(TypeError):
+            to_kebab_case(None)  # type: ignore[arg-type]
 
 
 if __name__ == "__main__":
