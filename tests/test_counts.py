@@ -5,7 +5,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.counts import word_count
+from textkit.counts import char_freq, word_count
 
 # The table of cases at the end of the word-rule ADR, row by row (input, count). Kept as
 # code so the cases are readable here; `test_cases_match_the_adr_table` keeps both in sync.
@@ -65,6 +65,45 @@ class WordCountTest(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(TypeError):
                     word_count(value)  # type: ignore[arg-type]
+
+
+
+class CharFreqTest(unittest.TestCase):
+    def test_counts_each_character(self):
+        self.assertEqual(char_freq("banana"), {"b": 1, "a": 3, "n": 2})
+
+    def test_empty_text(self):
+        self.assertEqual(char_freq(""), {})
+
+    def test_whitespace_is_not_counted(self):
+        self.assertEqual(char_freq("a b\tc\nd\r\n"), {"a": 1, "b": 1, "c": 1, "d": 1})
+
+    def test_unicode_whitespace_is_not_counted(self):
+        # No-break space, em space, line separator, vertical tab, form feed.
+        self.assertEqual(char_freq("\u00a0\u2003\u2028\x0b\x0c"), {})
+        self.assertEqual(char_freq("x\u00a0x"), {"x": 2})
+
+    def test_is_case_sensitive(self):
+        self.assertEqual(char_freq("aAa"), {"a": 2, "A": 1})
+
+    def test_keys_in_order_of_first_occurrence(self):
+        self.assertEqual(list(char_freq("hello, world")), ["h", "e", "l", "o", ",", "w", "r", "d"])
+
+    def test_punctuation_digits_and_symbols_are_counted(self):
+        self.assertEqual(char_freq("1+1=2!"), {"1": 2, "+": 1, "=": 1, "2": 1, "!": 1})
+
+    def test_counts_code_points_without_normalization(self):
+        self.assertEqual(char_freq("e\u0301\u00e9"), {"e": 1, "\u0301": 1, "\u00e9": 1})
+        self.assertEqual(char_freq("\U0001f642\U0001f642"), {"\U0001f642": 2})
+
+    def test_returns_a_plain_dict(self):
+        self.assertIs(type(char_freq("ab")), dict)
+
+    def test_rejects_non_str(self):
+        for value in (None, b"ab", ["a", "b"], 3):
+            with self.subTest(value=value):
+                with self.assertRaises(TypeError):
+                    char_freq(value)  # type: ignore[arg-type]
 
 
 if __name__ == "__main__":

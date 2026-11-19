@@ -2,6 +2,7 @@
 
 The word rule used here is the one in docs/decisions/0002-what-counts-as-a-word.md; the
 private `_words` tokenizer implements it and is the single place that rule lives in code.
+`char_freq` counts characters, not words, so that rule does not apply to it.
 """
 
 import unicodedata
@@ -71,3 +72,26 @@ def word_count(text: str) -> int:
     if not isinstance(text, str):
         raise TypeError(f"word_count() expects str, got {type(text).__name__}")
     return len(_words(text))
+
+
+def char_freq(text: str) -> dict[str, int]:
+    """Return how many times each non-whitespace character occurs in `text`.
+
+    Counting is case-sensitive (`"a"` and `"A"` are different keys) and per code point: no
+    Unicode normalization is applied, so a combining mark in NFD text is a key of its own.
+    Characters for which `str.isspace()` is true (spaces, tabs, newlines, no-break and other
+    Unicode spaces) are not counted. Keys appear in the order of their first occurrence in
+    `text`. The result is a new plain `dict`; it is empty for `""` or whitespace-only text.
+
+    Raises:
+        TypeError: if `text` is not a `str`.
+    """
+    if not isinstance(text, str):
+        # Without this, a list or bytes would be iterated and counted silently.
+        raise TypeError(f"char_freq() expects str, got {type(text).__name__}")
+    counts: dict[str, int] = {}
+    # A plain dict keeps insertion order (Python 3.7+), which is the first-occurrence order.
+    for char in text:
+        if not char.isspace():
+            counts[char] = counts.get(char, 0) + 1
+    return counts
