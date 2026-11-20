@@ -195,7 +195,7 @@ def _expression(source: str, token: Token) -> Expression:
         problem = filters.check(name, argument if colon else None)
         if problem:
             _fail(problem, token)
-        parsed.append(Filter(name, int(argument) if colon else None))
+        parsed.append(Filter(name, filters.width(argument) if colon else None))
     return Expression(names, tuple(parsed))
 
 

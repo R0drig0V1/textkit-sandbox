@@ -9,6 +9,7 @@ runs of the checks never share a file (phase 3 rule "The command line"). Every e
 
 import json
 import pathlib
+import sys
 import tempfile
 import unittest
 from typing import Union
@@ -73,6 +74,27 @@ class RenderCommandTest(unittest.TestCase):
         result = _run("render", template, self._context({"x": True}))
         self.assertEqual((result.returncode, result.stdout), (1, ""))
         self.assertEqual(result.stderr, "3:1: 'if' has no 'endif'\n")
+
+    def test_huge_truncate_width_exits_1_without_traceback(self):
+        template = self._file("t.txt", "{{ x | truncate:" + "9" * 5000 + " }}")
+        result = _run("render", template, self._context({"x": "abc"}))
+        self.assertEqual((result.returncode, result.stdout), (1, ""))
+        self.assertEqual(
+            result.stderr, "1:1: filter 'truncate' needs a width of at most 18 digits\n"
+        )
+
+    def test_huge_integer_in_the_context_has_no_traceback(self):
+        # Where integer string conversion is limited (3.11+, 3.9.14+), json.loads rejects
+        # the number (exit 2); elsewhere it is read and printed (exit 0).
+        template = self._file("t.txt", "{{ n }}")
+        context = self._file("context.json", '{"n": 1' + "0" * 5000 + "}")
+        result = _run("render", template, context)
+        self.assertNotIn("Traceback", result.stderr)
+        if hasattr(sys, "get_int_max_str_digits"):
+            self.assertEqual(result.returncode, 2)
+            self.assertTrue(result.stderr.startswith(f"{ERROR}{context}: not valid JSON: "))
+        else:
+            self.assertEqual((result.returncode, result.stdout), (0, "1" + "0" * 5000))
 
     def test_unreadable_files_exit_2(self):
         good_template = self._file("t.txt", "{{ x }}")

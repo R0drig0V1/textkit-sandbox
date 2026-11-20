@@ -11,7 +11,7 @@ in ``{{ }}`` and ``for``, false in ``if``. Values print as ``str(value)``, excep
 which prints as ``""``. Output is plain text: nothing is escaped.
 """
 
-from typing import Any, Dict, List, NoReturn
+from typing import Any, Dict, List, NoReturn, Union
 
 from textkit.template import filters
 from textkit.template.exceptions import TemplateError
@@ -41,8 +41,10 @@ def render(template: str, context: dict[str, Any]) -> str:
         TypeError: if ``template`` is not a ``str`` or ``context`` is not a ``dict``.
         TemplateSyntaxError: if the template cannot be parsed (raised before rendering).
         TemplateError: for a missing name in ``{{ }}`` or ``for``, a ``for`` over a value
-            that is not a list, or a dotted name through a value that is not a dict. The
-            error's ``line`` and ``column`` are those of the tag's opening delimiter.
+            that is not a list, a dotted name through a value that is not a dict, or a value
+            whose ``str`` raises ``ValueError`` (an int of more than 4300 digits on Python
+            3.11+). The error's ``line`` and ``column`` are those of the tag's opening
+            delimiter.
     """
     if not isinstance(template, str):
         raise TypeError(f"template must be a str, not {type(template).__name__}")
@@ -63,12 +65,12 @@ def _render(nodes: List[Node], scopes: _Scopes, out: List[str]) -> None:
             value = _lookup(node.expression, scopes, node)
             if value is _MISSING:
                 _missing(node.expression, node)
-            out.append(_text(value, node.expression))
+            out.append(_text(value, node))
         elif isinstance(node, If):
             value = _lookup(node.expression, scopes, node)
             # A missing name is false, whatever the filters (ADR 0006).
             truth = value is not _MISSING and (
-                bool(_text(value, node.expression)) if node.expression.filters else bool(value)
+                bool(_text(value, node)) if node.expression.filters else bool(value)
             )
             _render(node.body if truth else node.orelse, scopes, out)
         else:
@@ -135,9 +137,20 @@ def _missing(expression: Expression, node: Any) -> NoReturn:
     raise TemplateError(f"{expression.dotted!r} is not defined", node.line, node.column)
 
 
-def _text(value: Any, expression: Expression) -> str:
-    """Turn ``value`` into text (``None`` -> ``""``) and apply ``expression``'s filters."""
-    text = "" if value is None else str(value)
-    for f in expression.filters:
+def _text(value: Any, node: Union[Output, If]) -> str:
+    """Turn ``value`` into text (``None`` -> ``""``) and apply ``node``'s filters.
+
+    ``str(value)`` raises ``ValueError`` for an int of more than 4300 digits (alone or inside
+    a list or dict) from Python 3.11 and the 3.9.14+ security releases; it becomes a
+    ``TemplateError`` at ``node``, so no standard-library ``ValueError`` escapes (phase 3
+    rule "Errors").
+    """
+    try:
+        text = "" if value is None else str(value)
+    except ValueError as exc:
+        raise TemplateError(
+            f"cannot print {node.expression.dotted!r}: {exc}", node.line, node.column
+        ) from exc
+    for f in node.expression.filters:
         text = filters.apply(f.name, f.width, text)
     return text

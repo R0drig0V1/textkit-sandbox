@@ -73,8 +73,9 @@ text and returns text.
 | `lower` | `str.lower` | `Ada` -> `ada` |
 
 `truncate` is the only filter with an argument: the width, in ASCII digits, at least 3 (the
-length of its `...` suffix). It is checked when the template is parsed, not when it is
-rendered.
+length of its `...` suffix) and at most 18 digits after leading zeros (any longer width is
+larger than any text, and Python 3.11+ refuses to convert strings of more than 4300 digits
+to an int). It is checked when the template is parsed, not when it is rendered.
 
 ## Errors
 
@@ -95,7 +96,7 @@ subclass `textkit.errors.InvalidValueError` once that exists, plan task T3.2).
 | an unknown tag | `TemplateSyntaxError` | `{% include x %}`, `{% elif a %}` | the tag |
 | an empty tag | `TemplateSyntaxError` | `{% %}` | the tag |
 | an unknown filter | `TemplateSyntaxError` | `{{ a \| title }}` | the tag |
-| a bad filter argument | `TemplateSyntaxError` | `truncate:x`, `truncate:2`, `truncate`, `upper:3` | the tag |
+| a bad filter argument | `TemplateSyntaxError` | `truncate:x`, `truncate:2`, a width of more than 18 digits, `truncate`, `upper:3` | the tag |
 | `else`, `endif` or `endfor` without their opening tag | `TemplateSyntaxError` | `{% endif %}`, `{% if a %}{% endfor %}` | the closing tag |
 | a second `else` in one `if` | `TemplateSyntaxError` | `{% if a %}{% else %}{% else %}` | the second `else` |
 | an end tag with something after it | `TemplateSyntaxError` | `{% endif a %}` | the tag |
@@ -104,6 +105,7 @@ subclass `textkit.errors.InvalidValueError` once that exists, plan task T3.2).
 | blocks nested deeper than 100 | `TemplateSyntaxError` | | the 101st opening tag |
 | a missing name in `{{ }}` or `for` | `TemplateError` | `{{ nmae }}` | the tag |
 | a dotted name through a value that is not a dict | `TemplateError` | `{{ user.name }}` with `user = "Ada"` | the tag |
+| a value that cannot be printed (`str` raises `ValueError`, as for an int of more than 4300 digits on Python 3.11+) | `TemplateError` | `{{ n }}` with `n = 10**5000` | the tag |
 | a `for` over a value that is not a list | `TemplateError` | `{% for c in name %}` with `name = "abc"` | the `for` tag |
 
 `render` raises `TypeError` when `template` is not a `str` or `context` is not a `dict`.

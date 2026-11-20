@@ -7,6 +7,7 @@ the two are equal and that every row renders as stated, so they cannot drift apa
 
 import ast
 import pathlib
+import sys
 import unittest
 
 import textkit.template
@@ -232,6 +233,42 @@ class RenderTest(unittest.TestCase):
         # The missing name comes first in the text, but the template does not parse.
         with self.assertRaises(TemplateSyntaxError):
             renderer.render("{{ missing }}{% endif %}", {})
+
+    def test_huge_truncate_width_is_a_syntax_error(self):
+        with self.assertRaises(TemplateSyntaxError) as caught:
+            renderer.render("x\n {{ t | truncate:" + "9" * 5000 + " }}", {"t": "abc"})
+        self.assertEqual((caught.exception.line, caught.exception.column), (2, 2))
+
+    def test_large_truncate_width_keeps_the_text(self):
+        template = "{{ t | truncate:" + "9" * 18 + " }}"
+        self.assertEqual(renderer.render(template, {"t": "abc"}), "abc")
+
+    def test_value_whose_str_raises_value_error(self):
+        class Unprintable:
+            def __str__(self) -> str:
+                raise ValueError("no text for this value")
+
+        for template in ("ab {{ v }}", "ab {% if v | upper %}{% endif %}"):
+            with self.subTest(template=template):
+                with self.assertRaises(TemplateError) as caught:
+                    renderer.render(template, {"v": Unprintable()})
+                error = caught.exception
+                self.assertEqual((error.line, error.column), (1, 4))
+                self.assertEqual(error.message, "cannot print 'v': no text for this value")
+
+    def test_int_too_long_to_print(self):
+        # str() of an int of more than 4300 digits raises ValueError where the interpreter
+        # limits integer string conversion (3.11+, 3.9.14+); elsewhere it prints.
+        context = {"x": 10**5000, "xs": [10**5000]}
+        for template in ("{{ x }}", "{{ xs }}"):
+            with self.subTest(template=template):
+                if hasattr(sys, "get_int_max_str_digits"):
+                    with self.assertRaises(TemplateError) as caught:
+                        renderer.render(template, context)
+                    self.assertEqual((caught.exception.line, caught.exception.column), (1, 1))
+                    self.assertIn("cannot print", caught.exception.message)
+                else:
+                    self.assertIn("1" + "0" * 5000, renderer.render(template, context))
 
     def test_wrong_argument_types(self):
         with self.assertRaises(TypeError):

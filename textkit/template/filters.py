@@ -31,6 +31,12 @@ _PLAIN: Dict[str, Callable[[str], str]] = {
 # The smallest width truncate accepts: the length of its default suffix "...".
 MIN_TRUNCATE_WIDTH = 3
 
+# The most significant digits a truncate width may have: up to 10**18 - 1 code points, far
+# beyond any text that fits in memory. The cap keeps int() away from long digit strings:
+# from Python 3.11 (and the 3.9.14+ security releases) int() of a string of more than 4300
+# digits raises ValueError, which must not escape (phase 3 rule "Errors").
+MAX_WIDTH_DIGITS = 18
+
 NAMES = tuple(sorted([*_PLAIN, "truncate"]))
 
 
@@ -39,19 +45,21 @@ def check(name: str, argument: Optional[str]) -> Optional[str]:
 
     ``argument`` is the text after ``:`` (stripped), or ``None`` when there was no ``:``.
     ``truncate`` needs a width written with ASCII digits only (no sign, no other digit
-    scripts), at least ``MIN_TRUNCATE_WIDTH``; every other filter takes no argument. The
-    width is checked as text, never with ``int()`` on arbitrary input, so no standard-library
-    ``ValueError`` can escape.
+    scripts), of at most ``MAX_WIDTH_DIGITS`` digits after leading zeros, and at least
+    ``MIN_TRUNCATE_WIDTH``; every other filter takes no argument. The width is checked as
+    text before ``width`` converts it, so no standard-library ``ValueError`` can escape.
     """
     if name == "truncate":
         if argument is None:
             return "filter 'truncate' needs a width: truncate:<width>"
         if not (argument.isascii() and argument.isdigit()):
             return f"filter 'truncate' needs an integer width, got {argument!r}"
-        if int(argument) < MIN_TRUNCATE_WIDTH:
+        if len(argument.lstrip("0")) > MAX_WIDTH_DIGITS:
+            return f"filter 'truncate' needs a width of at most {MAX_WIDTH_DIGITS} digits"
+        if width(argument) < MIN_TRUNCATE_WIDTH:
             return (
                 f"filter 'truncate' needs a width of at least {MIN_TRUNCATE_WIDTH}, "
-                f"got {int(argument)}"
+                f"got {width(argument)}"
             )
         return None
     if name not in _PLAIN:
@@ -61,13 +69,22 @@ def check(name: str, argument: Optional[str]) -> Optional[str]:
     return None
 
 
-def apply(name: str, width: Optional[int], text: str) -> str:
-    """Apply the filter ``name`` to ``text``; ``width`` is ``truncate``'s width, else ``None``.
+def width(argument: str) -> int:
+    """Return the integer value of a ``truncate`` width that passed ``check``.
+
+    Leading zeros are dropped first, so the string ``int()`` sees has at most
+    ``MAX_WIDTH_DIGITS`` digits whatever the template wrote (``"000…05"`` is ``5``).
+    """
+    return int(argument.lstrip("0") or "0")
+
+
+def apply(name: str, size: Optional[int], text: str) -> str:
+    """Apply the filter ``name`` to ``text``; ``size`` is ``truncate``'s width, else ``None``.
 
     The filter must have passed ``check``: an unknown name raises ``KeyError``, a bug in the
     parser rather than a template error.
     """
     if name == "truncate":
-        assert width is not None
-        return truncate(text, width)
+        assert size is not None
+        return truncate(text, size)
     return _PLAIN[name](text)

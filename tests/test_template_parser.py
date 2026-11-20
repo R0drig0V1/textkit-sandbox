@@ -115,6 +115,21 @@ class SyntaxErrorTest(unittest.TestCase):
         (node,) = parser.parse("{{ a | truncate:3 }}")
         self.assertEqual(node.expression.filters, (Filter("truncate", 3),))
 
+    def test_truncate_width_digit_limit(self):
+        # Python 3.11+ (and 3.9.14+) int() rejects strings of more than 4300 digits with a
+        # ValueError; the width is capped as text first, so a syntax error comes out instead.
+        self.assertSyntaxError(
+            "ab{{ a | truncate:" + "9" * 5000 + " }}", 1, 3, "at most 18 digits"
+        )
+        self.assertSyntaxError("{{ a | truncate:" + "1" * 19 + " }}", 1, 1, "at most 18 digits")
+        (node,) = parser.parse("{{ a | truncate:" + "9" * 18 + " }}")
+        self.assertEqual(node.expression.filters, (Filter("truncate", 10**18 - 1),))
+
+    def test_truncate_width_leading_zeros_do_not_count(self):
+        (node,) = parser.parse("{{ a | truncate:" + "0" * 5000 + "12 }}")
+        self.assertEqual(node.expression.filters, (Filter("truncate", 12),))
+        self.assertSyntaxError("{{ a | truncate:" + "0" * 5000 + " }}", 1, 1, "at least 3")
+
     def test_closing_tags_without_their_opening_tag(self):
         self.assertSyntaxError("a{% else %}", 1, 2, "'else' without a matching 'if'")
         self.assertSyntaxError("ab{% endif %}", 1, 3, "'endif' without a matching 'if'")
