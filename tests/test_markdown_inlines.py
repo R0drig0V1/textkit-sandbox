@@ -5,6 +5,7 @@ it is tested in tests/test_markdown_blocks.py and the whole conversion in
 tests/test_markdown.py.
 """
 
+import time
 import unittest
 
 from textkit.markdown.inlines import ESCAPABLE, render_inlines
@@ -23,9 +24,10 @@ class RenderInlinesTest(unittest.TestCase):
         self.assertEqual(render_inlines("*a **b** c*"), "<em>a <strong>b</strong> c</em>")
         self.assertEqual(render_inlines("**[x](/y)**"), '<strong><a href="/y">x</a></strong>')
 
-    def test_a_strong_closer_is_the_end_of_its_star_run(self):
+    def test_star_runs_are_used_from_their_inner_side(self):
         self.assertEqual(render_inlines("**a *b***"), "<strong>a <em>b</em></strong>")
-        self.assertEqual(render_inlines("***x***"), "<strong><em>x</em></strong>")
+        # Both runs have two stars or more: strong first, inside (as CommonMark does).
+        self.assertEqual(render_inlines("***x***"), "<em><strong>x</strong></em>")
         self.assertEqual(render_inlines("*a **b***"), "<em>a <strong>b</strong></em>")
         self.assertEqual(render_inlines("**a**b*"), "<strong>a</strong>b*")
 
@@ -95,6 +97,40 @@ class RenderInlinesTest(unittest.TestCase):
             render_inlines("*see [x*y](/u)*"), '<em>see <a href="/u">x*y</a></em>'
         )
         self.assertEqual(render_inlines("*a \\* b*"), "<em>a * b</em>")
+
+
+    def test_long_star_runs_keep_every_star(self):
+        # A run that can neither open nor close is text, however long (it once recursed).
+        for n in (1, 2, 5000, 10000):
+            with self.subTest(n=n):
+                self.assertEqual(render_inlines("*" * n), "*" * n)
+        self.assertEqual(render_inlines("x" + "*" * 10000), "x" + "*" * 10000)
+
+    def test_deep_nesting_does_not_recurse(self):
+        n = 5000
+        self.assertEqual(
+            render_inlines("**" * n + "a" + "**" * n), "<strong>" * n + "a" + "</strong>" * n
+        )
+        self.assertEqual(render_inlines("*a " * n + "b" + "*" * n), "<em>a " * n + "b" + "</em>" * n)
+        self.assertEqual(
+            render_inlines("[" * n + "x" + "](/u)" * n), "[" * (n - 1) + '<a href="/u">x</a>' + "](/u)" * (n - 1)
+        )
+
+    def test_unmatched_openers_take_linear_time(self):
+        # Each of these took seconds to minutes with a scan per opener; one pass takes
+        # milliseconds. The bound is generous so a loaded machine does not fail it.
+        for text in ("[" * 20000, "*a " * 20000, "a*" * 20000, "](" * 20000, "[a](" * 20000,
+                     "`a" * 20000, "\\[" * 20000):
+            with self.subTest(text=text[:8]):
+                start = time.perf_counter()
+                render_inlines(text)
+                self.assertLess(time.perf_counter() - start, 2.0)
+
+    def test_link_closes_the_nearest_open_bracket(self):
+        self.assertEqual(render_inlines("[a [b](/c)"), '[a <a href="/c">b</a>')
+        # No link inside a link: once [b](/c) is made, the outer "[" is text.
+        self.assertEqual(render_inlines("[a [b](/c)](/d)"), '[a <a href="/c">b</a>](/d)')
+        self.assertEqual(render_inlines("[*a](/u)*"), '<a href="/u">*a</a>*')
 
 
 if __name__ == "__main__":

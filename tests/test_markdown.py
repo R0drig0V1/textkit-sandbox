@@ -53,6 +53,8 @@ MARKDOWN_CASES = [
     ("**strong**", "<p><strong>strong</strong></p>\n"),
     ("*em*", "<p><em>em</em></p>\n"),
     ("**a *b* c**", "<p><strong>a <em>b</em> c</strong></p>\n"),
+    ("***x***", "<p><em><strong>x</strong></em></p>\n"),
+    ("**** ** a **", "<p>**** ** a **</p>\n"),
     ("`code`", "<p><code>code</code></p>\n"),
     ("[text](https://example.com)", "<p><a href=\"https://example.com\">text</a></p>\n"),
     ("[mail](mailto:a@example.com)", "<p><a href=\"mailto:a@example.com\">mail</a></p>\n"),
@@ -186,6 +188,14 @@ class ToHtmlTest(unittest.TestCase):
             with self.subTest(tag=tag):
                 self.assertNotIn(tag, html)
 
+    def test_long_and_deep_input_never_raises(self):
+        n = 10000
+        self.assertEqual(to_html("*" * n), "<p>" + "*" * n + "</p>\n")
+        self.assertEqual(
+            to_html("- " + "**" * n + "a" + "**" * n),
+            "<ul>\n<li>" + "<strong>" * n + "a" + "</strong>" * n + "</li>\n</ul>\n",
+        )
+
     def test_rejects_non_str(self):
         for bad in (None, b"# x", 3, ["# x"]):
             with self.subTest(value=bad):
@@ -228,6 +238,13 @@ class MarkdownCommandTest(unittest.TestCase):
     def test_empty_file_writes_nothing(self):
         result = _run_bytes("markdown", self._file("empty.md", b"\n\n"))
         self.assertEqual((result.returncode, result.stdout, result.stderr), (0, b"", b""))
+
+    def test_long_star_run_exits_0(self):
+        # Once a RecursionError with a traceback and exit 1.
+        result = _run("markdown", self._file("stars.md", b"*" * 10000 + b"\n"))
+        self.assertEqual(result.returncode, 0, result.stderr[-500:])
+        self.assertEqual(result.stdout, "<p>" + "*" * 10000 + "</p>\n")
+        self.assertEqual(result.stderr, "")
 
     def test_missing_file_exits_2(self):
         path = str(self.dir / "missing.md")

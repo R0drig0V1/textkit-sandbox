@@ -1,28 +1,38 @@
 """Inline Markdown of ``textkit.markdown``: emphasis, code spans, links and escapes.
 
 ``render_inlines(text)`` turns the text of one block (a heading, a paragraph, a list item, a
-paragraph of a quote) into HTML. The constructs, in the order they are tried at each
-position:
+paragraph of a quote) into HTML. The constructs:
 
 - a backslash before ``\\``, ``*``, ``\\```, ``[`` or ``]`` prints that character as is; a
   backslash before anything else is an ordinary character;
 - ```code``` : a backtick, one or more characters other than a backtick, a backtick. The
   content is escaped and nothing else: a backslash inside is a character;
-- ``[text](url)``: the text runs to the first ``]`` that is not escaped and not inside a code
-  span, the URL from the ``(`` right after it to the next ``)``. The text is parsed as
-  inlines; the URL goes through ``html.safe_url`` and is escaped;
-- ``**strong**`` and ``*em*``: the opening marker is followed by a character that is not
-  whitespace, and the closing one is the first matching marker after it that follows a
-  character that is not whitespace (escapes, code spans and links are skipped while
-  looking for it, and so is every ``**`` when looking for a single ``*``); a ``**`` closer
-  is the last two stars of its run (``**a *b***``). The content is parsed as inlines, so
-  the two nest.
+- ``[text](url)``: a ``]`` closes the nearest ``[`` before it that is still open, and makes
+  a link when ``(`` follows it directly; the URL runs from there to the next ``)``. The text
+  is parsed as inlines (a link inside a link is not made: forming a link closes every ``[``
+  before it); the URL goes through ``html.safe_url`` and is escaped. A ``]`` that makes no
+  link prints as is, and so does its ``[``;
+- ``**strong**`` and ``*em*``: a run of stars can open emphasis when the character after it
+  is not whitespace, and close it when the character before it is not whitespace. Each run
+  that can close is matched with the nearest open run before it: two stars from each when
+  both have two left (``<strong>``), else one (``<em>``), repeated while both have stars
+  left. Stars are used from the inner side of each run, so ``**a *b***`` is
+  strong(a em(b)). Runs inside a link are matched only with each other. Stars left over
+  print as is.
 
 Anything that does not complete one of these, an unmatched marker included, is printed as
 is, escaped (``html.escape``): no input raises, and no raw HTML reaches the output.
+
+**One pass, no recursion.** The text is read once, left to right, into a list of output
+pieces; star runs are kept as ``_Delimiter`` records and matched with a stack (the
+delimiter-stack method of CommonMark), and a link only rewrites the piece of its ``[``. So
+the time is about linear in the length of the text, whatever it holds (a run of ten
+thousand ``*`` or ``[`` included), and nesting depth is unlimited: there is no recursion
+for deep input to exhaust.
 """
 
-from typing import NamedTuple, Optional
+from dataclasses import dataclass, field
+from typing import Optional, Union
 
 from textkit.markdown.html import escape, safe_url
 
@@ -30,24 +40,32 @@ from textkit.markdown.html import escape, safe_url
 ESCAPABLE = "\\*`[]"
 
 
-class _Link(NamedTuple):
-    """A complete ``[text](url)``: ``text`` and ``url`` raw, ``end`` just past the ``)``."""
+@dataclass
+class _Delimiter:
+    """A run of stars: how many are left, and the tags matched on each side of it.
 
-    text: str
-    url: str
-    end: int
+    ``closes`` holds the closing tags, innermost first (the order they were matched);
+    ``opens`` the opening tags, innermost first too, so they are written reversed.
+    """
 
+    count: int
+    can_open: bool
+    can_close: bool
+    closes: list[str] = field(default_factory=list)
+    opens: list[str] = field(default_factory=list)
 
-def _is_space(char: str) -> bool:
-    """Whether ``char`` counts as whitespace next to an emphasis marker."""
-    return char.isspace()
+    def html(self) -> str:
+        # Closing tags use the stars on the left of the run, opening tags those on the
+        # right; the stars no match used stay in the middle as text.
+        return "".join(self.closes) + "*" * self.count + "".join(reversed(self.opens))
 
 
 def _code_span_end(text: str, start: int) -> Optional[int]:
     """Index of the backtick that closes a code span opened at ``start``, or ``None``.
 
     The span needs at least one character between its backticks, so ``"``"`` is two
-    literal backticks rather than an empty span.
+    literal backticks rather than an empty span. Each call stops at the next backtick, so
+    all the calls of one pass read the text about once.
     """
     if start + 1 >= len(text) or text[start + 1] == "`":
         return None
@@ -55,121 +73,90 @@ def _code_span_end(text: str, start: int) -> Optional[int]:
     return end if end != -1 else None
 
 
-def _link_at(text: str, start: int) -> Optional[_Link]:
-    """The link that starts with the ``[`` at ``start``, or ``None`` if there is none."""
-    i = start + 1
-    while i < len(text):
-        char = text[i]
-        if char == "\\" and i + 1 < len(text) and text[i + 1] in ESCAPABLE:
-            i += 2
-            continue
-        if char == "`":
-            end = _code_span_end(text, i)
-            if end is not None:
-                i = end + 1
-                continue
-        if char == "]":
-            break
-        i += 1
-    else:
-        return None
-    # i is the closing bracket; the URL must follow it directly.
-    if not text.startswith("(", i + 1):
-        return None
-    close = text.find(")", i + 2)
-    if close == -1:
-        return None
-    return _Link(text=text[start + 1 : i], url=text[i + 2 : close], end=close + 1)
+def _match_emphasis(delimiters: list[_Delimiter]) -> None:
+    """Match the star runs of ``delimiters`` (in text order) into strong and em tags.
 
-
-def _skip(text: str, i: int) -> int:
-    """Index just past the escape, code span or link at ``i``, or ``i`` if none starts there.
-
-    Used while looking for a closing emphasis marker, so a marker inside one of these
-    (``*a `*` b*``, ``*see [x*y](u)*``) is not taken as the closer.
+    Each run is visited once and each match uses up stars, so this is linear in the number
+    of runs and stars.
     """
-    char = text[i]
-    if char == "\\" and i + 1 < len(text) and text[i + 1] in ESCAPABLE:
-        return i + 2
-    if char == "`":
-        end = _code_span_end(text, i)
-        if end is not None:
-            return end + 1
-    if char == "[":
-        link = _link_at(text, i)
-        if link is not None:
-            return link.end
-    return i
-
-
-def _emphasis_end(text: str, start: int, width: int) -> Optional[int]:
-    """Index of the marker that closes the ``width``-star opener at ``start``, or ``None``."""
-    content = start + width
-    if content >= len(text) or _is_space(text[content]):
-        return None
-    marker = "*" * width
-    i = content
-    while i < len(text):
-        after = _skip(text, i)
-        if after != i:
-            i = after
-            continue
-        if text.startswith("**", i) and width == 1:
-            # A "**" is never the closer of a single "*": it opens or closes a strong span.
-            i += 2
-            continue
-        if text.startswith(marker, i) and i > content and not _is_space(text[i - 1]):
-            if width == 1:
-                return i
-            # A "**" closer is the last two stars of its run, so the stars before them
-            # close an emphasis inside: "**a *b***" is strong(a em(b)).
-            run_end = i
-            while run_end < len(text) and text[run_end] == "*":
-                run_end += 1
-            return run_end - 2
-        i += 1
-    return None
+    openers: list[_Delimiter] = []
+    for run in delimiters:
+        if run.can_close:
+            while run.count and openers:
+                opener = openers[-1]
+                width = 2 if opener.count >= 2 and run.count >= 2 else 1
+                tag = "strong" if width == 2 else "em"
+                opener.opens.append(f"<{tag}>")
+                run.closes.append(f"</{tag}>")
+                opener.count -= width
+                run.count -= width
+                if not opener.count:
+                    openers.pop()
+        if run.count and run.can_open:
+            openers.append(run)
 
 
 def render_inlines(text: str) -> str:
     """Render the inline Markdown in ``text`` as HTML, escaping everything else.
 
     ``text`` is the content of one block, its lines already joined by one space. Never
-    raises for a ``str``; an unmatched marker (``"2 * 3"``, ``"[a]"``, ``"`x"``) is printed
-    as is.
+    raises for a ``str``, however long or deeply nested; an unmatched marker (``"2 * 3"``,
+    ``"[a]"``, ``"`x"``) is printed as is.
     """
-    out = []
+    pieces: list[Union[str, _Delimiter]] = []
+    delimiters: list[_Delimiter] = []
+    # Open "[": the index of its piece, and how many delimiters came before it.
+    brackets: list[tuple[int, int]] = []
+    # No ")" exists at or after this index (learned from a failed search), so a later "]("
+    # does not search again: without it, many "](" with no ")" would be quadratic.
+    no_paren_from = len(text) + 1
     i = 0
     while i < len(text):
         char = text[i]
         if char == "\\" and i + 1 < len(text) and text[i + 1] in ESCAPABLE:
-            out.append(escape(text[i + 1]))
+            pieces.append(escape(text[i + 1]))
             i += 2
-            continue
-        if char == "`":
+        elif char == "`" and _code_span_end(text, i) is not None:
             end = _code_span_end(text, i)
-            if end is not None:
-                out.append(f"<code>{escape(text[i + 1 : end])}</code>")
-                i = end + 1
-                continue
-        elif char == "[":
-            link = _link_at(text, i)
-            if link is not None:
-                href = escape(safe_url(link.url))
-                out.append(f'<a href="{href}">{render_inlines(link.text)}</a>')
-                i = link.end
-                continue
+            assert end is not None  # for type checkers: tested on the line above
+            pieces.append(f"<code>{escape(text[i + 1 : end])}</code>")
+            i = end + 1
         elif char == "*":
-            width = 2 if text.startswith("**", i) else 1
-            end = _emphasis_end(text, i, width)
-            if end is not None:
-                tag = "strong" if width == 2 else "em"
-                inner = render_inlines(text[i + width : end])
-                out.append(f"<{tag}>{inner}</{tag}>")
-                i = end + width
+            end = i
+            while end < len(text) and text[end] == "*":
+                end += 1
+            before = text[i - 1] if i else " "
+            after = text[end] if end < len(text) else " "
+            run = _Delimiter(end - i, can_open=not after.isspace(), can_close=not before.isspace())
+            pieces.append(run)
+            delimiters.append(run)
+            i = end
+        elif char == "[":
+            brackets.append((len(pieces), len(delimiters)))
+            pieces.append("[")
+            i += 1
+        elif char == "]" and brackets:
+            piece, first = brackets.pop()
+            close = -1
+            if text.startswith("(", i + 1) and i + 2 < no_paren_from:
+                close = text.find(")", i + 2)
+                if close == -1:
+                    no_paren_from = i + 2
+            if close == -1:
+                # Not a link: the "[" (already a "[" piece) and this "]" print as is.
+                pieces.append("]")
+                i += 1
                 continue
-            # An unmatched "**" prints one "*" and the second is tried as an opener of its
-            # own, so "**a*" gives "*<em>a</em>".
-        out.append(escape(char))
-        i += 1
-    return "".join(out)
+            # The stars inside the link text match only each other, then are done.
+            _match_emphasis(delimiters[first:])
+            del delimiters[first:]
+            pieces[piece] = f'<a href="{escape(safe_url(text[i + 2 : close]))}">'
+            pieces.append("</a>")
+            # No link inside a link: the "[" still open before this one stay text.
+            brackets.clear()
+            i = close + 1
+        else:
+            pieces.append(escape(char))
+            i += 1
+    _match_emphasis(delimiters)
+    return "".join(p if isinstance(p, str) else p.html() for p in pieces)

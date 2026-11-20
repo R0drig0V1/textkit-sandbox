@@ -30,6 +30,8 @@ optional language), block quotes holding paragraphs, and a `---` rule. Inlines:
   and the text after `>` is always paragraph text;
 - setext headings (`Title` over `===`), closing `#`s on a heading, indented code blocks,
   `~~~` fences, `***` and `___` rules, `_em_` and `__strong__`, multi-backtick code spans;
+- CommonMark's finer emphasis rules (punctuation-flanking, the "multiple of 3" rule): a star
+  run opens when a non-space follows it and closes when a non-space precedes it;
 - reference links, autolinks (`<https://...>`), images, tables, footnotes, hard line breaks;
 - lazy continuation: a line that is not indented and is not another item ends a list, and
   a line without `>` ends a quote;
@@ -70,9 +72,15 @@ bad schemes because a blocklist fails open on the first scheme it forgets.
   parentheses must encode them (`%28`, `%29`).
 - Links to schemes such as `tel:` or `ftp:` are dropped; adding one is a change to
   `ALLOWED_SCHEMES` in `textkit/markdown/html.py`, this ADR and its table.
-- Markers are matched by scanning forward from each opener, which takes time quadratic in
-  the length of a block full of unmatched `*` or `[`; it is meant for documents of a few
-  hundred kilobytes at most.
+- Inlines are parsed in one left-to-right pass, without recursion: star runs are matched
+  with a stack (CommonMark's delimiter-stack method, without its punctuation and
+  "multiple of 3" rules), and a `]` closes the nearest open `[`. The time is about linear
+  in the size of the text, whatever it holds (a megabyte of unmatched `[` or `*a ` takes
+  well under a second), and nesting has no depth limit. A first draft that matched each
+  opener by scanning forward and recursing into the content raised `RecursionError` on a
+  few thousand `*` and took seconds on 10 KB of unmatched `[`; `tests/test_markdown_inlines.py`
+  pins both (a run of 10 000 `*` prints as is, 20 000 unmatched openers render within a
+  generous time bound).
 - `tests/test_markdown.py` converts every row below and checks that its own case list
   equals this table (parsed with `ast.literal_eval`), so the table and the tests cannot
   drift apart.
@@ -109,6 +117,8 @@ table.
 | `"**strong**"` | `"<p><strong>strong</strong></p>\n"` |
 | `"*em*"` | `"<p><em>em</em></p>\n"` |
 | `"**a *b* c**"` | `"<p><strong>a <em>b</em> c</strong></p>\n"` |
+| `"***x***"` | `"<p><em><strong>x</strong></em></p>\n"` |
+| `"**** ** a **"` | `"<p>**** ** a **</p>\n"` |
 | `"\x60code\x60"` | `"<p><code>code</code></p>\n"` |
 | `"[text](https://example.com)"` | `"<p><a href=\"https://example.com\">text</a></p>\n"` |
 | `"[mail](mailto:a@example.com)"` | `"<p><a href=\"mailto:a@example.com\">mail</a></p>\n"` |

@@ -127,15 +127,21 @@ a line without `>`, ends the quote.
 ## Inlines
 
 Inlines are parsed in headings, paragraphs, list items and quote paragraphs, after their
-lines are joined.
+lines are joined. They are read in one pass, without recursion: the time is about linear in
+the length of the text and there is no limit on nesting, so no input, however long or deep,
+makes `to_html` fail.
 
-**Strong and emphasis**: `**strong**` and `*em*`, which nest. The opening marker must be
-followed, and the closing one preceded, by a character that is not whitespace, so
-arithmetic stays text.
+**Strong and emphasis**: `**strong**` and `*em*`, which nest. A run of stars can open
+emphasis when a non-space follows it, and close it when a non-space precedes it, so
+arithmetic stays text. Each closing run matches the nearest open run before it: two stars
+from each when both have two (`<strong>`), else one (`<em>`). Stars left over, and a run
+that can neither open nor close (`****`), print as is.
 
 ```pycon
 >>> print(to_html("**bold *and italic***, 2 * 3 * 4"), end="")
 <p><strong>bold <em>and italic</em></strong>, 2 * 3 * 4</p>
+>>> to_html("*" * 12)
+'<p>************</p>\n'
 
 ```
 
@@ -148,7 +154,9 @@ and a backslash is an ordinary character.
 
 ```
 
-**Links**: `[text](url)`. The text is parsed as inlines; the URL runs to the first `)`.
+**Links**: `[text](url)`. A `]` closes the nearest open `[` and makes a link when `(`
+follows it; the URL runs to the next `)`. The text is parsed as inlines, but holds no other
+link.
 
 ```pycon
 >>> print(to_html("[the *docs*](https://example.com/docs) and [a file](notes/a.md)"), end="")
