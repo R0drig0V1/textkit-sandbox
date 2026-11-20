@@ -10,6 +10,7 @@ import pathlib
 import unittest
 
 import textkit.diff
+from textkit.errors import InvalidValueError
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
@@ -24,7 +25,8 @@ class PackageTest(unittest.TestCase):
     def test_patch_error_is_importable_but_not_public(self):
         from textkit.diff import PatchError
 
-        self.assertTrue(issubclass(PatchError, ValueError))
+        self.assertTrue(issubclass(PatchError, InvalidValueError))
+        self.assertFalse(issubclass(PatchError, ValueError))
         self.assertNotIn("PatchError", textkit.diff.__all__)
 
     def test_no_difflib_in_textkit(self):

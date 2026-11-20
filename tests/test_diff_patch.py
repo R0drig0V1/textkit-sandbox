@@ -9,6 +9,7 @@ import random
 import unittest
 
 import textkit.diff
+from textkit.errors import InvalidValueError
 from textkit.diff import patch
 from textkit.diff.unified import unified_diff
 
@@ -180,8 +181,9 @@ class ApplyPatchTest(unittest.TestCase):
         with self.assertRaises(patch.PatchError):
             patch.apply_patch("a\nb\n", HEADERS + "@@ -1 +1 @@\n-a\n+x\n\\ No newline\n")
 
-    def test_patch_error_is_a_value_error_outside_all(self):
-        self.assertTrue(issubclass(patch.PatchError, ValueError))
+    def test_patch_error_is_an_invalid_value_error_outside_all(self):
+        self.assertTrue(issubclass(patch.PatchError, InvalidValueError))
+        self.assertFalse(issubclass(patch.PatchError, ValueError))
         self.assertIs(textkit.diff.PatchError, patch.PatchError)
         self.assertNotIn("PatchError", textkit.diff.__all__)
 

@@ -14,7 +14,8 @@ the [usage guide](usage.md#diff-textkitdiff).
 | `diff_words(a: str, b: str) -> list[tuple[str, str]]` | `words.py` | `(op, word)` pairs over the words of both texts |
 
 `PatchError` (`patch.py`) is importable as `from textkit.diff import PatchError`; it is not in
-`__all__`, which lists functions only.
+`__all__`, which lists functions only. It subclasses `textkit.errors.InvalidValueError`, so
+`except TextkitError` catches it, and it is not a `ValueError` (ADR 0006).
 
 ## Lines
 
@@ -99,8 +100,8 @@ compared and not returned. The tie rule is the same as for lines.
 
 | Function | Error | When |
 |----------|-------|------|
-| `unified_diff` | `ValueError` | `context` is negative |
-| `apply_patch` | `PatchError` (a `ValueError`) | the patch is malformed: no `--- `/`+++ ` headers, headers with no hunk, a bad hunk header (non-ASCII digits, or a number too long for `int`, included), a non-empty range starting at line 0, a hunk with two empty ranges, fewer or more lines than its header states, a line with an unknown prefix (an empty line included), a patch line without a final newline, a misplaced `\` line |
+| `unified_diff` | `InvalidValueError` | `context` is negative |
+| `apply_patch` | `PatchError` (an `InvalidValueError`) | the patch is malformed: no `--- `/`+++ ` headers, headers with no hunk, a bad hunk header (non-ASCII digits, or a number too long for `int`, included), a non-empty range starting at line 0, a hunk with two empty ranges, fewer or more lines than its header states, a line with an unknown prefix (an empty line included), a patch line without a final newline, a misplaced `\` line |
 | `apply_patch` | `PatchError` | the patch does not apply: a context or removed line differs from the text, a range runs past the end of the text, hunks out of order or overlapping, or a line without a newline that would not be the last one |
 | all three | `TypeError` | an argument of the wrong type (`context` must be an `int`, not a `bool`) |
 

@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Added `apply_patch` in the new package `textkit.diff`: applies a unified diff (GNU numbering) at the lines its hunks state, with no fuzz; raises `PatchError` (a `ValueError`) for a malformed patch or one that does not apply.
+- Added `apply_patch` in the new package `textkit.diff`: applies a unified diff (GNU numbering) at the lines its hunks state, with no fuzz; raises `PatchError` (an `InvalidValueError`) for a malformed patch or one that does not apply.
 - Added `char_freq` in `textkit.counts`: counts each non-whitespace character, case-sensitive, keys in order of first occurrence.
 - Added `diff_words` in `textkit.diff`: word-by-word differences as `("=" | "-" | "+", word)` pairs over the words of ADR 0002.
 - Added `is_palindrome`: tells whether text reads the same backwards, ignoring case, accents and symbols.

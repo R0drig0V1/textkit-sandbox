@@ -8,6 +8,7 @@ same hunks; the tie rule (tested in ``tests/test_diff_lcs.py``) never comes into
 import unittest
 
 from textkit.diff import unified
+from textkit.errors import InvalidValueError
 
 
 def _lines(*items: object) -> str:
@@ -191,11 +192,11 @@ class UnifiedDiffTest(unittest.TestCase):
         self.assertTrue(out.endswith("\n"))
 
     def test_negative_context_is_rejected(self):
-        with self.assertRaises(ValueError) as caught:
+        with self.assertRaises(InvalidValueError) as caught:
             unified.unified_diff("a\n", "b\n", -1)
         self.assertIn("-1", str(caught.exception))
         # Rejected even when the texts are equal: the argument is wrong either way.
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidValueError):
             unified.unified_diff("a\n", "a\n", context=-2)
 
     def test_wrong_types_raise_type_error(self):

@@ -10,6 +10,7 @@ Apple/FreeBSD ``diff`` of macOS; ``docs/diff.md`` describes it and the ADR
 from typing import List, Tuple
 
 from textkit.diff.lcs import DELETE, EQUAL, INSERT, edit_script, split_lines
+from textkit.errors import InvalidValueError
 
 # Printed after a line that does not end in "\n" (the last line of a text without a final
 # newline), exactly as GNU diff prints it in the C locale.
@@ -45,7 +46,7 @@ def unified_diff(a: str, b: str, context: int = 3) -> str:
 
     Raises:
         TypeError: if ``a`` or ``b`` is not a ``str``, or ``context`` is not an ``int``.
-        ValueError: if ``context`` is negative.
+        InvalidValueError: if ``context`` is negative.
     """
     for name, value in (("a", a), ("b", b)):
         if not isinstance(value, str):
@@ -54,7 +55,7 @@ def unified_diff(a: str, b: str, context: int = 3) -> str:
     if not isinstance(context, int) or isinstance(context, bool):
         raise TypeError(f"unified_diff() expects int for context, got {type(context).__name__}")
     if context < 0:
-        raise ValueError(f"context must be 0 or more, got {context}")
+        raise InvalidValueError(f"context must be 0 or more, got {context}")
     if a == b:
         return ""
     script = edit_script(split_lines(a), split_lines(b))

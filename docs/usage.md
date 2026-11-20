@@ -213,7 +213,7 @@ marker. The format, the numbering and the tie rule are in [docs/diff.md](diff.md
 ```
 
 `apply_patch` applies such a diff, exactly at the lines its hunks state; a patch that does
-not apply raises `PatchError` (a `ValueError`) with the hunk's header in the message.
+not apply raises `PatchError` (an `InvalidValueError`) with the hunk's header in the message.
 
 ```pycon
 >>> from textkit.diff import PatchError, apply_patch

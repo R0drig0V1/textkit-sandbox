@@ -12,17 +12,19 @@ import re
 from typing import List, NamedTuple, Optional, Tuple
 
 from textkit.diff.lcs import split_lines
+from textkit.errors import InvalidValueError
 
 # "@@ -l[,s] +l[,s] @@", optionally followed by a space and anything (git and GNU diff -p
 # write a section heading there). The numbers are ASCII digits only: \d would accept "٣".
 _HUNK_HEADER = re.compile(r"@@ -([0-9]+)(?:,([0-9]+))? \+([0-9]+)(?:,([0-9]+))? @@(?: .*)?\n?")
 
 
-class PatchError(ValueError):
+class PatchError(InvalidValueError):
     """A patch that is not a well-formed unified diff, or that does not apply to the text.
 
-    A subclass of ``ValueError`` (phase 3 rule "Errors", before ``textkit.errors``). When a
-    hunk does not apply, the message contains the hunk's ``@@`` header line.
+    A subclass of ``textkit.errors.InvalidValueError`` (phase 3 rule "Errors"), so callers
+    catch it with any ``TextkitError``; it is not a ``ValueError``. When a hunk is at fault,
+    the message contains the hunk's ``@@`` header line.
     """
 
 
@@ -55,7 +57,7 @@ def apply_patch(text: str, patch: str) -> str:
 
     Raises:
         TypeError: if ``text`` or ``patch`` is not a ``str``.
-        PatchError: (a ``ValueError``) if the patch is malformed (missing or repeated
+        PatchError: (an ``InvalidValueError``) if the patch is malformed (missing or repeated
             headers, headers with no hunk, a bad hunk header, a line count that does not
             match the header, an unknown line prefix, a line with no final ``"\\n"`` in the
             patch, hunks out of order) or does not apply (a context or removed line differs
