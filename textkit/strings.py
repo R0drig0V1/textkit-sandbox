@@ -1,7 +1,12 @@
-"""String helpers. Every public function is listed in the README's function table."""
+"""String helpers. Every public function is listed in the README's function table.
+
+A rejected argument value raises ``textkit.errors.InvalidValueError`` (ADR 0006).
+"""
 
 import re
 import unicodedata
+
+from textkit.errors import InvalidValueError
 
 # Compiled once: any run of characters outside lower-case ASCII letters and digits.
 _NON_SLUG_RUN = re.compile(r"[^a-z0-9]+")
@@ -40,11 +45,12 @@ def truncate(text: str, width: int, suffix: str = "...") -> str:
     ``width`` long.
 
     Raises:
-        ValueError: if ``width < len(suffix)``. This is checked first, so it is raised even
-            when ``text`` would fit: an invalid width is a caller bug regardless of input.
+        InvalidValueError: if ``width < len(suffix)``. This is checked first, so it is
+            raised even when ``text`` would fit: an invalid width is a caller bug regardless
+            of input.
     """
     if width < len(suffix):
-        raise ValueError(
+        raise InvalidValueError(
             f"width ({width}) must be at least the suffix length ({len(suffix)})"
         )
     if len(text) <= width:
@@ -88,10 +94,10 @@ def wrap(text: str, width: int) -> list[str]:
     ``wrap("", width)`` and whitespace-only input give ``[]``.
 
     Raises:
-        ValueError: if ``width < 1``, whatever ``text`` is.
+        InvalidValueError: if ``width < 1``, whatever ``text`` is.
     """
     if width < 1:
-        raise ValueError(f"width must be at least 1, got {width}")
+        raise InvalidValueError(f"width must be at least 1, got {width}")
     lines: list[str] = []
     current = ""
     # str.split() with no argument splits on any whitespace run and drops empty strings,
@@ -118,11 +124,11 @@ def slug_title(text: str, max_len: int) -> str:
     The result may be ``""`` (``max_len == 0`` or a punctuation-only ``text``).
 
     Raises:
-        ValueError: if ``max_len < 0``.
+        InvalidValueError: if ``max_len < 0``.
     """
     # truncate would raise for a negative width too; checking here names our parameter.
     if max_len < 0:
-        raise ValueError(f"max_len ({max_len}) must not be negative")
+        raise InvalidValueError(f"max_len ({max_len}) must not be negative")
     return truncate(slugify(text), max_len, suffix="").rstrip("-")
 
 

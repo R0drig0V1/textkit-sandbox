@@ -30,10 +30,11 @@ Option 3, **round up**: `reading_time` returns the smallest whole number of minu
   for a short text, and a non-zero text never claims to take no time.
 - Exactly `n * wpm` words give `n`; one word more gives `n + 1`.
 
-`wpm` must be an `int` of at least 1. `wpm < 1` raises `ValueError` (the plan requires it),
-checked before the text is read, so `reading_time("", 0)` raises rather than returning `0`.
-A non-`int` `wpm` (`bool` and `float` included) raises `TypeError`, which keeps the
-arithmetic exact; non-`str` `text` raises `TypeError` from `word_count`.
+`wpm` must be an `int` of at least 1. `wpm < 1` raises `InvalidValueError` (the plan requires
+it; `textkit.errors`, ADR 0006), checked before the text is read, so `reading_time("", 0)`
+raises rather than returning `0`. A non-`int` `wpm` (`bool` and `float` included) raises
+`TypeError`, which keeps the arithmetic exact; non-`str` `text` raises `TypeError` from
+`word_count`.
 
 ## Consequences
 

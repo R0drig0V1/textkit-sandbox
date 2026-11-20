@@ -48,7 +48,7 @@ error.
 >>> truncate("Hello", 2)
 Traceback (most recent call last):
     ...
-ValueError: width (2) must be at least the suffix length (3)
+textkit.errors.InvalidValueError: width (2) must be at least the suffix length (3)
 
 ```
 
@@ -194,6 +194,33 @@ stay with the word before them (ADR 0001).
 'httpServer'
 
 ```
+
+## Errors: `textkit.errors`
+
+A function that rejects an argument's value raises `InvalidValueError`; every exception
+textkit defines is a `TextkitError`, so one `except` clause handles anything textkit
+rejects. An argument of the wrong type still raises the built-in `TypeError`.
+
+```pycon
+>>> from textkit.errors import InvalidValueError, TextkitError
+>>> from textkit.strings import wrap
+>>> try:
+...     wrap("a b", 0)
+... except TextkitError as exc:
+...     print(type(exc).__name__, "-", exc)
+InvalidValueError - width must be at least 1, got 0
+>>> issubclass(InvalidValueError, TextkitError)
+True
+>>> issubclass(InvalidValueError, ValueError)
+False
+
+```
+
+`InvalidValueError` is not a `ValueError` on purpose (ADR 0006): a `ValueError` that
+escapes textkit is a bug in textkit, not a rejected input, and `except TextkitError` never
+hides it. The command line follows the same split: a function command that raises a
+`TextkitError` exits 1 with the message on stderr, while any other exception keeps its
+traceback.
 
 ## Command line
 

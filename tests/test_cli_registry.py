@@ -26,6 +26,7 @@ from unittest import mock
 import textkit.cli
 import textkit.cli.main as cli
 from textkit.cli import registry
+from textkit.errors import InvalidValueError
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
@@ -192,13 +193,14 @@ class MainWithToolsTest(RegistryTestCase):
         self.assertEqual((code, out), (2, ""))
         self.assertIn("usage:", err)
 
-    def test_value_error_from_a_tool_is_not_caught(self) -> None:
-        # _main catches ValueError around function commands only; a tool handles its own.
+    def test_textkit_error_from_a_tool_is_not_caught(self) -> None:
+        # _main catches TextkitError around function commands only (T3.2); a tool handles
+        # its own errors in run, so even a TextkitError it lets escape propagates.
         def run(args: argparse.Namespace) -> int:
-            raise ValueError("tool bug")
+            raise InvalidValueError("tool bug")
 
         registry.register(registry.Command("zz-raises", "Raises.", lambda parser: None, run))
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidValueError):
             _main_captured(["zz-raises"])
 
     def test_tool_named_like_a_function_command_raises_on_every_run(self) -> None:
