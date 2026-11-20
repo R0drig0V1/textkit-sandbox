@@ -91,12 +91,13 @@ class MainTest(unittest.TestCase):
 
     def test_help_shows_the_first_docstring_line_of_every_command(self) -> None:
         proc = run_cli("--help")
-        # argparse re-wraps help lines, so compare with whitespace collapsed.
-        flat = " ".join(proc.stdout.split())
+        # argparse wraps help at spaces and after hyphens ("kebab-" / "case"), so compare
+        # with all whitespace removed.
+        flat = "".join(proc.stdout.split())
         for name, func in expected_commands().items():
             with self.subTest(command=name):
                 first = inspect.getdoc(func).splitlines()[0]
-                self.assertIn(" ".join(first.split()), flat)
+                self.assertIn("".join(first.split()), flat)
 
     def test_every_command_runs_once(self) -> None:
         for name, func in expected_commands().items():

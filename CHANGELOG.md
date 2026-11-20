@@ -10,6 +10,7 @@
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (`"Ñandú"` -> `"Nandu"`).
 - Added `to_camel_case`: converts snake_case or kebab-case names to camelCase (`HTTP_server` -> `httpServer`).
+- Added `to_kebab_case`: converts camelCase, PascalCase or snake_case names to kebab-case, built on `to_snake_case` (ADR 0001).
 - Added `to_snake_case`: converts camelCase, PascalCase or kebab-case names to snake_case (ADR 0001).
 - Added `truncate`: shortens text to exactly `width` code points, ending in a suffix when cut.
 - Added `word_count` in the new module `textkit.counts`: counts words by the rule of ADR 0002.

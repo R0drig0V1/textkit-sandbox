@@ -88,3 +88,20 @@ def to_camel_case(name: str) -> str:
     if not words:
         return ""
     return words[0].lower() + "".join(word.capitalize() for word in words[1:])
+
+
+def to_kebab_case(name: str) -> str:
+    """Convert a camelCase, PascalCase or snake_case name to kebab-case.
+
+    Built on `to_snake_case`: the name is cut into words by the same rule (ADR 0001) and
+    the words are lower-cased and joined with `-` instead of `_`, so `"HTTPServer"` ->
+    `"http-server"`, `"parseURL2"` -> `"parse-url2"` and `"already_snake"` ->
+    `"already-snake"`. kebab-case input comes back unchanged, and the function is
+    idempotent.
+
+    Never raises for a `str`; `""` and separator-only input give `""`. Lossy like
+    `to_snake_case` (`"_private"` loses its leading underscore).
+    """
+    # to_snake_case's words never contain `_` or `-` (both are separators), so every `_`
+    # in its output is a word boundary and can be swapped one for one.
+    return to_snake_case(name).replace("_", "-")
