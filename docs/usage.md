@@ -209,6 +209,61 @@ stay with the word before them (ADR 0001).
 
 ```
 
+## Diff: `textkit.diff`
+
+`unified_diff` compares two texts line by line and returns the unified format of GNU
+`diff -u` (headers `--- a` and `+++ b`, `context=3` unchanged lines around each change);
+equal texts give `""`. The format, its line numbers and the rules for a missing final
+newline are in [docs/diff.md](diff.md) and ADR 0007.
+
+```pycon
+>>> from textkit.diff import unified_diff
+>>> old = "one\ntwo\nthree\n"
+>>> new = "one\n2\nthree\nfour\n"
+>>> print(unified_diff(old, new), end="")
+--- a
++++ b
+@@ -1,3 +1,4 @@
+ one
+-two
++2
+ three
++four
+>>> unified_diff(old, old)
+''
+
+```
+
+`apply_patch` applies such a diff to a text, exactly at the lines it states (no fuzz);
+a patch that does not fit raises `PatchError`, whose message names the hunk.
+
+```pycon
+>>> from textkit.diff import PatchError, apply_patch
+>>> apply_patch(old, unified_diff(old, new)) == new
+True
+>>> apply_patch("one\nTWO\nthree\n", unified_diff(old, new))
+Traceback (most recent call last):
+    ...
+textkit.diff.patch.PatchError: hunk @@ -1,3 +1,4 @@ does not match line 2: expected 'two\n', found 'TWO\n'
+
+```
+
+`diff_words` compares the words of two texts (the rule of `word_count`, ADR 0002), each
+exactly as written: `"="` kept, `"-"` only in the first text, `"+"` only in the second.
+
+```pycon
+>>> from textkit.diff import diff_words
+>>> diff_words("The quick brown fox", "the quick red fox")
+[('-', 'The'), ('+', 'the'), ('=', 'quick'), ('-', 'brown'), ('+', 'red'), ('=', 'fox')]
+
+```
+
+On the command line, `diff` compares two UTF-8 files and exits 0 when they are equal, 1
+when they differ, 2 when a file cannot be read:
+
+```sh
+python3 -m textkit diff old.txt new.txt        # prints the unified diff
+```
 ## Errors: `textkit.errors`
 
 A function that rejects an argument's value raises `InvalidValueError`; every exception

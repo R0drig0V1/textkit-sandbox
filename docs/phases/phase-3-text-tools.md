@@ -266,7 +266,7 @@ bounce it.
       `docs/usage.md`, the README row and the CHANGELOG line. At least 40 tests over the
       three modules.
       PR after T3.1.
-- [ ] **T3.6 line diff** (large): package `textkit/diff/` with at least `lcs.py`,
+- [x] **T3.6 line diff** (large): package `textkit/diff/` with at least `lcs.py`,
       `unified.py` and `patch.py`. Public functions:
       `unified_diff(a: str, b: str, context: int = 3) -> str`,
       `apply_patch(text: str, patch: str) -> str` and
