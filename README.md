@@ -11,6 +11,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 
 | Function | Module | What it does |
 |----------|--------|--------------|
+| `slugify` | `textkit.strings` | Turns text into a lower-case ASCII slug |
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
 
 ## Commands
