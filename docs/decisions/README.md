@@ -6,3 +6,4 @@ One file per decision, `NNNN-title.md`, with Context / Decision / Consequences.
 | # | Decision |
 |---|----------|
 | [0001](0001-to-snake-case-word-boundaries.md) | Word boundaries in `to_snake_case`: runs of capitals and digits |
+| [0002](0002-word-count-what-counts-as-a-word.md) | What counts as a word in `word_count` |

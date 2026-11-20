@@ -16,6 +16,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `truncate` | `textkit.strings` | Shortens text to a width, ending in a suffix when cut |
 | `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase or kebab-case to snake_case |
 | `strip_accents` | `textkit.strings` | Removes combining marks (accents) from text |
+| `word_count` | `textkit.counts` | Counts the words in a text (rule: ADR 0002) |
 
 ## Commands
 
