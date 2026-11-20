@@ -11,7 +11,7 @@ The package has three stages, one module each:
   the only public function.
 
 What the subset leaves out, why raw HTML is escaped and why some link schemes are dropped
-are decided in docs/decisions/0008-markdown-subset-raw-html-and-link-schemes.md; the syntax
+are decided in docs/decisions/0009-markdown-subset-raw-html-and-link-schemes.md; the syntax
 is described with examples in docs/markdown.md.
 """
 

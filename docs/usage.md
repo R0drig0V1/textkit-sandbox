@@ -308,7 +308,7 @@ traceback.
 `to_html` converts a small subset of Markdown to HTML, one block per line: headings,
 paragraphs, one-level lists, fenced code blocks, quotes and `---` rules, with `**strong**`,
 `*em*`, `` `code` `` and `[text](url)` inside. Raw HTML is always escaped, and a link whose
-scheme is not `http`, `https` or `mailto` points to `#` (ADR 0008). Every construct, with
+scheme is not `http`, `https` or `mailto` points to `#` (ADR 0009). Every construct, with
 an example, is in [docs/markdown.md](markdown.md).
 
 ```pycon
