@@ -40,3 +40,21 @@ def slugify(text: str) -> str:
     # An explicit ASCII class instead of str.isalnum, which also accepts non-ASCII letters.
     ascii_only = text.encode("ascii", "ignore").decode("ascii").lower()
     return re.sub(r"[^a-z0-9]+", "-", ascii_only).strip("-")
+
+
+def slug_title(text: str, max_len: int) -> str:
+    """Make a slug of ``text`` at most ``max_len`` characters long that never ends in ``-``.
+
+    Exactly ``truncate(slugify(text), max_len, suffix="")`` with trailing ``-`` stripped: a
+    character cut, not a word cut, so a word may be split (``("Hello, World!", 8)`` ->
+    ``"hello-wo"``), and a cut that lands right after a separator drops it
+    (``("Hello, World!", 6)`` -> ``"hello"``). The result may be shorter than ``max_len`` and
+    may be ``""`` (``max_len == 0``, or input that slugifies to nothing).
+
+    Raises:
+        ValueError: if ``max_len < 0``.
+    """
+    # Checked here so the error names this function's argument rather than truncate's.
+    if max_len < 0:
+        raise ValueError(f"max_len must be >= 0, got {max_len}")
+    return truncate(slugify(text), max_len, suffix="").rstrip("-")

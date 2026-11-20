@@ -11,6 +11,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 
 | Function | Module | What it does |
 |----------|--------|--------------|
+| `slug_title` | `textkit.strings` | Makes a slug of at most `max_len` characters that never ends in `-` |
 | `slugify` | `textkit.strings` | Makes a lower-case ASCII slug (`Hello, World!` -> `hello-world`) |
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
 | `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase or kebab-case names to snake_case |
