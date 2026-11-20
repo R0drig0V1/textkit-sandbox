@@ -340,7 +340,7 @@ bounce it.
       (`_tokens.words`, each word its `token.text`, exactly as in the text), in order. Fewer
       than `n` words give `[]`; `n < 1` raises the phase 3 "Errors" error (`ValueError`
       before T3.2, `InvalidValueError` after). Depends on T3.3.
-- [ ] **T3.10 `levenshtein`** (small) in `textkit/strings.py`: `levenshtein(a, b) -> int`,
+- [x] **T3.10 `levenshtein`** (small) in `textkit/strings.py`: `levenshtein(a, b) -> int`,
       the edit distance over code points (insert, delete, substitute, each of cost 1), with
       two rows of memory: a test with `tracemalloc` shows a peak under 1 MB for two strings
       of 1000 characters. `levenshtein("", s) == len(s)`; it is symmetric: test both.

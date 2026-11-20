@@ -8,6 +8,7 @@
 - Added `dedent`: removes the prefix of spaces and tabs common to every non-blank line, keeping line endings (every `str.splitlines` boundary, `"\x0c"` included); blank lines become empty.
 - Added `diff_words` in `textkit.diff`: a word-by-word diff of two texts as `(op, word)` pairs over the words of ADR 0002.
 - Added `is_palindrome`: tells whether text reads the same backwards, ignoring case, accents and symbols.
+- Added `levenshtein`: edit distance (insert, delete, substitute, each cost 1) between two strings over code points, with two rows of memory.
 - Added `ngrams` in `textkit.counts`: the runs of `n` consecutive words (default 2) of a text, in order, words exactly as in the text (ADR 0002); fewer than `n` words give `[]`, `n < 1` raises `InvalidValueError`.
 - Added `reading_time` in `textkit.counts`: whole minutes to read a text at `wpm` words per minute (default 200), from `word_count` (ADR 0002), rounded up: empty text is 0, under one minute is 1 (ADR 0004); `wpm < 1` raises `InvalidValueError`.
 - Added `sentence_count` in `textkit.counts`: counts sentences; listed abbreviations (`Dr.`, `e.g.`), initials and an end followed by lower case (ellipses included) do not end one (ADR 0005).
