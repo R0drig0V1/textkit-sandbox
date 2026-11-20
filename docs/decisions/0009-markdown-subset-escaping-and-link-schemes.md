@@ -1,6 +1,6 @@
-<!-- ADR 0007: the Markdown subset of textkit.markdown.to_html, its escaping and its link
+<!-- ADR 0009: the Markdown subset of textkit.markdown.to_html, its escaping and its link
      schemes (plan task T3.5). The case table at the end is parsed by tests/test_markdown.py. -->
-# 0007. Markdown to HTML: the subset, escaping everything, and dropping link schemes
+# 0009. Markdown to HTML: the subset, escaping everything, and dropping link schemes
 
 ## Context
 

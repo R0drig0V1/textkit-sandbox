@@ -7,7 +7,7 @@ before each closing fence: doctest reads expected output up to the first blank l
 library only. It is safe by construction: raw HTML is never passed through, and links to
 schemes other than `http`, `https` and `mailto` are dropped. The reasons, and what the
 subset leaves out, are in
-[ADR 0007](decisions/0007-markdown-subset-escaping-and-link-schemes.md), which ends with a
+[ADR 0009](decisions/0009-markdown-subset-escaping-and-link-schemes.md), which ends with a
 table of cases that the tests check row by row.
 
 The examples print the HTML, so each output line shows as it is written:
@@ -207,7 +207,7 @@ with a `:` in it is dropped too: write the colon as `%3A`.
 
 Nested lists, blocks inside quotes, setext headings, indented code, `~~~` fences, `_em_`,
 reference links, autolinks, images, tables, hard line breaks, HTML entities and raw HTML.
-They are printed as text (escaped). ADR 0007 explains why.
+They are printed as text (escaped). ADR 0009 explains why.
 
 ## Command line
 

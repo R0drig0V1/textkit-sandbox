@@ -282,7 +282,7 @@ raises a `TextkitError`; any other exception keeps its traceback.
 
 `to_html` converts a small, safe subset of Markdown to HTML: raw HTML is escaped and links
 to schemes other than `http`, `https` and `mailto` point to `#`. Every block and inline is
-in [docs/markdown.md](markdown.md); the reasons are in ADR 0007.
+in [docs/markdown.md](markdown.md); the reasons are in ADR 0009.
 
 ```pycon
 >>> from textkit.markdown import to_html
