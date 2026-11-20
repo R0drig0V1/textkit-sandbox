@@ -1,8 +1,9 @@
 """Identifier case conversions. Every public function is listed in the README's function table.
 
-How an identifier is split into words (separators, runs of capitals, digits) is decided in
-docs/decisions/0001-to-snake-case-word-boundaries.md; its table of cases is tested row by row
-in tests/test_cases.py.
+How ``to_snake_case`` splits an identifier into words (separators, runs of capitals, digits)
+is decided in docs/decisions/0001-to-snake-case-word-boundaries.md; its table of cases is
+tested row by row in tests/test_cases.py. ``to_camel_case`` splits only at ``_`` and ``-``
+(plan task T1.8), so the two are not inverses of each other.
 """
 
 
@@ -60,3 +61,36 @@ def _starts_word(name: str, i: int) -> bool:
     if not name[i - 1].isupper():
         return True
     return i + 1 < len(name) and name[i + 1].islower()
+
+
+def to_camel_case(name: str) -> str:
+    """Convert a snake_case or kebab-case identifier to camelCase.
+
+    The name is split at ``_`` and ``-`` only; a run of them counts as one separator, and
+    separators at either end are dropped (``"__user--id__"`` -> ``"userId"``). The first word
+    is lower-cased and every other word capitalized with ``str.capitalize``, so the rest of
+    each word is lower-cased too (``"HTTP_server"`` -> ``"httpServer"``,
+    ``"user_ID"`` -> ``"userId"``). Other characters, spaces and dots included, are not
+    separators and are kept as they are.
+
+    Input with no ``_`` or ``-`` is returned with only its first character lower-cased
+    (``"UserId"`` -> ``"userId"``, ``"HTTPServer"`` -> ``"hTTPServer"``): without a separator
+    there are no word boundaries to rebuild, and this function, unlike ``to_snake_case``,
+    does not guess them from capitals. ``""`` and separator-only input give ``""``.
+
+    This is not the inverse of ``to_snake_case`` (see ADR 0001): ``"HTTPServer"`` ->
+    ``"http_server"`` -> ``"httpServer"``.
+
+    Raises:
+        TypeError: if ``name`` is not a ``str``.
+    """
+    if not isinstance(name, str):
+        raise TypeError(f"name must be a str, not {type(name).__name__}")
+    if "_" not in name and "-" not in name:
+        return name[:1].lower() + name[1:]
+    # Splitting on one separator kind after mapping the other to it leaves empty strings for
+    # runs and for leading/trailing separators; dropping them gives "a run counts as one".
+    words = [word for word in name.replace("-", "_").split("_") if word]
+    if not words:
+        return ""
+    return words[0].lower() + "".join(word.capitalize() for word in words[1:])
