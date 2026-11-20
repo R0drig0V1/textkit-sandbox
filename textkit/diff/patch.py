@@ -121,14 +121,15 @@ def _parse_hunk(lines: List[str], k: int) -> Tuple[_Hunk, int]:
         raise PatchError(f"patch line {k + 1} is not a hunk header: {lines[k]!r}")
     header = lines[k].rstrip("\n")
     old_line, old_size, _, new_size = match.groups()
-    old_count = 1 if old_size is None else int(old_size)
-    new_count = 1 if new_size is None else int(new_size)
+    first = _number(old_line, header)
+    old_count = 1 if old_size is None else _number(old_size, header)
+    new_count = 1 if new_size is None else _number(new_size, header)
     if old_count == 0:
-        start = int(old_line)  # GNU: an empty range "l,0" is just after line l
-    elif int(old_line) == 0:
+        start = first  # GNU: an empty range "l,0" is just after line l
+    elif first == 0:
         raise PatchError(f"a non-empty range cannot start at line 0: {header}")
     else:
-        start = int(old_line) - 1
+        start = first - 1
     if old_count == 0 and new_count == 0:
         raise PatchError(f"a hunk with two empty ranges changes nothing: {header}")
     old: List[str] = []
@@ -172,3 +173,17 @@ def _parse_hunk(lines: List[str], k: int) -> Tuple[_Hunk, int]:
         if any(not item.endswith("\n") for item in side[:-1]):
             raise PatchError(f"a line without a newline is not the last of its side: {header}")
     return _Hunk(header, start, old, new), k
+
+
+def _number(digits: str, header: str) -> int:
+    """Convert a number of a hunk header, raising ``PatchError`` when ``int`` cannot.
+
+    The regular expression admits ASCII digits only, but Python 3.11+ (and the 3.7-3.10
+    security releases since September 2022) refuse to convert more than 4300 digits with a
+    plain ``ValueError``; that would escape as a standard-library error instead of the
+    ``PatchError`` a malformed patch raises (phase 3 rule "Errors").
+    """
+    try:
+        return int(digits)
+    except ValueError as exc:
+        raise PatchError(f"a number in the hunk header is too long: {header}") from exc

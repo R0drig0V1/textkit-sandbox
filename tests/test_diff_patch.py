@@ -159,6 +159,18 @@ class ApplyPatchTest(unittest.TestCase):
                 with self.assertRaises(patch.PatchError):
                     patch.apply_patch("a\nb\nc\n", diff)
 
+    def test_huge_header_numbers_raise_patch_error(self):
+        # More than 4300 digits: int() raises a plain ValueError on Python 3.11+ (and the
+        # 3.9.14+ security releases); it must come out as PatchError naming the hunk. On a
+        # Python without the limit the number converts and the hunk fails to apply instead.
+        nines = "9" * 5000
+        for header in (f"@@ -{nines} +1 @@", f"@@ -1,{nines} +1 @@", f"@@ -1 +1,{nines} @@"):
+            with self.subTest(header=header[:20]):
+                with self.assertRaises(patch.PatchError) as caught:
+                    patch.apply_patch("x\n", HEADERS + header + "\n-x\n+y\n")
+                self.assertIs(type(caught.exception), patch.PatchError)
+                self.assertIn(header, str(caught.exception))
+
     def test_unterminated_line_cannot_be_followed(self):
         # A hunk that ends the text without a newline, then a hunk that adds after it.
         diff = HEADERS + "@@ -1 +1 @@\n-a\n+a\n\\ No newline at end of file\n@@ -1,0 +2 @@\n+b\n"
