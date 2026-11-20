@@ -15,6 +15,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
 | `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase or kebab-case names to snake_case |
 | `truncate` | `textkit.strings` | Shortens text to a width, ending in a suffix when cut |
+| `word_count` | `textkit.counts` | Counts the words in a text, by the rule of ADR 0002 |
 
 ## Commands
 
