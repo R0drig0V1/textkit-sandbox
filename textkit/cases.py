@@ -3,7 +3,8 @@
 How ``to_snake_case`` splits an identifier into words (separators, runs of capitals, digits)
 is decided in docs/decisions/0001-to-snake-case-word-boundaries.md; its table of cases is
 tested row by row in tests/test_cases.py. ``to_camel_case`` splits only at ``_`` and ``-``
-(plan task T1.8), so the two are not inverses of each other.
+(plan task T1.8), so the two are not inverses of each other. ``to_kebab_case`` is
+``to_snake_case`` with ``-`` as the separator, so it follows ADR 0001 exactly.
 """
 
 
@@ -94,3 +95,22 @@ def to_camel_case(name: str) -> str:
     if not words:
         return ""
     return words[0].lower() + "".join(word.capitalize() for word in words[1:])
+
+
+def to_kebab_case(name: str) -> str:
+    """Convert a camelCase, PascalCase or snake_case identifier to kebab-case.
+
+    Built on ``to_snake_case``: the name is split into words by exactly the same rules
+    (ADR 0001: runs of capitals, digits, separators), and the words are lower-cased and
+    joined with ``-`` instead of ``_`` (``"HTTPServer"`` -> ``"http-server"``,
+    ``"parseURL2"`` -> ``"parse-url2"``, ``"user_id"`` -> ``"user-id"``). Kebab-case input
+    comes back lower-cased and otherwise unchanged; ``""`` and separator-only input give ``""``.
+
+    The same limitations as ``to_snake_case`` apply (``"PDFs"`` -> ``"pd-fs"``).
+
+    Raises:
+        TypeError: if ``name`` is not a ``str`` (raised by ``to_snake_case``).
+    """
+    # Safe to replace every "_": to_snake_case joins words made only of alphanumeric
+    # characters, so each "_" in its output is a separator, never part of a word.
+    return to_snake_case(name).replace("_", "-")
