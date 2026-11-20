@@ -12,3 +12,4 @@
 - Added `truncate`: shortens text to exactly `width` code points, ending in a suffix when cut.
 - Added `word_count` in the new module `textkit.counts`: counts words by the rule of ADR 0002.
 - Added `wrap`: splits text into lines of at most `width` code points at whitespace; existing newlines are reflowed (ADR 0003).
+- Added the `python3 -m textkit` command line.
