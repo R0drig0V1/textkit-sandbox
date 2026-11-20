@@ -1,7 +1,8 @@
 """Command line of textkit: ``python3 -m textkit <function> <text>`` (plan task T2.6).
 
 Prints the result of one public function of textkit applied to one text argument, and lists
-the available functions with ``--help``. The commands are discovered at run time, never
+the available functions with ``--help``; ``--version`` prints ``textkit <version>`` from
+``textkit.__version__`` (plan task T2.7) and exits 0. The commands are discovered at run time, never
 hard-coded, so a public function added to any module later becomes a command with no change
 here. A command is a *public function* (the definition in the phase 1 "Rules for every task":
 a top-level ``def`` whose name does not start with ``_``, in a module of ``textkit/`` whose
@@ -134,6 +135,15 @@ def _parser(commands: dict[str, Callable[..., Any]]) -> argparse.ArgumentParser:
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    # The version is read from the package, never repeated here (T2.7: __init__.py is the
+    # only place in textkit/ that holds the string). argparse prints it to stdout and exits
+    # 0 before the required sub-command is checked, so no function argument is needed.
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"textkit {textkit.__version__}",
+        help="print the textkit version and exit",
+    )
     # dest is mandatory with required=True on Python 3.9: without it, the "required"
     # error message joins a None and argparse crashes instead of printing the usage.
     sub = parser.add_subparsers(
@@ -151,7 +161,7 @@ def _parser(commands: dict[str, Callable[..., Any]]) -> argparse.ArgumentParser:
 def _main(argv: Optional[List[str]] = None) -> int:
     """Run the command line on ``argv`` (``sys.argv[1:]`` when ``None``); return the exit code.
 
-    Exit codes: 0 on success (and for ``--help``); 2 on an unknown function, a wrong
+    Exit codes: 0 on success (and for ``--help`` and ``--version``); 2 on an unknown function, a wrong
     argument count or no arguments at all, with the usage and message on stderr (argparse's
     own handling, so ``_main`` returns the code instead of raising ``SystemExit``); 1 when the
     function raises ``ValueError`` for the given text, with the message on stderr.

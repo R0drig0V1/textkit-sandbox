@@ -7,6 +7,7 @@
 - Added `reading_time` in `textkit.counts`: whole minutes to read a text at `wpm` words per minute (default 200), from `word_count` (ADR 0002), rounded up: empty text is 0, under one minute is 1 (ADR 0004); `wpm < 1` raises `ValueError`.
 - Added `slug_title`: slug cut to a maximum length (character cut), never ending in `-`.
 - Added the `python3 -m textkit` command line.
+- Added `python3 -m textkit --version`.
 - Added `slugify`: turns text into a lower-case ASCII slug (non-ASCII removed, no normalization).
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (accents) from text.
