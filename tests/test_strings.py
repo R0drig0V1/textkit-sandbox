@@ -2,7 +2,7 @@ import unittest
 
 import unicodedata
 
-from textkit.strings import slugify, squeeze
+from textkit.strings import slugify, squeeze, truncate
 
 
 class SqueezeTest(unittest.TestCase):
@@ -42,6 +42,48 @@ class SlugifyTest(unittest.TestCase):
     def test_non_ascii_digits_and_letters_removed(self):
         # str.isalnum would keep these; the ASCII-only rule drops them.
         self.assertEqual(slugify("a٣b été"), "ab-t")
+
+
+class TruncateTest(unittest.TestCase):
+    def test_text_that_fits_is_unchanged(self):
+        self.assertEqual(truncate("hello", 10), "hello")
+
+    def test_text_exactly_width_is_unchanged(self):
+        self.assertEqual(truncate("hello", 5), "hello")
+
+    def test_cut_keeps_start_and_result_is_width_long(self):
+        result = truncate("hello world", 8)
+        self.assertEqual(result, "hello...")
+        self.assertEqual(len(result), 8)
+
+    def test_custom_suffix(self):
+        self.assertEqual(truncate("hello world", 6, suffix="~"), "hello~")
+
+    def test_empty_suffix_is_a_plain_cut(self):
+        self.assertEqual(truncate("hello world", 5, suffix=""), "hello")
+
+    def test_width_equal_to_suffix_gives_only_suffix(self):
+        self.assertEqual(truncate("hello world", 3), "...")
+
+    def test_width_zero_with_empty_suffix(self):
+        self.assertEqual(truncate("hello", 0, suffix=""), "")
+
+    def test_width_below_suffix_raises(self):
+        with self.assertRaises(ValueError):
+            truncate("hello world", 2)
+
+    def test_width_below_suffix_raises_even_if_text_fits(self):
+        with self.assertRaises(ValueError):
+            truncate("ab", 2)
+        with self.assertRaises(ValueError):
+            truncate("", 0, suffix="...")
+
+    def test_negative_width_raises(self):
+        with self.assertRaises(ValueError):
+            truncate("", -1, suffix="")
+
+    def test_counts_code_points(self):
+        self.assertEqual(truncate("Ñandú!", 5, suffix="."), "Ñand.")
 
 
 if __name__ == "__main__":
