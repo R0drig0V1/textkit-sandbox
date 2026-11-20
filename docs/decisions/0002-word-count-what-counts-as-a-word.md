@@ -1,4 +1,4 @@
-<!-- ADR 0002: the word rule of textkit.counts.word_count (plan task T1.5). -->
+<!-- ADR 0002: the word rule of textkit.counts.word_count (plan task T1.5); token offsets added by T3.3. -->
 # 0002. What counts as a word in `word_count`
 
 ## Context
@@ -62,6 +62,29 @@ with no precomposed form, which normalizing to NFC first would not.
   two words. Changing any of them means amending this ADR and its table.
 - `tests/test_counts.py` tests every row below and checks that this table and the tests list
   the same cases, so the two cannot drift apart silently.
+
+## Offsets
+
+Added with plan task T3.3, so that callers which need to know where a word is (the word diff
+of T3.6, for example) do not search for it again. `textkit/_tokens.words` returns a list of
+`Token(text, start, end)` (a `typing.NamedTuple`), one per word in order, instead of the bare
+strings; `word_count` stays `len(words(text))`, and code that compares words compares
+`token.text`.
+
+- **Offsets count code points**: they are Python `str` indices, `end` exclusive, so
+  `text[token.start:token.end] == token.text` for every token. A character outside the BMP
+  is one code point (`"\U0001F600 ab"` gives `Token("ab", 2, 4)`), not two UTF-16 units or
+  four UTF-8 bytes; a caller that needs another unit converts.
+- **Offsets come from the match** (`re.finditer`), never from searching the text for the
+  word, which would give the first occurrence of a repeated word (`"the cat the cat"`: the
+  second `"the"` is `Token("the", 8, 11)`).
+- **Combining marks stay inside their word** (rule 2), so a token's span covers them: NFD
+  `"cafe\u0301 x"` gives `Token("cafe\u0301", 0, 5)` and `Token("x", 6, 7)`. No
+  normalization is applied, so offsets always refer to the text as given.
+- Tokens are strictly increasing and never overlap (`t[i].end <= t[i + 1].start`), because
+  they are successive non-empty matches of one pattern.
+
+This section stays before `## Cases`: the tests read everything after that heading as rows.
 
 ## Cases
 

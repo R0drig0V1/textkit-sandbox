@@ -5,12 +5,12 @@ import pathlib
 import re
 import unittest
 
-from textkit._tokens import words
+from textkit._tokens import Token, words
 
 # The case table of the word-rule ADR (docs/decisions/*-word-count-what-counts-as-a-word.md),
-# row by row and in the same order, with the words each input must produce. The ADR table
-# gives only counts; WordsTest checks that these rows are exactly the ADR's inputs and that
-# each list has the ADR's count, so the token lists cannot drift from the table.
+# row by row and in the same order, with the words each input must produce (the ``text`` of
+# each token). The ADR table gives only counts; WordsTest checks that these rows are exactly
+# the ADR's inputs and that each list has the ADR's count, so the lists cannot drift from it.
 WORDS_CASES = [
     ("", []),
     ("   \n\t  ", []),
@@ -54,11 +54,16 @@ def _adr_cases() -> list:
     return [(ast.literal_eval(src), int(n)) for src, n in rows]
 
 
+def _texts(text: str) -> list:
+    """The ``text`` of every token of ``words(text)``, in order."""
+    return [token.text for token in words(text)]
+
+
 class WordsTest(unittest.TestCase):
     def test_adr_cases(self):
         for text, expected in WORDS_CASES:
             with self.subTest(text=text):
-                self.assertEqual(words(text), expected)
+                self.assertEqual(_texts(text), expected)
 
     def test_cases_match_adr_table(self):
         self.assertEqual(
@@ -67,7 +72,55 @@ class WordsTest(unittest.TestCase):
 
     def test_returns_words_unchanged_in_order(self):
         # No case folding or normalization: the words are slices of the input.
-        self.assertEqual(words("Zeta, ALPHA beta"), ["Zeta", "ALPHA", "beta"])
+        self.assertEqual(_texts("Zeta, ALPHA beta"), ["Zeta", "ALPHA", "beta"])
+
+    def test_returns_tokens(self):
+        self.assertEqual(
+            words("Hello, world!"), [Token("Hello", 0, 5), Token("world", 7, 12)]
+        )
+        token = words("hi")[0]
+        self.assertIsInstance(token, Token)
+        self.assertEqual((token.text, token.start, token.end), ("hi", 0, 2))
+
+    def test_offsets_slice_the_input_on_every_adr_row(self):
+        # Read from the ADR itself, so a row added there is covered without editing this test.
+        for text, _count in _adr_cases():
+            for token in words(text):
+                with self.subTest(text=text, token=token):
+                    self.assertEqual(text[token.start : token.end], token.text)
+
+    def test_offsets_increase_and_do_not_overlap(self):
+        texts = [text for text, _count in _adr_cases()]
+        texts.append("the cat the cat, the-cat; 1,000 don't \U0001F600 cafe\u0301 x")
+        for text in texts:
+            tokens = words(text)
+            with self.subTest(text=text):
+                for token in tokens:
+                    self.assertLess(token.start, token.end)
+                for left, right in zip(tokens, tokens[1:]):
+                    self.assertLessEqual(left.end, right.start)
+
+    def test_repeated_word_gets_its_own_offsets(self):
+        # A search for the word would give the first "the" twice; the match does not.
+        self.assertEqual(
+            words("the cat the cat"),
+            [
+                Token("the", 0, 3),
+                Token("cat", 4, 7),
+                Token("the", 8, 11),
+                Token("cat", 12, 15),
+            ],
+        )
+
+    def test_offsets_count_code_points_outside_the_bmp(self):
+        # U+1F600 is one code point (two UTF-16 units, four UTF-8 bytes): "ab" starts at 2.
+        self.assertEqual(words("\U0001F600 ab"), [Token("ab", 2, 4)])
+
+    def test_combining_marks_stay_inside_their_word(self):
+        # NFD: "e" followed by U+0301, five code points in one token.
+        self.assertEqual(
+            words("cafe\u0301 x"), [Token("cafe\u0301", 0, 5), Token("x", 6, 7)]
+        )
 
     def test_rejects_non_str(self):
         for bad in (b"hello", None, 3):

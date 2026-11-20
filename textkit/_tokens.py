@@ -1,7 +1,9 @@
 """Shared tokenizer: the prose word rule of ADR 0002, as a private helper module.
 
 The rule is decided in docs/decisions/0002-word-count-what-counts-as-a-word.md; change that
-ADR (and its case table) before changing the pattern below. ``textkit.counts.word_count`` is
+ADR (and its case table) before changing the pattern below. ``words`` returns ``Token``s, each
+word with its code-point offsets in the input (ADR 0002, "Offsets"), so callers that need
+positions (diffs, n-grams) do not search for the word again. ``textkit.counts.word_count`` is
 ``len(words(text))``. The module name starts with ``_``, so it holds no public functions:
 ``scripts/check.sh`` skips it and it has no README row or CHANGELOG line.
 
@@ -13,6 +15,19 @@ import functools
 import re
 import sys
 import unicodedata
+from typing import NamedTuple
+
+
+class Token(NamedTuple):
+    """One word of ``words``: its text and where it is in the input.
+
+    ``start`` and ``end`` are code-point offsets (``str`` indices, not bytes or UTF-16 units),
+    ``end`` exclusive, so ``text_argument[token.start:token.end] == token.text`` always.
+    """
+
+    text: str
+    start: int
+    end: int
 
 
 @functools.lru_cache(maxsize=None)
@@ -37,13 +52,19 @@ def _word_pattern() -> "re.Pattern[str]":
     # followed by combining marks; a mark never starts a run. Runs join into one word across
     # a single hyphen, a single apostrophe (ASCII or U+2019), or a "." / "," between two
     # digits (so "3.14" and "1,000" stay one number). Everything else, "_" included, separates.
-    # Every group is non-capturing, so findall() returns whole matches.
+    # Every group is non-capturing, so group() is the whole word.
     run = rf"(?:[^\W_][{marks}]*)+"
     return re.compile(rf"{run}(?:(?:[-'’]|(?<=\d)[.,](?=\d)){run})*")
 
 
-def words(text: str) -> list[str]:
-    """Return the words of ``text`` in order, each exactly as it appears in the input.
+def words(text: str) -> list[Token]:
+    """Return the words of ``text`` in order, as ``Token(text, start, end)``.
+
+    Each token's ``text`` is the word exactly as it appears in the input, and
+    ``text[token.start:token.end] == token.text``. Offsets count code points (a character
+    outside the BMP is one), come from the match itself and are strictly increasing; tokens
+    never overlap. Combining marks stay inside their word, so NFD ``"cafe\\u0301"`` is one
+    token of length 5.
 
     A word is a maximal run of letters or digits (any script), each optionally followed by
     combining marks; a single hyphen, a single apostrophe (``'`` or ``’``) or a ``.``/``,``
@@ -57,4 +78,6 @@ def words(text: str) -> list[str]:
     """
     if not isinstance(text, str):
         raise TypeError(f"words() expects str, got {type(text).__name__}")
-    return _word_pattern().findall(text)
+    # Offsets come from each match, never from searching for the word in ``text``: a search
+    # would find the first occurrence of a repeated word, not this one.
+    return [Token(m.group(), m.start(), m.end()) for m in _word_pattern().finditer(text)]
