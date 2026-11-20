@@ -1,12 +1,12 @@
 <!-- Reference of the template engine textkit.template (plan task T3.4): syntax, filters, errors.
-     Keep it in sync with textkit/template/ and with ADR 0006 (missing names). -->
+     Keep it in sync with textkit/template/ and with ADR 0007 (missing names). -->
 # Templates: `textkit.template`
 
 `render(template: str, context: dict[str, Any]) -> str` fills a template with values from a
 dict. It is a small engine for plain text: names, filters, `if`, `for` and comments, nothing
 more (no literals, operators, macros, includes or whitespace control). Short examples are in
 the [usage guide](usage.md#templates-textkittemplate); the rule for names missing from the
-context is [ADR 0006](decisions/0006-template-missing-names.md).
+context is [ADR 0007](decisions/0007-template-missing-names.md).
 
 ```python
 from textkit.template import render, TemplateError, TemplateSyntaxError
@@ -59,7 +59,7 @@ The body renders when the expression is true by Python's `bool`: `0`, `0.0`, `""
 `{% if flag | lower %}` is true for `False` (`"false"` is not empty). `else` is optional;
 there is no `elif` (nest an `if` in the `else` instead).
 
-A name missing from the context is **false** here, not an error (ADR 0006).
+A name missing from the context is **false** here, not an error (ADR 0007).
 
 ### Loops: `{% for item in expr %} ... {% endfor %}`
 
@@ -103,8 +103,8 @@ take no argument. Both are checked while parsing.
 ## Errors
 
 Two classes, importable from `textkit.template` (they are not in its `__all__`, which lists
-functions only). Until textkit's error hierarchy (plan task T3.2) is merged, `TemplateError`
-subclasses `ValueError`.
+functions only). `TemplateError` subclasses `textkit.errors.InvalidValueError`, so
+`except TextkitError` catches both; neither is a `ValueError` (ADR 0006).
 
 - `TemplateError`: rendering failed. Attributes `message`, `line` and `column`;
   `str(error)` is `"<line>:<column>: <message>"`.
@@ -137,8 +137,8 @@ block with no end tag, that of its opening tag.
 
 | Cause | Example | Position |
 |-------|---------|----------|
-| A name missing from the context in `{{ }}` (ADR 0006) | `render("{{ x }}", {})` | the `{{` |
-| A name missing from the context in `for` (ADR 0006) | `render("{% for i in xs %}{% endfor %}", {})` | the `{%` of the `for` |
+| A name missing from the context in `{{ }}` (ADR 0007) | `render("{{ x }}", {})` | the `{{` |
+| A name missing from the context in `for` (ADR 0007) | `render("{% for i in xs %}{% endfor %}", {})` | the `{%` of the `for` |
 | A `for` over a value that is not a `list` (tuples, dicts, strings, `None`, or any expression with filters) | `{"xs": "ab"}` | the `{%` of the `for` |
 | A dotted name through a value that is not a `dict`, in any tag | `"{{ user.name }}"` with `{"user": "Ada"}` | the tag |
 | A value nested too deeply for `str` to print (a list or dict thousands of levels deep) | `{{ v }}` | the tag |

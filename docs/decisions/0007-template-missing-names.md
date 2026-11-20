@@ -1,5 +1,5 @@
-<!-- ADR 0006: what textkit.template.render does with a name missing from the context (plan task T3.4). -->
-# 0006. Names missing from a template's context: an error, except in `if`
+<!-- ADR 0007: what textkit.template.render does with a name missing from the context (plan task T3.4). -->
+# 0007. Names missing from a template's context: an error, except in `if`
 
 Status: accepted (plan task T3.4)
 

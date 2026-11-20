@@ -6,14 +6,16 @@ column, not a line break (the rule is in ``docs/template.md``). The position is 
 opening delimiter (``{{``, ``{%`` or ``{#``) of the tag at fault; for a block with no end tag,
 that of the block's opening tag.
 
-Until the error hierarchy of plan task T3.2 is merged, ``TemplateError`` subclasses
-``ValueError`` (phase 3 rule "Errors"), so a caller that already catches textkit's
-``ValueError`` catches template errors too. These classes are importable from
+``TemplateError`` subclasses ``textkit.errors.InvalidValueError`` (phase 3 rule "Errors"),
+so ``except TextkitError`` catches template errors along with every other input textkit
+rejects; neither class is a ``ValueError`` (ADR 0006). These classes are importable from
 ``textkit.template`` but are not in its ``__all__``, which lists functions only.
 """
 
+from textkit.errors import InvalidValueError
 
-class TemplateError(ValueError):
+
+class TemplateError(InvalidValueError):
     """A template could not be rendered; ``line`` and ``column`` locate the tag at fault.
 
     Raised directly while rendering: a ``for`` over a value that is not a list, a dotted

@@ -11,4 +11,4 @@ One file per decision, `NNNN-title.md`, with Context / Decision / Consequences.
 | [0004](0004-reading-time-rounding.md) | `reading_time` rounds up to whole minutes: empty text is 0, under one minute is 1 |
 | [0005](0005-sentence-count-abbreviations-and-ellipses.md) | Where `sentence_count` ends a sentence: abbreviations, ellipses, lower case |
 | [0006](0006-invalid-value-error-not-a-value-error.md) | Rejected values raise `textkit.errors.InvalidValueError`, which is not a `ValueError` |
-| [0006](0006-template-missing-names.md) | Names missing from a template's context: an error, except in `if` (false) |
+| [0007](0007-template-missing-names.md) | Names missing from a template's context: an error, except in `if` (false) |

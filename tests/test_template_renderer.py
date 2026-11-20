@@ -14,6 +14,7 @@ import re
 import unittest
 
 import textkit.template
+from textkit.errors import InvalidValueError, TextkitError
 from textkit.template import TemplateError, TemplateSyntaxError
 from textkit.template.parser import parse
 from textkit.template.renderer import render, render_nodes
@@ -237,8 +238,10 @@ class RenderTest(unittest.TestCase):
 
     def test_error_classes(self):
         self.assertTrue(issubclass(TemplateSyntaxError, TemplateError))
-        # Phase 3 rule "Errors": ValueError until the error hierarchy (T3.2) is merged.
-        self.assertTrue(issubclass(TemplateError, ValueError))
+        # Phase 3 rule "Errors": a textkit error, and not a ValueError (ADR 0006).
+        self.assertTrue(issubclass(TemplateError, InvalidValueError))
+        self.assertTrue(issubclass(TemplateError, TextkitError))
+        self.assertFalse(issubclass(TemplateError, ValueError))
         error = TemplateError("boom", 3, 14)
         self.assertEqual((error.message, error.line, error.column), ("boom", 3, 14))
         self.assertEqual(str(error), "3:14: boom")

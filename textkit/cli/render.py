@@ -25,6 +25,7 @@ import sys
 from typing import Any, List
 
 from textkit.cli import registry
+from textkit.errors import InvalidValueError
 from textkit.template import TemplateError, render
 
 _NAME = "render"
@@ -35,11 +36,12 @@ _NAME = "render"
 _SURROGATE = re.compile("[\ud800-\udfff]")
 
 
-class _InputError(ValueError):
+class _InputError(InvalidValueError):
     """A file of the command could not be used; ``str()`` is ``"<path>: <reason>"``.
 
-    Caught in ``_run`` (exit 2), never raised out of it. It subclasses ``ValueError`` only
-    because the phase 3 rule "Errors" asks it of every exception class until T3.2 is merged.
+    Caught in ``_run`` (exit 2), never raised out of it. It subclasses ``InvalidValueError``
+    because every exception class textkit defines is a ``TextkitError`` (phase 3 rule
+    "Errors", checked by ``tests/test_errors.py``).
     """
 
 

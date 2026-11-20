@@ -253,7 +253,7 @@ filter and every error are in [template.md](template.md).
 ```
 
 A name missing from the context is an error in `{{ }}` and `for`, with the line and column
-of its tag, but false in `if`, so optional keys are tested with `if` (ADR 0006). `None`
+of its tag, but false in `if`, so optional keys are tested with `if` (ADR 0007). `None`
 prints as empty text.
 
 ```pycon
