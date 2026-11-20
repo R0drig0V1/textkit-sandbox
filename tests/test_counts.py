@@ -5,7 +5,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.counts import char_freq, reading_time, sentence_count, word_count
+from textkit.counts import char_freq, ngrams, reading_time, sentence_count, word_count
 
 # The case table of the word-rule ADR (docs/decisions/*-word-count-what-counts-as-a-word.md),
 # row by row. Kept literal here so a failure names the input; WordCountTest also checks that
@@ -271,6 +271,92 @@ class SentenceCountTest(unittest.TestCase):
             with self.subTest(value=bad):
                 with self.assertRaises(TypeError):
                     sentence_count(bad)
+
+
+class NgramsTest(unittest.TestCase):
+    def test_bigrams_by_default(self):
+        self.assertEqual(ngrams("a b c"), [("a", "b"), ("b", "c")])
+
+    def test_trigrams_overlap_in_order(self):
+        self.assertEqual(
+            ngrams("one two three four", 3),
+            [("one", "two", "three"), ("two", "three", "four")],
+        )
+
+    def test_unigrams(self):
+        self.assertEqual(ngrams("x y", n=1), [("x",), ("y",)])
+
+    def test_exactly_n_words_give_one_run(self):
+        self.assertEqual(ngrams("red fox", 2), [("red", "fox")])
+
+    def test_fewer_than_n_words_give_empty(self):
+        for text, n in (("", 1), ("", 2), ("   ", 2), ("?! ...", 1), ("one", 2), ("a b", 3)):
+            with self.subTest(text=text, n=n):
+                self.assertEqual(ngrams(text, n), [])
+
+    def test_count_is_words_minus_n_plus_one(self):
+        text = "the quick brown fox jumps over the lazy dog"
+        for n in range(1, 12):
+            with self.subTest(n=n):
+                self.assertEqual(len(ngrams(text, n)), max(0, word_count(text) - n + 1))
+
+    def test_words_follow_adr_0002(self):
+        # Joined words stay whole; punctuation, "_" and doubled joiners separate.
+        self.assertEqual(
+            ngrams("A well-known fact: don't pay 3.14, rock--roll_x."),
+            [
+                ("A", "well-known"),
+                ("well-known", "fact"),
+                ("fact", "don't"),
+                ("don't", "pay"),
+                ("pay", "3.14"),
+                ("3.14", "rock"),
+                ("rock", "roll"),
+                ("roll", "x"),
+            ],
+        )
+
+    def test_words_kept_exactly_as_in_text(self):
+        # No case folding and no normalization: the NFD word keeps its combining mark.
+        nfd = "cafe\u0301"
+        self.assertEqual(ngrams(f"The {nfd} THE", 2), [("The", nfd), (nfd, "THE")])
+
+    def test_repeated_words_and_line_breaks(self):
+        self.assertEqual(
+            ngrams("to be\nor not\r\nto be"),
+            [("to", "be"), ("be", "or"), ("or", "not"), ("not", "to"), ("to", "be")],
+        )
+
+    def test_items_are_tuples_of_str(self):
+        result = ngrams("a b c", 2)
+        self.assertIsInstance(result, list)
+        for run in result:
+            self.assertIs(type(run), tuple)
+            for word in run:
+                self.assertIs(type(word), str)
+
+    def test_n_below_one_raises_value_error(self):
+        for n in (0, -1, -100):
+            for text in ("", "a b c"):
+                with self.subTest(n=n, text=text):
+                    with self.assertRaises(ValueError):
+                        ngrams(text, n)
+
+    def test_n_checked_before_text(self):
+        with self.assertRaises(ValueError):
+            ngrams(None, 0)
+
+    def test_rejects_non_int_n(self):
+        for bad in (True, False, 2.0, "2", None):
+            with self.subTest(n=bad):
+                with self.assertRaises(TypeError):
+                    ngrams("a b c", bad)
+
+    def test_rejects_non_str(self):
+        for bad in (b"a b", None, 3, ["a", "b"]):
+            with self.subTest(value=bad):
+                with self.assertRaises(TypeError):
+                    ngrams(bad)
 
 
 if __name__ == "__main__":
