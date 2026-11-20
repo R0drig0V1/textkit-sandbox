@@ -145,3 +145,61 @@ def is_palindrome(text: str) -> bool:
     # combining dot), and stripping first keeps such marks out of the comparison.
     kept = [ch for ch in strip_accents(text).casefold() if ch.isalnum()]
     return kept == kept[::-1]
+
+
+def dedent(text: str) -> str:
+    """Remove the prefix of spaces and tabs common to every non-blank line of ``text``.
+
+    Lines are split with ``str.splitlines(keepends=True)`` and each line ending is kept
+    exactly as it was. That method ends a line at every character it treats as a line
+    boundary, not only ``"\\n"``: ``"\\r\\n"``, ``"\\r"``, ``"\\x0b"``, ``"\\x0c"`` (form
+    feed), ``"\\x1c"``-``"\\x1e"``, ``"\\x85"``, ``"\\u2028"`` and ``"\\u2029"`` end a line too
+    (unlike the ``"\\n"``-only rule of other textkit helpers), so
+    ``dedent("  a\\x0c  b")`` gives ``"a\\x0cb"``.
+
+    A line made only of spaces and tabs (or empty) is blank: it does not count when the
+    common prefix is computed, and it becomes empty, its line ending kept. The prefix is
+    compared character by character, so a tab and a space are different: lines indented
+    with ``"\\t"`` and with ``"    "`` share no prefix and are returned unchanged. A text
+    with no final line ending keeps none. ``""`` gives ``""``; blank-only text gives just
+    its line endings.
+
+    Unlike ``textwrap.dedent``, nothing else is normalized (no tab expansion, no
+    ``"\\r\\n"`` translation).
+
+    Raises:
+        TypeError: if ``text`` is not a ``str`` (``bytes`` included). No other input is
+            rejected.
+    """
+    if not isinstance(text, str):
+        raise TypeError(f"dedent() expects str, got {type(text).__name__}")
+    # Each item is (content, ending): splitlines() on one line gives its content without
+    # the ending, whatever boundary character ended it ([""] for a line that is only an
+    # ending, never [] since the line is not empty).
+    lines = []
+    for line in text.splitlines(keepends=True):
+        content = line.splitlines()[0]
+        lines.append((content, line[len(content):]))
+    prefix = None
+    for content, _ in lines:
+        if not content.strip(" \t"):
+            continue  # blank lines do not constrain the prefix
+        indent = content[: len(content) - len(content.lstrip(" \t"))]
+        if prefix is None:
+            prefix = indent
+        else:
+            # Shorten the prefix to the part both share, character by character.
+            common = 0
+            for a, b in zip(prefix, indent):
+                if a != b:
+                    break
+                common += 1
+            prefix = prefix[:common]
+    cut = len(prefix) if prefix else 0
+    parts = []
+    for content, ending in lines:
+        if not content.strip(" \t"):
+            parts.append(ending)
+        else:
+            parts.append(content[cut:] + ending)
+    return "".join(parts)

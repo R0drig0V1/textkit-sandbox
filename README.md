@@ -13,6 +13,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | Function | Module | What it does |
 |----------|--------|--------------|
 | `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive |
+| `dedent` | `textkit.strings` | Removes the indentation of spaces and tabs common to every non-blank line |
 | `is_palindrome` | `textkit.strings` | Tells whether text reads the same backwards, ignoring case, accents and symbols |
 | `ngrams` | `textkit.counts` | Runs of `n` consecutive words of a text, in order (words: ADR 0002) |
 | `reading_time` | `textkit.counts` | Whole minutes to read a text, rounded up (ADR 0004) |
