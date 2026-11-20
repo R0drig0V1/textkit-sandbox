@@ -288,6 +288,24 @@ False
 The command line exits 1 with the message on stderr, and no traceback, when a function command
 raises a `TextkitError`; any other exception keeps its traceback.
 
+## Markdown: `textkit.markdown`
+
+`to_html` converts a small, safe subset of Markdown to HTML: raw HTML is escaped and links
+to schemes other than `http`, `https` and `mailto` point to `#`. Every block and inline is
+in [docs/markdown.md](markdown.md); the reasons are in ADR 0009.
+
+```pycon
+>>> from textkit.markdown import to_html
+>>> print(to_html("# Notes\n\nSome *text* and [a link](https://example.com)."), end="")
+<h1>Notes</h1>
+<p>Some <em>text</em> and <a href="https://example.com">a link</a>.</p>
+>>> to_html("[x](javascript:alert)")
+'<p><a href="#">x</a></p>\n'
+
+```
+
+From the shell, `python3 -m textkit markdown notes.md` writes the HTML of a UTF-8 file.
+
 ## Templates: `textkit.template`
 
 `render` fills a template from a dict: `{{ name }}` prints a value, `{% if %}` and
