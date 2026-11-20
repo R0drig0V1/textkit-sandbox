@@ -1,4 +1,4 @@
-"""Tests for textkit/__main__.py, the ``python3 -m textkit`` command line (plan task T2.6).
+"""Tests for textkit/__main__.py, the ``python3 -m textkit`` command line (plan tasks T2.6, T2.7).
 
 The expected command set is computed here from the public-function definition of the phase 1
 rules, independently of the discovery code in ``textkit/__main__.py``: public functions are
@@ -22,6 +22,7 @@ import unittest
 from typing import Any, Dict, List, Tuple
 from unittest import mock
 
+import textkit
 import textkit.__main__ as cli
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -247,6 +248,20 @@ class CommandsTest(unittest.TestCase):
         b = _fake_module("textkit.b", "def same(text): return text\n")
         with self.assertRaises(RuntimeError):
             cli._commands([a, b])
+
+
+
+class VersionTest(unittest.TestCase):
+    """``python3 -m textkit --version`` (plan task T2.7)."""
+
+    def test_version_flag_prints_the_package_version(self) -> None:
+        proc = _run("--version")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual(proc.stderr, "")
+        self.assertEqual(proc.stdout, f"textkit {textkit.__version__}\n")
+
+    def test_package_version(self) -> None:
+        self.assertEqual(textkit.__version__, "0.1.0")
 
 
 if __name__ == "__main__":
