@@ -6,6 +6,8 @@ docs/decisions/0001-to-snake-case-word-boundaries.md; later converters build on 
 
 import re
 
+from textkit._tokens import words
+
 # `_` and `-` separate words; a run of them counts as one separator (ADR 0001, rule 1).
 _SEPARATORS = re.compile(r"[-_]+")
 
@@ -46,11 +48,20 @@ def to_snake_case(name: str) -> str:
     Never raises for a `str`; `""` and separator-only input give `""`. The full rule and
     its table of cases are in ADR 0001 (docs/decisions/).
     """
-    words = []
-    for chunk in _SEPARATORS.split(name):
-        if chunk:
-            words.extend(_split_chunk(chunk))
-    return "_".join(word.lower() for word in words)
+    # Rule 1 (separators) goes through the shared tokenizer (ADR 0002) only when the name
+    # has nothing but letters, digits and `_`: there both rules cut at every run of `_` and
+    # nowhere else. `-` and any other character keep the separator regex, because ADR 0002
+    # joins a single `-` ("kebab-case" is one word) and splits on punctuation that ADR 0001
+    # keeps inside a word. Case boundaries (rules 2-4) have no ADR 0002 counterpart, so
+    # `_split_chunk` handles them on either path.
+    if all(ch.isalnum() or ch == "_" for ch in name):
+        chunks = words(name)
+    else:
+        chunks = [chunk for chunk in _SEPARATORS.split(name) if chunk]
+    parts = []
+    for chunk in chunks:
+        parts.extend(_split_chunk(chunk))
+    return "_".join(part.lower() for part in parts)
 
 
 def to_camel_case(name: str) -> str:

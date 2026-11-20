@@ -8,7 +8,9 @@ python3 -m unittest discover -s tests -t . -q
 
 python3 - <<'PY'
 import ast, pathlib, re, sys
+# Modules whose name starts with "_" (__init__, _tokens, __main__) hold no public functions.
 funcs = sorted(n.name for p in pathlib.Path("textkit").glob("*.py")
+               if not p.name.startswith("_")
                for n in ast.parse(p.read_text()).body
                if isinstance(n, ast.FunctionDef) and not n.name.startswith("_"))
 errors = []

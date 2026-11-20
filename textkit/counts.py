@@ -6,6 +6,8 @@ T1.10 moves it into the shared tokenizer ``textkit/_tokens.py`` unchanged.
 
 import unicodedata
 
+from textkit._tokens import words
+
 # Characters that join two word parts into one word ("well-known", "don't", "don’t").
 _JOINERS = frozenset("-'’")
 # Characters that join two runs of decimal digits into one number ("3.14", "1,000").
@@ -30,26 +32,8 @@ def word_count(text: str) -> int:
     Raises:
         TypeError: if ``text`` is not a ``str``.
     """
-    if not isinstance(text, str):
-        raise TypeError(f"text must be a str, not {type(text).__name__}")
-    count = 0
-    in_word = False
-    n = len(text)
-    for i, ch in enumerate(text):
-        if ch.isalnum():
-            if not in_word:
-                count += 1
-                in_word = True
-        elif in_word and _is_mark(ch):
-            pass  # a combining mark continues the word (NFD "ú" is one letter)
-        elif in_word and i + 1 < n and text[i + 1].isalnum() and (
-            ch in _JOINERS
-            or (ch in _DIGIT_JOINERS and text[i - 1].isdecimal() and text[i + 1].isdecimal())
-        ):
-            pass  # a single joiner inside a word; the next character resumes it
-        else:
-            in_word = False
-    return count
+    # The rule lives in the shared tokenizer (T1.10); words() also raises the TypeError.
+    return len(words(text))
 
 
 def char_freq(text: str) -> dict[str, int]:
