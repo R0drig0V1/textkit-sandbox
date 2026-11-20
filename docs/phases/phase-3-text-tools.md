@@ -228,7 +228,7 @@ bounce it.
       `docs/usage.md`, the README row and the CHANGELOG line. At least 40 tests over the
       three modules, every error case with its line and column among them.
       PR after T3.1.
-- [ ] **T3.5 Markdown to HTML** (large): package `textkit/markdown/` with at least
+- [x] **T3.5 Markdown to HTML** (large): package `textkit/markdown/` with at least
       `blocks.py`, `inlines.py` and `html.py`. Public function: `to_html(text: str) -> str`.
       Lines end at `"\n"`, `"\r\n"` or a lone `"\r"`; the ending is dropped before parsing
       (code block lines included) and every output line ends in `"\n"`.
