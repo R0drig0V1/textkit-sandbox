@@ -147,3 +147,31 @@ def sentence_count(text: str) -> int:
     if words(text[start:]):
         count += 1
     return count
+
+
+def ngrams(text: str, n: int = 2) -> list[tuple[str, ...]]:
+    """Return the runs of ``n`` consecutive words of ``text``, in order.
+
+    Words follow the rule of ``word_count`` (ADR 0002) and come from ``_tokens.words``; each
+    word is its ``token.text``, exactly as in the text (no case-folding or normalization), so
+    ``ngrams("A b", 1) == [("A",), ("b",)]``. Runs overlap: ``k`` words give ``k - n + 1``
+    tuples of length ``n``, and a repeated run appears once per occurrence. Punctuation and
+    line breaks between words do not stop a run. Fewer than ``n`` words (``""`` included)
+    give ``[]``. The first call builds the word pattern (about 0.1 s).
+
+    Raises:
+        ValueError: if ``n < 1``, checked before ``text`` is read (even for ``""``).
+        TypeError: if ``n`` is not an ``int`` (``bool`` and ``float`` included), or if
+            ``text`` is not a ``str`` (``bytes`` included).
+    """
+    # bool is a subclass of int, but ngrams("a b", True) is a bug, not unigrams.
+    if isinstance(n, bool) or not isinstance(n, int):
+        raise TypeError(f"ngrams() expects an int n, got {type(n).__name__}")
+    if n < 1:
+        raise ValueError(f"n must be at least 1, got {n}")
+    # Checked here as well as in words() so the error names the public function.
+    if not isinstance(text, str):
+        raise TypeError(f"ngrams() expects str, got {type(text).__name__}")
+    tokens = [token.text for token in words(text)]
+    # range() is empty when len(tokens) < n, which gives the [] of the contract.
+    return [tuple(tokens[i : i + n]) for i in range(len(tokens) - n + 1)]

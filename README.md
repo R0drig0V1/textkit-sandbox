@@ -14,6 +14,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 |----------|--------|--------------|
 | `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive |
 | `is_palindrome` | `textkit.strings` | Tells whether text reads the same backwards, ignoring case, accents and symbols |
+| `ngrams` | `textkit.counts` | Runs of `n` consecutive words of a text, in order (words: ADR 0002) |
 | `reading_time` | `textkit.counts` | Whole minutes to read a text, rounded up (ADR 0004) |
 | `sentence_count` | `textkit.counts` | Counts the sentences in a text (abbreviations, ellipses: ADR 0005) |
 | `slug_title` | `textkit.strings` | Slug cut to a maximum length, never ending in `-` |

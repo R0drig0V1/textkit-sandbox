@@ -137,6 +137,18 @@ and an end followed by a lower-case letter do not end one (ADR 0005).
 
 ```
 
+`ngrams` gives the runs of `n` consecutive words (default 2), each word exactly as in the
+text by the rule of ADR 0002; fewer than `n` words give `[]`.
+
+```pycon
+>>> from textkit.counts import ngrams
+>>> ngrams("A well-known fact, again.")
+[('A', 'well-known'), ('well-known', 'fact'), ('fact', 'again')]
+>>> ngrams("one two", 3)
+[]
+
+```
+
 ## Identifier cases: `textkit.cases`
 
 `to_snake_case` splits at separators and capitals; a run of capitals stays one word and digits

@@ -5,7 +5,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.counts import char_freq, reading_time, sentence_count, word_count
+from textkit.counts import char_freq, ngrams, reading_time, sentence_count, word_count
 
 # The case table of the word-rule ADR (docs/decisions/*-word-count-what-counts-as-a-word.md),
 # row by row. Kept literal here so a failure names the input; WordCountTest also checks that
@@ -271,6 +271,84 @@ class SentenceCountTest(unittest.TestCase):
             with self.subTest(value=bad):
                 with self.assertRaises(TypeError):
                     sentence_count(bad)
+
+
+class NgramsTest(unittest.TestCase):
+    def test_default_is_bigrams(self):
+        self.assertEqual(
+            ngrams("the quick brown fox"),
+            [("the", "quick"), ("quick", "brown"), ("brown", "fox")],
+        )
+
+    def test_trigrams(self):
+        self.assertEqual(
+            ngrams("a b c d", 3),
+            [("a", "b", "c"), ("b", "c", "d")],
+        )
+
+    def test_unigrams(self):
+        self.assertEqual(ngrams("one two", 1), [("one",), ("two",)])
+
+    def test_n_equal_to_word_count_gives_one_tuple(self):
+        self.assertEqual(ngrams("a b c", 3), [("a", "b", "c")])
+
+    def test_fewer_than_n_words_gives_empty_list(self):
+        for text, n in (("", 1), ("", 2), ("   ", 1), ("!!! ...", 1), ("one", 2), ("a b", 3)):
+            with self.subTest(text=text, n=n):
+                self.assertEqual(ngrams(text, n), [])
+
+    def test_count_is_words_minus_n_plus_one(self):
+        text = "Hello, world! It's a well-known fact: 3.14 is pi."
+        for n in range(1, 12):
+            with self.subTest(n=n):
+                self.assertEqual(len(ngrams(text, n)), max(word_count(text) - n + 1, 0))
+
+    def test_words_follow_adr_0002(self):
+        # Hyphens, apostrophes and digit separators join; punctuation and "_" do not.
+        self.assertEqual(
+            ngrams("well-known don't 3.14 snake_case"),
+            [("well-known", "don't"), ("don't", "3.14"), ("3.14", "snake"), ("snake", "case")],
+        )
+
+    def test_words_exactly_as_in_text(self):
+        # No case-folding and no normalization: the NFD word keeps its combining mark.
+        self.assertEqual(
+            ngrams("Hello HELLO cafe\u0301", 2),
+            [("Hello", "HELLO"), ("HELLO", "cafe\u0301")],
+        )
+
+    def test_punctuation_and_newlines_do_not_stop_a_run(self):
+        self.assertEqual(ngrams("End.\nStart, again"), [("End", "Start"), ("Start", "again")])
+
+    def test_repeated_runs_appear_once_per_occurrence(self):
+        self.assertEqual(ngrams("a b a b"), [("a", "b"), ("b", "a"), ("a", "b")])
+
+    def test_returns_list_of_tuples(self):
+        result = ngrams("a b c")
+        self.assertIs(type(result), list)
+        for gram in result:
+            self.assertIs(type(gram), tuple)
+
+    def test_n_below_one_raises_value_error(self):
+        for bad in (0, -1, -5):
+            with self.subTest(n=bad):
+                with self.assertRaises(ValueError):
+                    ngrams("a b c", bad)
+        # Checked before the text is read: empty text does not short-circuit to [].
+        with self.assertRaises(ValueError):
+            ngrams("", 0)
+
+    def test_non_int_n_raises_type_error(self):
+        for bad in (2.0, "2", None, True):
+            with self.subTest(n=bad):
+                with self.assertRaises(TypeError):
+                    ngrams("a b c", bad)
+
+    def test_rejects_non_str(self):
+        for bad in (b"a b", None, 3, ["a", "b"]):
+            with self.subTest(value=bad):
+                with self.assertRaises(TypeError):
+                    ngrams(bad)
 
 
 if __name__ == "__main__":
