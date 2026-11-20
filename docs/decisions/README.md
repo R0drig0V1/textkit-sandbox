@@ -12,3 +12,4 @@ One file per decision, `NNNN-title.md`, with Context / Decision / Consequences.
 | [0005](0005-sentence-count-abbreviations-and-ellipses.md) | Where `sentence_count` ends a sentence: abbreviations, ellipses, lower case |
 | [0006](0006-error-hierarchy.md) | `InvalidValueError` is a `TextkitError`, not a `ValueError`: an escaping `ValueError` is a bug |
 | [0007](0007-unified-diff-newlines-ties-and-cost.md) | `textkit.diff`: the `\ No newline at end of file` marker, the tie rule (deletions first) and the cost of the LCS |
+| [0008](0008-template-missing-names.md) | `textkit.template`: a missing name is an error in `{{ }}` and `for`, false in `if` |

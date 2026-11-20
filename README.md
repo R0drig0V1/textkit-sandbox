@@ -18,6 +18,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `is_palindrome` | `textkit.strings` | Tells whether text reads the same backwards, ignoring case, accents and symbols |
 | `ngrams` | `textkit.counts` | Runs of `n` consecutive words of a text, in order (rule: ADR 0002) |
 | `reading_time` | `textkit.counts` | Whole minutes to read a text, rounded up (ADR 0004) |
+| `render` | `textkit.template` | Fills a text template (`{{ name }}`, `if`, `for`, filters) from a dict (missing names: ADR 0008) |
 | `sentence_count` | `textkit.counts` | Counts the sentences in a text (abbreviations, ellipses: ADR 0005) |
 | `slug_title` | `textkit.strings` | Slug cut to a maximum length, never ending in `-` |
 | `slugify` | `textkit.strings` | Turns text into a lower-case ASCII slug |
@@ -48,3 +49,8 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
   (headers `--- a` and `+++ b`; read as UTF-8, `"\r"` kept). Exit 0 when they are equal
   (nothing printed), 1 when they differ, 2 when a file cannot be read
   ([docs/diff.md](docs/diff.md)).
+- `python3 -m textkit render <template-file> <json-file>`: renders a template
+  (`textkit.template.render`, [docs/template.md](docs/template.md)) with the JSON object in
+  the second file as its context and writes the result unchanged. Exit 0 on success, 1 for a
+  template error (`line:column: message` on stderr), 2 for a file that cannot be read or a
+  JSON file that is not a JSON object.
