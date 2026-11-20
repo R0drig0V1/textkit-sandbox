@@ -70,3 +70,40 @@ def strip_accents(text: str) -> str:
     # characters (class 0) are kept.
     base = "".join(ch for ch in decomposed if not unicodedata.combining(ch))
     return unicodedata.normalize("NFC", base)
+
+
+def wrap(text: str, width: int) -> list[str]:
+    """Split ``text`` into lines of at most ``width`` characters, breaking at spaces.
+
+    Words are filled greedily: each line takes as many words as fit, joined by one space.
+    Runs of spaces between words collapse to one, leading and trailing spaces are dropped
+    and no returned line starts or ends with the separating space. A word longer than
+    ``width`` is never split: it gets a line of its own, longer than ``width``. Widths are
+    counted in code points (``len``).
+
+    Existing newlines (and every other character for which ``str.isspace()`` is true, such
+    as tabs) are separators just like spaces, so the text is reflowed and no returned line
+    contains a line break; see ADR 0003 (``docs/decisions/0003-wrap-existing-newlines.md``).
+
+    ``wrap("", width)`` and whitespace-only input give ``[]``.
+
+    Raises:
+        ValueError: if ``width < 1``, whatever ``text`` is.
+    """
+    if width < 1:
+        raise ValueError(f"width must be at least 1, got {width}")
+    lines: list[str] = []
+    current = ""
+    # str.split() with no argument splits on any whitespace run and drops empty strings,
+    # which gives the collapsing, stripping and newline rules in one step (ADR 0003).
+    for word in text.split():
+        if not current:
+            current = word
+        elif len(current) + 1 + len(word) <= width:
+            current += " " + word
+        else:
+            lines.append(current)
+            current = word
+    if current:
+        lines.append(current)
+    return lines

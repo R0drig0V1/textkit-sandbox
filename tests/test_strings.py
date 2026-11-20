@@ -2,7 +2,7 @@ import unittest
 
 import unicodedata
 
-from textkit.strings import slugify, squeeze, strip_accents, truncate
+from textkit.strings import slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -111,6 +111,59 @@ class StripAccentsTest(unittest.TestCase):
 
     def test_hangul_stays_composed(self):
         self.assertEqual(strip_accents("한국어"), "한국어")
+
+
+class WrapTest(unittest.TestCase):
+    def test_greedy_fill(self):
+        self.assertEqual(wrap("the quick brown fox", 10), ["the quick", "brown fox"])
+
+    def test_line_may_be_exactly_width(self):
+        self.assertEqual(wrap("ab cd", 5), ["ab cd"])
+        self.assertEqual(wrap("ab cd", 4), ["ab", "cd"])
+
+    def test_long_word_gets_own_line(self):
+        self.assertEqual(wrap("a abcdefgh b", 3), ["a", "abcdefgh", "b"])
+
+    def test_long_word_is_not_split(self):
+        self.assertEqual(wrap("abcdefgh", 3), ["abcdefgh"])
+
+    def test_runs_of_spaces_collapse(self):
+        self.assertEqual(wrap("a     b", 10), ["a b"])
+
+    def test_leading_and_trailing_spaces_dropped(self):
+        self.assertEqual(wrap("   a b   ", 10), ["a b"])
+
+    def test_lines_never_contain_separating_space(self):
+        for line in wrap("aa  bb   cc dd ee", 5):
+            self.assertFalse(line.startswith(" ") or line.endswith(" "), line)
+
+    def test_empty_and_whitespace_only(self):
+        self.assertEqual(wrap("", 5), [])
+        self.assertEqual(wrap("     ", 5), [])
+
+    def test_width_below_one_raises(self):
+        for width in (0, -1):
+            with self.assertRaises(ValueError):
+                wrap("abc", width)
+        with self.assertRaises(ValueError):
+            wrap("", 0)
+
+    def test_width_one(self):
+        self.assertEqual(wrap("a b cd", 1), ["a", "b", "cd"])
+
+    # ADR 0003: existing newlines are separators, like spaces.
+    def test_newlines_are_separators(self):
+        self.assertEqual(wrap("a\nb", 10), ["a b"])
+
+    def test_paragraph_breaks_are_not_kept(self):
+        self.assertEqual(wrap("one two\n\nthree", 7), ["one two", "three"])
+
+    def test_crlf_tabs_and_unicode_line_separators(self):
+        self.assertEqual(wrap("a\r\nb\tc\u2028d", 20), ["a b c d"])
+
+    def test_no_line_contains_a_newline(self):
+        for line in wrap("x\ny\n\nz w\n", 3):
+            self.assertNotIn("\n", line)
 
 
 if __name__ == "__main__":
