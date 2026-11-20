@@ -14,3 +14,4 @@ One file per decision, `NNNN-title.md`, with Context / Decision / Consequences.
 | [0007](0007-unified-diff-newlines-ties-and-cost.md) | `unified_diff`: a missing final newline, the LCS tie rule (deletions first) and its cost |
 | [0008](0008-template-missing-names.md) | Names missing from a template's context: an error, except in `if` (false) |
 | [0007](0007-markdown-subset-raw-html-and-link-schemes.md) | The Markdown subset of `to_html`: what it leaves out, why raw HTML is escaped and some link schemes dropped |
+| [0008](0008-markdown-subset-raw-html-and-link-schemes.md) | The Markdown subset of `to_html`: what it leaves out, why raw HTML is escaped and some link schemes dropped |

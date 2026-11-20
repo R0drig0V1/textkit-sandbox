@@ -28,7 +28,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
 | `strip_accents` | `textkit.strings` | Removes combining marks (accents) from text |
 | `to_camel_case` | `textkit.cases` | Converts snake_case or kebab-case to camelCase |
-| `to_html` | `textkit.markdown` | Converts a Markdown subset to HTML; raw HTML is escaped, unsafe link schemes become `#` (ADR 0007) |
+| `to_html` | `textkit.markdown` | Converts a Markdown subset to HTML; raw HTML is escaped, unsafe link schemes become `#` (ADR 0008) |
 | `to_kebab_case` | `textkit.cases` | Converts camelCase, PascalCase or snake_case to kebab-case |
 | `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase or kebab-case to snake_case |
 | `truncate` | `textkit.strings` | Shortens text to a width, ending in a suffix when cut |
@@ -63,3 +63,6 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 - `python3 -m textkit markdown <file>`: writes `to_html` of a UTF-8 Markdown file
   (docs/markdown.md). Exit 0 on success, 2 when the file is missing, unreadable or not
   valid UTF-8.
+  - `python3 -m textkit markdown <file>`: writes `to_html` of a UTF-8 Markdown file. Exit 0
+    on success, 2 when the file is missing, unreadable or not valid UTF-8. See
+    [docs/markdown.md](docs/markdown.md).

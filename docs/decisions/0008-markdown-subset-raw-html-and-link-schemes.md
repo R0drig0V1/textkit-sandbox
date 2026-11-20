@@ -1,5 +1,5 @@
-<!-- ADR 0007: the Markdown subset of textkit.markdown.to_html (plan task T3.5). -->
-# 0007. The Markdown subset of `to_html`: what it leaves out, raw HTML and link schemes
+<!-- ADR 0008: the Markdown subset of textkit.markdown.to_html (plan task T3.5). -->
+# 0008. The Markdown subset of `to_html`: what it leaves out, raw HTML and link schemes
 
 ## Context
 

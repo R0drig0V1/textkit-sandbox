@@ -1,7 +1,7 @@
 """HTML output of the Markdown subset, and ``to_html``, its public function (plan task T3.5).
 
 Two safety rules hold for every byte this module writes (decided, with their reasons, in
-docs/decisions/0007-markdown-subset-raw-html-and-link-schemes.md):
+docs/decisions/0008-markdown-subset-raw-html-and-link-schemes.md):
 
 - raw HTML is never passed through: ``&``, ``<``, ``>`` and ``"`` are escaped in text, in
   code and in attribute values (``escape``);
@@ -155,7 +155,7 @@ def to_html(text: str) -> str:
     ``"\\n"``, ``"\\r\\n"`` or ``"\\r"``; every output line ends in ``"\\n"``; ``""`` gives
     ``""``. ``&``, ``<``, ``>`` and ``"`` are always escaped, so raw HTML is printed as
     text, and a link whose scheme is not ``http``, ``https`` or ``mailto`` points to ``#``.
-    The full rules and what the subset leaves out are in ADR 0007 and docs/markdown.md.
+    The full rules and what the subset leaves out are in ADR 0008 and docs/markdown.md.
 
     Every ``str`` is valid input: unmatched markers are printed as they are.
 

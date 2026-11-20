@@ -1,6 +1,6 @@
 <!-- The Markdown subset of textkit.markdown.to_html (plan task T3.5): every block and inline,
 with an example of each. The decisions behind it (what is left out, raw HTML, link schemes)
-are in docs/decisions/0007-markdown-subset-raw-html-and-link-schemes.md, whose case table
+are in docs/decisions/0008-markdown-subset-raw-html-and-link-schemes.md, whose case table
 the tests check. -->
 # Markdown: `textkit.markdown`
 
@@ -209,4 +209,4 @@ blocks. A marker that is not matched is printed as it is.
 Everything else is printed as text: setext headings, closing `#` sequences, indented code
 blocks, `~~~` fences, nested lists and blocks inside items or quotes, lazy continuation
 lines, `+` bullets and `1)` markers, `_` emphasis, hard line breaks, autolinks, reference
-links, images, link titles, tables, raw HTML and entities. The reasons are in ADR 0007.
+links, images, link titles, tables, raw HTML and entities. The reasons are in ADR 0008.

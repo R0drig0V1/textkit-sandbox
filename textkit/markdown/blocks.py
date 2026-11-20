@@ -5,7 +5,7 @@ title, a paragraph, a list item, a quoted paragraph) is kept raw, with its lines
 joined by one space, for ``textkit.markdown.inlines`` to parse. Code block lines are kept
 exactly as written, minus their line endings.
 
-The rules, decided in docs/decisions/0007-markdown-subset-raw-html-and-link-schemes.md:
+The rules, decided in docs/decisions/0008-markdown-subset-raw-html-and-link-schemes.md:
 
 - a line ends at ``"\\n"``, ``"\\r\\n"`` or a lone ``"\\r"``; the ending is dropped;
 - a *blank* line is empty or holds spaces and tabs only;
