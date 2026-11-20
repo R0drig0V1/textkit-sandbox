@@ -8,6 +8,7 @@
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `truncate`: shortens text to a width, ending in a suffix when cut.
 - Added `to_camel_case`: converts snake_case or kebab-case identifiers to camelCase.
+- Added `to_kebab_case`: converts camelCase, PascalCase or snake_case identifiers to kebab-case, splitting words like `to_snake_case` (ADR 0001).
 - Added `to_snake_case`: converts camelCase, PascalCase or kebab-case identifiers to snake_case.
 - Added `strip_accents`: removes combining marks (accents) from text.
 - Added `word_count` in the new module `textkit.counts`: counts words; hyphenated words, contractions and numbers count once (ADR 0002).

@@ -1,7 +1,7 @@
 """Tests for textkit.cases."""
 import unittest
 
-from textkit.cases import to_camel_case, to_snake_case
+from textkit.cases import to_camel_case, to_kebab_case, to_snake_case
 
 # The table of cases at the end of docs/decisions/0001-to-snake-case-word-boundaries.md,
 # row by row and in the same order. Keep both in sync.
@@ -95,6 +95,37 @@ class ToCamelCaseTest(unittest.TestCase):
     def test_rejects_non_str(self):
         with self.assertRaises(TypeError):
             to_camel_case(None)
+
+
+class ToKebabCaseTest(unittest.TestCase):
+    def test_adr_table_with_dashes(self):
+        # Built on to_snake_case: every row of ADR 0001 gives the same words, joined by "-".
+        for name, snake in ADR_CASES:
+            with self.subTest(name=name):
+                self.assertEqual(to_kebab_case(name), snake.replace("_", "-"))
+
+    def test_examples(self):
+        self.assertEqual(to_kebab_case("HTTPServer"), "http-server")
+        self.assertEqual(to_kebab_case("camelCase"), "camel-case")
+        self.assertEqual(to_kebab_case("PascalCase"), "pascal-case")
+        self.assertEqual(to_kebab_case("user_id"), "user-id")
+        self.assertEqual(to_kebab_case("parseURL2"), "parse-url2")
+
+    def test_kebab_case_unchanged(self):
+        self.assertEqual(to_kebab_case("already-kebab"), "already-kebab")
+
+    def test_matches_to_snake_case(self):
+        for name in ("getHTTPResponseCode", "__private_name", "a.b c", "ÉtéChaud"):
+            with self.subTest(name=name):
+                self.assertEqual(to_kebab_case(name), to_snake_case(name).replace("_", "-"))
+
+    def test_empty_and_separators_only(self):
+        self.assertEqual(to_kebab_case(""), "")
+        self.assertEqual(to_kebab_case("-_-"), "")
+
+    def test_rejects_non_str(self):
+        with self.assertRaises(TypeError):
+            to_kebab_case(None)
 
 
 if __name__ == "__main__":
