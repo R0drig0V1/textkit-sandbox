@@ -35,8 +35,9 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
   takes one text argument (found at run time; other parameters keep their defaults).
   `python3 -m textkit --help` lists them under `commands:`, then the tool subcommands under
   `tools:`. Lists and dicts print as JSON with sorted keys. Exit 0 on success, 2 on an
-  unknown command or a wrong argument count, 1 when the function rejects the text
-  (`ValueError`).
+  unknown command or a wrong argument count, 1 when the function rejects the text (a
+  `TextkitError` from `textkit.errors`, message on stderr, no traceback). Any other
+  exception is a bug and keeps its traceback (ADR 0006).
 - Tool subcommands, `python3 -m textkit <tool> ...`: one module `textkit/cli/<name>.py` each
   ([docs/usage.md](docs/usage.md#command-line)), and one bullet each below, in alphabetical
   order of subcommand. None yet.

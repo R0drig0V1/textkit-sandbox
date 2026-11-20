@@ -6,6 +6,7 @@ import re
 import unittest
 
 from textkit.counts import char_freq, ngrams, reading_time, sentence_count, word_count
+from textkit.errors import InvalidValueError
 
 # The case table of the word-rule ADR (docs/decisions/*-word-count-what-counts-as-a-word.md),
 # row by row. Kept literal here so a failure names the input; WordCountTest also checks that
@@ -159,13 +160,13 @@ class ReadingTimeTest(unittest.TestCase):
         self.assertEqual(word_count(text), 300)
         self.assertEqual(reading_time(text, 100), 3)
 
-    def test_wpm_below_one_raises_value_error(self):
+    def test_wpm_below_one_raises_invalid_value_error(self):
         for bad in (0, -1, -200):
             with self.subTest(wpm=bad):
-                with self.assertRaises(ValueError):
+                with self.assertRaises(InvalidValueError):
                     reading_time("hello", bad)
         # Checked before the text is read: empty text does not short-circuit to 0.
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidValueError):
             reading_time("", 0)
 
     def test_non_int_wpm_raises_type_error(self):
@@ -335,15 +336,15 @@ class NgramsTest(unittest.TestCase):
             for word in run:
                 self.assertIs(type(word), str)
 
-    def test_n_below_one_raises_value_error(self):
+    def test_n_below_one_raises_invalid_value_error(self):
         for n in (0, -1, -100):
             for text in ("", "a b c"):
                 with self.subTest(n=n, text=text):
-                    with self.assertRaises(ValueError):
+                    with self.assertRaises(InvalidValueError):
                         ngrams(text, n)
 
     def test_n_checked_before_text(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidValueError):
             ngrams(None, 0)
 
     def test_rejects_non_int_n(self):

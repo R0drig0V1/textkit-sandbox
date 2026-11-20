@@ -37,7 +37,7 @@ transliterated, so strip accents first when you want to keep the letters.
 
 `truncate` keeps the start of the text and marks the cut with a suffix (`"..."` by default);
 the result, suffix included, is exactly `width` long. A width shorter than the suffix is an
-error.
+error, `InvalidValueError` (see [Errors](#errors-textkiterrors)).
 
 ```pycon
 >>> from textkit.strings import truncate
@@ -48,7 +48,7 @@ error.
 >>> truncate("Hello", 2)
 Traceback (most recent call last):
     ...
-ValueError: width (2) must be at least the suffix length (3)
+textkit.errors.InvalidValueError: width (2) must be at least the suffix length (3)
 
 ```
 
@@ -184,6 +184,39 @@ stay with the word before them (ADR 0001).
 'httpServer'
 
 ```
+
+## Errors: `textkit.errors`
+
+A function that rejects a value raises `InvalidValueError`, with a message that names the
+argument and the rule; its base class `TextkitError` is the base of every error textkit
+raises on purpose, the error classes of the tool packages included. Catch `TextkitError` to
+handle any rejected input.
+
+```pycon
+>>> from textkit.errors import InvalidValueError, TextkitError
+>>> from textkit.strings import wrap
+>>> try:
+...     wrap("some text", 0)
+... except TextkitError as exc:
+...     print(f"{type(exc).__name__}: {exc}")
+InvalidValueError: width must be at least 1, got 0
+
+```
+
+`InvalidValueError` is not a `ValueError` (ADR 0006): `except ValueError` does not catch it,
+and a `ValueError` that escapes textkit is a bug in textkit, never a rejected input. An
+argument of the wrong type still raises `TypeError`.
+
+```pycon
+>>> issubclass(InvalidValueError, TextkitError)
+True
+>>> issubclass(InvalidValueError, ValueError)
+False
+
+```
+
+The command line exits 1 with the message on stderr, and no traceback, when a function command
+raises a `TextkitError`; any other exception keeps its traceback.
 
 ## Command line
 
