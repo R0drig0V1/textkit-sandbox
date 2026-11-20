@@ -138,7 +138,7 @@ bounce it.
       module under `textkit/cli/`, also when the file is run alone. Update the README
       "Commands" section. CHANGELOG
       line: "Split the command line into `textkit/cli/`."
-- [ ] **T3.2 error hierarchy** (medium): `textkit/errors.py` with `TextkitError(Exception)`
+- [x] **T3.2 error hierarchy** (medium): `textkit/errors.py` with `TextkitError(Exception)`
       and `InvalidValueError(TextkitError)`. Every `raise ValueError` in `textkit/` becomes
       `raise InvalidValueError` with the same message; `TypeError` for an argument of the
       wrong type stays. Write an ADR on why `InvalidValueError` does not inherit from
