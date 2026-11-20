@@ -1,9 +1,10 @@
 """Tests for textkit.cases. CASES mirrors the table at the end of ADR 0001, row by row;
-CAMEL_CASES pins the to_camel_case rules of plan task T1.8."""
+CAMEL_CASES pins the to_camel_case rules of plan task T1.8; ToKebabCaseTest reuses CASES for
+to_kebab_case (T2.3)."""
 
 import unittest
 
-from textkit.cases import to_camel_case, to_snake_case
+from textkit.cases import to_camel_case, to_kebab_case, to_snake_case
 
 # (input, expected) in the order of the table in
 # docs/decisions/0001-to-snake-case-word-boundaries.md; keep both in sync.
@@ -88,6 +89,33 @@ class ToCamelCaseTest(unittest.TestCase):
             with self.subTest(name=name):
                 once = to_camel_case(name)
                 self.assertEqual(to_camel_case(once), once)
+
+
+
+class ToKebabCaseTest(unittest.TestCase):
+    def test_adr_table(self):
+        # Same words as to_snake_case (ADR 0001), joined with `-` instead of `_`.
+        for name, snake in CASES:
+            with self.subTest(name=name):
+                self.assertEqual(to_kebab_case(name), snake.replace("_", "-"))
+
+    def test_examples(self):
+        for name, expected in [
+            ("HTTPServer", "http-server"),
+            ("parseURL2", "parse-url2"),
+            ("already_snake", "already-snake"),
+            ("kebab-case", "kebab-case"),
+            ("__private--name__", "private-name"),
+            ("", ""),
+        ]:
+            with self.subTest(name=name):
+                self.assertEqual(to_kebab_case(name), expected)
+
+    def test_idempotent(self):
+        for name, _ in CASES:
+            with self.subTest(name=name):
+                once = to_kebab_case(name)
+                self.assertEqual(to_kebab_case(once), once)
 
 
 if __name__ == "__main__":

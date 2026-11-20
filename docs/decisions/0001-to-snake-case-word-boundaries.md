@@ -41,7 +41,7 @@ Rejected: one word per capital (`h_t_t_p_server`) loses the acronym; never split
 - The conversion is lossy: `HTTPServer` and `HttpServer` both give `http_server`, and
   `_private` loses its leading underscore. Round trips through `to_camel_case` are not
   guaranteed.
-- `to_kebab_case` (T2.3) can reuse the same words and join them with `-`.
+- `to_kebab_case` (T2.3) reuses the same words and joins them with `-`.
 - T1.10 can route through the shared tokenizer only the rows below whose split agrees with
   T1.5's word rule; case boundaries (rules 2-4) are specific to identifiers.
 
