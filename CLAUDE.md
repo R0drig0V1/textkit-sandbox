@@ -24,9 +24,13 @@ The workflow comes from the `herdr-agent-pool` plugin
 ## Commands (run from the repo root)
 
 ```bash
-scripts/check.sh        # lint + types + tests; must stay green (edit it per project)
+scripts/check.sh        # all the checks; must stay green. Waits 75 s first (see below)
 python3 -m unittest discover -s tests -t . -q     # only the unit tests
 ```
+
+`scripts/check.sh` waits `TEXTKIT_CHECK_SECONDS` (75 by default) before it runs: the wait
+stands for the build and test suite of a real project. Never shorten or skip it. While
+working on a task, run the unit tests directly; run `scripts/check.sh` when the task is ready.
 
 ## Rules
 

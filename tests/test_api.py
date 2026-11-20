@@ -1,7 +1,8 @@
 """API contract test for the whole ``textkit`` package (plan task T2.5).
 
 Every public function (the phase 1 definition: a top-level function whose name does not start
-with ``_``, defined in a ``textkit`` module whose name does not start with ``_``) must have a
+with ``_``, defined in a ``textkit`` module whose name does not start with ``_``; and, for a
+package, the phase 3 one: the names in ``__all__`` of its ``__init__.py``) must have a
 docstring and type hints for every parameter and its return value, and the set of public
 functions must equal the README function table.
 
@@ -38,6 +39,12 @@ def _public_functions() -> dict[str, typing.Callable[..., typing.Any]]:
         if info.name.startswith("_"):
             continue
         module = importlib.import_module(f"{textkit.__name__}.{info.name}")
+        if info.ispkg:
+            # A package's public functions are the names in __all__ of its __init__.py,
+            # wherever in the package they are defined (phase 3 rules); none without it.
+            for name in getattr(module, "__all__", []):
+                found[f"{module.__name__}.{name}"] = getattr(module, name)
+            continue
         for name, func in inspect.getmembers(module, inspect.isfunction):
             # Functions imported from elsewhere belong to the module that defines them.
             if func.__module__ == module.__name__ and not name.startswith("_"):
