@@ -2,5 +2,6 @@
 
 ## Unreleased
 
+- Added `slugify`: lower-case ASCII slug with runs of other characters turned into one `-`.
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `truncate`: shortens text to exactly `width` code points, ending in a suffix when cut.

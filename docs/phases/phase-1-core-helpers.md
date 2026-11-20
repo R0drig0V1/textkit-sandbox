@@ -27,7 +27,7 @@ anything else). Tasks with no "Depends on" can start at once.
 
 ## Tasks
 
-- [ ] **T1.1 `slugify`** in `textkit/strings.py`: `slugify(text) -> str` lower-cases, turns
+- [x] **T1.1 `slugify`** in `textkit/strings.py`: `slugify(text) -> str` lower-cases, turns
       every run of non-alphanumeric characters into one `-` and strips `-` at both ends
       (`"Hello, World!"` -> `"hello-world"`). ASCII only: characters outside ASCII are removed
       first, with no separator (`"naïve"` -> `"nave"`, `"Ñandú"` -> `"and"` for NFC input as
