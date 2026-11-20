@@ -1,11 +1,12 @@
 """Command line for textkit: ``python3 -m textkit <function> "<text>"``.
 
 Prints the result of any public function of one text argument and lists them with
-``--help``. The commands are discovered at run time, never hard-coded: every public
-function (the phase 1 definition: a top-level function whose name does not start with
-``_``, in a ``textkit`` module whose name does not start with ``_``) defined in its own
-module and with exactly one parameter without a default. Parameters with defaults keep
-their default. A new function that fits becomes a command with no change here.
+``--help``; ``--version`` prints ``textkit <textkit.__version__>``. The commands are
+discovered at run time, never hard-coded: every public function (the phase 1 definition:
+a top-level function whose name does not start with ``_``, in a ``textkit`` module whose
+name does not start with ``_``) defined in its own module and with exactly one parameter
+without a default. Parameters with defaults keep their default. A new function that
+fits becomes a command with no change here.
 
 Importing this module has no side effects; ``_main`` only runs under
 ``if __name__ == "__main__":``. Usage and output rules are in docs/cli.md.
@@ -82,6 +83,11 @@ def _build_parser(commands: Dict[str, Callable[..., Any]]) -> argparse.ArgumentP
         epilog='Quote the text: python3 -m textkit slugify "Hello, World!". '
         "Use -- before a text that starts with -.",
     )
+    # The version is read from textkit.__version__, its only definition, never repeated here.
+    # action="version" prints to stdout and exits 0 before the required subcommand is checked.
+    parser.add_argument(
+        "--version", action="version", version=f"textkit {textkit.__version__}"
+    )
     # dest is mandatory with required=True on Python 3.9: without it, argparse crashes
     # with a TypeError while building the "required" error message.
     subparsers = parser.add_subparsers(
@@ -109,8 +115,9 @@ def _main(argv: Optional[List[str]] = None) -> int:
     ``argv`` defaults to ``sys.argv[1:]``. Prints the result of the chosen function to
     stdout and returns 0. An unknown function, a wrong argument count or no arguments at
     all print the usage and an error to stderr and return 2; ``--help`` prints the list of
-    functions to stdout and returns 0. A ``ValueError`` raised by the function itself is
-    reported on stderr as ``textkit: error: <message>`` and returns 1 (no traceback).
+    functions to stdout and returns 0, and so does ``--version`` with ``textkit <version>``.
+    A ``ValueError`` raised by the function itself is reported on stderr as
+    ``textkit: error: <message>`` and returns 1 (no traceback).
     """
     commands = _commands()
     parser = _build_parser(commands)

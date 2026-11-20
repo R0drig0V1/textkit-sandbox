@@ -171,5 +171,18 @@ class MainTest(unittest.TestCase):
         self.assertEqual((proc.returncode, proc.stdout, proc.stderr), (0, "", ""))
 
 
+class VersionTest(unittest.TestCase):
+    """``python3 -m textkit --version`` and ``textkit.__version__`` (plan task T2.7)."""
+
+    def test_version_flag_prints_the_package_version_and_exits_0(self) -> None:
+        proc = run_cli("--version")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual(proc.stdout, f"textkit {textkit.__version__}\n")
+        self.assertEqual(proc.stderr, "")
+
+    def test_package_version_is_0_1_0(self) -> None:
+        self.assertEqual(textkit.__version__, "0.1.0")
+
+
 if __name__ == "__main__":
     unittest.main()

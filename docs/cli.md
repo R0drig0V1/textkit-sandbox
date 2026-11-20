@@ -4,11 +4,19 @@
 ```bash
 python3 -m textkit <function> "<text>"
 python3 -m textkit --help
+python3 -m textkit --version
 ```
 
 `python3 -m textkit` runs one textkit function on one text argument and prints the result.
 `--help` lists every available function with the first line of its docstring;
 `python3 -m textkit <function> --help` shows the help for one function.
+
+## Version
+
+`python3 -m textkit --version` prints `textkit <version>` (today `textkit 0.1.0`) to stdout
+and exits 0 (plan task T2.7). The version string lives only in `textkit/__init__.py` as
+`__version__`; `__main__.py` reads `textkit.__version__` (argparse's `action="version"`), so
+a release changes that one line.
 
 ## Which functions are commands
 
@@ -53,7 +61,7 @@ Any other type is printed with `print()` as well.
 
 | Status | When | Where the message goes |
 |--------|------|------------------------|
-| 0 | success, and after `--help` | result or help on stdout |
+| 0 | success, and after `--help` or `--version` | result or help on stdout |
 | 1 | the function raised `ValueError` (none of the current commands can) | `textkit: error: <message>` on stderr |
 | 2 | no arguments, an unknown function, a function that is not a command, or a wrong argument count | usage and error on stderr |
 
