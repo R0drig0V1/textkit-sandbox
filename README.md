@@ -48,4 +48,5 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 - `python3 -m textkit render <template-file> <json-file>`: renders a template file
   ([docs/template.md](docs/template.md)) with the JSON object in the second file and writes
   the result as is. Exit 0 on success, 1 with `line:column: message` on stderr for a
-  template error, 2 for a file that cannot be read or a JSON file that is not an object.
+  template error, 2 for a file that cannot be read, a JSON file that is not an object or
+  holds a lone surrogate, or a result stdout cannot encode.

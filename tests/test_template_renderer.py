@@ -7,13 +7,16 @@ equals ``RENDER_CASES``, so the ADR and the tests cannot drift apart.
 """
 
 import ast
+import copy
 import pathlib
+import pickle
 import re
 import unittest
 
 import textkit.template
 from textkit.template import TemplateError, TemplateSyntaxError
-from textkit.template.renderer import render
+from textkit.template.parser import parse
+from textkit.template.renderer import render, render_nodes
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
@@ -197,6 +200,35 @@ class RenderTest(unittest.TestCase):
         self.assertErrorAt(TemplateSyntaxError, "{% if no %}{% if %}{% endif %}{% endif %}",
                            {}, 1, 12)
 
+    def test_deep_nesting_renders_without_recursion(self):
+        depth = 5000
+        nested_for = "{% for x in l %}" * depth + "{{ loop.index }}" + "{% endfor %}" * depth
+        self.assertEqual(render(nested_for, {"l": [1]}), "1")
+        nested_if = "{% if x %}" * depth + "y" + "{% endif %}" * depth
+        self.assertEqual(render(nested_if, {"x": True}), "y")
+        mixed = "{% for x in l %}{% if x %}" * depth + "{{ x }}" + "{% endif %}{% endfor %}" * depth
+        self.assertEqual(render(mixed, {"l": [2]}), "2")
+
+    def test_a_value_too_deep_to_print_is_a_template_error(self):
+        value: list = []
+        for _ in range(100_000):
+            value = [value]
+        error = self.assertErrorAt(TemplateError, "ab\n {{ v }}", {"v": value}, 2, 2)
+        self.assertEqual(error.message, "the value is nested too deeply to print")
+        self.assertErrorAt(TemplateError, "{% if v | upper %}{% endif %}", {"v": value}, 1, 1)
+
+    def test_scopes_are_restored_after_an_error_inside_loops(self):
+        context = {"xs": [1, 2], "ys": [3]}
+        scopes = [context]
+        nodes = parse(
+            "{% for x in xs %}{% for y in ys %}{{ x }}{{ missing }}{% endfor %}{% endfor %}"
+        )
+        out: list = []
+        with self.assertRaises(TemplateError):
+            render_nodes(nodes, scopes, out)
+        self.assertEqual(scopes, [context])
+        self.assertEqual(out, ["1"])
+
     def test_rejects_arguments_of_the_wrong_type(self):
         with self.assertRaises(TypeError):
             render(b"{{ x }}", {"x": 1})
@@ -210,6 +242,14 @@ class RenderTest(unittest.TestCase):
         error = TemplateError("boom", 3, 14)
         self.assertEqual((error.message, error.line, error.column), ("boom", 3, 14))
         self.assertEqual(str(error), "3:14: boom")
+        for clone in (copy.copy(error), pickle.loads(pickle.dumps(error))):
+            with self.subTest(clone=clone):
+                self.assertIs(type(clone), TemplateError)
+                self.assertEqual((clone.message, clone.line, clone.column), ("boom", 3, 14))
+                self.assertEqual(str(clone), "3:14: boom")
+        syntax = pickle.loads(pickle.dumps(TemplateSyntaxError("bad", 1, 2)))
+        self.assertIs(type(syntax), TemplateSyntaxError)
+        self.assertEqual(str(syntax), "1:2: bad")
 
     def test_package_exports_render_only(self):
         self.assertEqual(textkit.template.__all__, ["render"])

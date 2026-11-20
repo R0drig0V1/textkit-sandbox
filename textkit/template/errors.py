@@ -23,10 +23,15 @@ class TemplateError(ValueError):
     """
 
     def __init__(self, message: str, line: int, column: int) -> None:
-        super().__init__(f"{line}:{column}: {message}")
+        # args holds the constructor's arguments, so copy and pickle rebuild the error
+        # (they call type(error)(*error.args)); __str__ formats them.
+        super().__init__(message, line, column)
         self.message = message
         self.line = line
         self.column = column
+
+    def __str__(self) -> str:
+        return f"{self.line}:{self.column}: {self.message}"
 
 
 class TemplateSyntaxError(TemplateError):

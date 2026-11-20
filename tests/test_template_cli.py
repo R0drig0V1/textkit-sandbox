@@ -4,14 +4,19 @@ Every test runs the real command line in a subprocess through ``_run`` and ``_ru
 ``tests/test_cli.py`` (cwd the repository root, ``PYTHONIOENCODING=utf-8``), with its input
 files written to a fresh ``tempfile`` directory and passed as absolute paths, so parallel
 runs never share a file. ``_run`` decodes in text mode, which turns ``"\\r"`` into
-``"\\n"``; outputs that contain ``"\\r"`` are checked with ``_run_bytes``.
+``"\\n"``; outputs that contain ``"\\r"`` are checked with ``_run_bytes``. One test calls the
+tool's ``run`` in process, to give it a stdout whose encoding cannot hold the result.
 """
 
+import argparse
+import contextlib
+import io
 import json
 import pathlib
 import tempfile
 import unittest
 
+import textkit.cli.render as render_cli
 from tests.test_cli import _run, _run_bytes
 
 PREFIX = "python3 -m textkit render: error: "
@@ -119,6 +124,48 @@ class RenderCommandTest(unittest.TestCase):
         result = _run("render", template)
         self.assertEqual(result.returncode, 2)
         self.assertIn("usage:", result.stderr)
+
+    def test_json_with_a_lone_surrogate_exits_2(self):
+        template = self._file("t.txt", "{{ x }}")
+        # json.dumps writes each surrogate as a "\\udxxx" escape: valid JSON, no valid text.
+        for context in ({"x": "\ud800"}, {"x": "ok", "y": ["a", {"z": "b\udfff"}]},
+                        {"\udc80": 1}):
+            with self.subTest(context=context):
+                path = self._json(context)
+                result = _run("render", template, path)
+                self.assertEqual((result.returncode, result.stdout), (2, ""))
+                self.assertTrue(
+                    result.stderr.startswith(f"{PREFIX}{path}: holds a lone surrogate '\\ud"),
+                    result.stderr,
+                )
+                self.assertNotIn("Traceback", result.stderr)
+
+    def test_json_with_a_surrogate_pair_is_one_character(self):
+        template = self._file("t.txt", "{{ x }}")
+        path = self._file("pair.json", '{"x": "\\ud83d\\ude00"}')
+        result = _run("render", template, path)
+        self.assertEqual((result.returncode, result.stdout), (0, "\U0001F600"))
+
+    def test_stdout_that_cannot_encode_the_result_exits_2(self):
+        args = argparse.Namespace(
+            template_file=self._file("t.txt", "caf\u00e9"), json_file=self._json({})
+        )
+        stdout = io.TextIOWrapper(io.BytesIO(), encoding="ascii")
+        stderr = io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            code = render_cli._run(args)
+        stdout.flush()
+        self.assertEqual(code, 2)
+        self.assertEqual(stdout.buffer.getvalue(), b"")
+        self.assertEqual(stderr.getvalue(), f"{PREFIX}stdout: cannot encode '\u00e9' as ascii\n")
+
+    def test_deeply_nested_blocks_render(self):
+        depth = 500
+        template = self._file(
+            "t.txt", "{% for x in l %}{% if x %}" * depth + "!" + "{% endif %}{% endfor %}" * depth
+        )
+        result = _run("render", template, self._json({"l": [1]}))
+        self.assertEqual((result.returncode, result.stdout, result.stderr), (0, "!", ""))
 
     def test_help_lists_render_under_tools(self):
         result = _run("--help")

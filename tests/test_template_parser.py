@@ -152,7 +152,8 @@ class ParseTest(unittest.TestCase):
 
     def test_bad_expression_in_output_if_and_for(self):
         self.assertSyntaxErrorAt("a\n b {{ x | nope }}", 2, 4)
-        self.assertSyntaxErrorAt("{% if x | truncate:1 %}{% endif %}", 1, 1)
+        error = self.assertSyntaxErrorAt("{% if x | truncate:1 %}{% endif %}", 1, 1)
+        self.assertEqual(error.message, "truncate width must be at least 3, got 1")
         self.assertSyntaxErrorAt("..{% for i in a..b %}{% endfor %}", 1, 3)
 
     def test_empty_and_unknown_tags(self):

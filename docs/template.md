@@ -76,9 +76,9 @@ bound to it. Inside the body:
 
 A comment prints nothing; it ends at the first `#}`, and tags inside it are ignored.
 
-Blocks nest freely: an `if` inside a `for` inside an `if`. Parsing has no depth limit;
-rendering nests Python calls, so a template nested hundreds of blocks deep can exceed
-Python's recursion limit.
+Blocks nest freely, to any depth: an `if` inside a `for` inside an `if`. The parser and
+the renderer both keep their own stack instead of nesting Python calls, so deep nesting
+never hits Python's recursion limit.
 
 ## Filters
 
@@ -141,6 +141,7 @@ block with no end tag, that of its opening tag.
 | A name missing from the context in `for` (ADR 0006) | `render("{% for i in xs %}{% endfor %}", {})` | the `{%` of the `for` |
 | A `for` over a value that is not a `list` (tuples, dicts, strings, `None`, or any expression with filters) | `{"xs": "ab"}` | the `{%` of the `for` |
 | A dotted name through a value that is not a `dict`, in any tag | `"{{ user.name }}"` with `{"user": "Ada"}` | the tag |
+| A value nested too deeply for `str` to print (a list or dict thousands of levels deep) | `{{ v }}` | the tag |
 
 A missing name in `if` is not an error (it is false). `render` raises `TypeError` when the
 template is not a `str` or the context not a `dict`.
@@ -160,4 +161,5 @@ becomes the context.
 |------|------|--------|
 | 0 | rendered | nothing |
 | 1 | a `TemplateError` or `TemplateSyntaxError` | `line:column: message` |
-| 2 | a file is missing, unreadable or not UTF-8; the JSON is invalid or not an object; wrong arguments | `python3 -m textkit render: error: <path>: <reason>` (argparse usage for wrong arguments) |
+| 2 | a file is missing, unreadable or not UTF-8; the JSON is invalid, not an object, or holds a lone surrogate (`"\ud800"`: valid JSON, but no UTF-8 text); wrong arguments | `python3 -m textkit render: error: <path>: <reason>` (argparse usage for wrong arguments) |
+| 2 | stdout's encoding cannot encode the result (for example under `PYTHONIOENCODING=ascii`); nothing is written | `python3 -m textkit render: error: stdout: cannot encode '<char>' as <encoding>` |
