@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `center`: pads text on both sides to `width` code points, the extra fill on the right when the padding is odd (unlike `str.center`); text of `width` or more is unchanged; `len(fill) != 1` or `width < 0` raises `InvalidValueError`.
 - Added `char_freq` in `textkit.counts`: counts each non-whitespace character, case-sensitive, keys in order of first occurrence.
 - Added `dedent`: removes the prefix of spaces and tabs common to every non-blank line, keeping line endings (every `str.splitlines` boundary, `"\x0c"` included); blank lines become empty.
 - Added `is_palindrome`: tells whether text reads the same backwards, ignoring case, accents and symbols.

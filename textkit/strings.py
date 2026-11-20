@@ -209,3 +209,29 @@ def dedent(text: str) -> str:
         else:
             parts.append(content[cut:] + ending)
     return "".join(parts)
+
+
+def center(text: str, width: int, fill: str = " ") -> str:
+    """Pad ``text`` on both sides with ``fill`` so that it is ``width`` code points long.
+
+    The padding ``width - len(text)`` is split in two halves; when it is odd, the extra
+    ``fill`` goes on the right: ``center("ab", 5)`` gives ``" ab  "``. This differs from
+    ``str.center``, which puts the extra character on the left in some cases
+    (``"ab".center(5)`` is ``"  ab "``). A ``text`` of ``width`` code points or more is
+    returned unchanged (never cut). Lengths are counted in code points (``len``).
+
+    Raises:
+        InvalidValueError: if ``len(fill) != 1`` or ``width < 0``. Both are checked
+            first, so they are raised even when ``text`` is already ``width`` long or
+            longer: a bad argument is a caller bug regardless of the input.
+    """
+    if len(fill) != 1:
+        raise InvalidValueError(f"fill must be exactly one character, got {fill!r}")
+    if width < 0:
+        raise InvalidValueError(f"width ({width}) must not be negative")
+    padding = width - len(text)
+    if padding <= 0:
+        return text
+    # Floor division gives the left side the smaller half, so an odd extra goes right.
+    left = padding // 2
+    return fill * left + text + fill * (padding - left)
