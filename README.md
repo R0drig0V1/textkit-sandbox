@@ -13,6 +13,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | Function | Module | What it does |
 |----------|--------|--------------|
 | `apply_patch` | `textkit.diff` | Applies a unified diff to a text, exactly where its hunks say (no fuzz) |
+| `center` | `textkit.strings` | Pads text on both sides to a width, the odd extra on the right |
 | `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive |
 | `diff_words` | `textkit.diff` | Word-by-word differences of two texts as `(op, word)` pairs |
 | `dedent` | `textkit.strings` | Removes the spaces and tabs common to the start of every non-blank line |
