@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added `char_freq` in `textkit.counts`: per-character counts of non-whitespace characters, case-sensitive, in order of first occurrence.
+- Added `reading_time` in `textkit.counts`: whole minutes to read a text, `ceil(word_count / wpm)`, `wpm=200` by default; 0 for no words, `wpm < 1` raises `ValueError` (ADR 0004).
 - Added `slug_title`: slug cut to at most `max_len` characters, never ending in `-`.
 - Added `slugify`: lower-case ASCII slug with runs of other characters turned into one `-`.
 - Added `squeeze`: collapses runs of whitespace into single spaces.
