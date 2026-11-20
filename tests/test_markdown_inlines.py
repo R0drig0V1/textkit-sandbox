@@ -33,6 +33,12 @@ class ParseInlinesTest(unittest.TestCase):
             parse_inlines("*a *b* c*"),
             [Emphasis((Text("a "), Emphasis((Text("b"),)), Text(" c")))],
         )
+        # Overlapping markers nest by the nearest-opener rule (ADR, Consequences), not as
+        # CommonMark would ("<strong>a *b</strong> c*").
+        self.assertEqual(
+            parse_inlines("**a *b** c*"),
+            [Emphasis((Emphasis((Text("a "), Emphasis((Text("b"),)))), Text(" c")))],
+        )
 
     def test_unmatched_stars_are_text(self):
         self.assertEqual(parse_inlines("**a"), [Text("**a")])

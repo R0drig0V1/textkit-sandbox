@@ -172,7 +172,9 @@ blocks. A marker that is not matched is printed as it is.
 - **Strong and emphasis.** A run of `*` can open when no whitespace follows it and close when
   none precedes it. Each closer pairs with the nearest opener before it: strong when both
   have two `*` left, emphasis otherwise, so `***a***` is `<em><strong>a</strong></em>` and
-  `**a*` is `*<em>a</em>`. `_` is not a marker.
+  `**a*` is `*<em>a</em>`. Overlapping markers nest by the same rule, so
+  `**a *b** c*` is `<em><em>a <em>b</em></em> c</em>` (CommonMark differs). `_` is not a
+  marker.
 - **Code spans.** A run of backticks opens a span that closes at the next run of the same
   length; the content is kept as it is (no trimming) and escaped. A backslash in a code span
   is a backslash.

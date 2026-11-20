@@ -83,10 +83,16 @@ such a URL as relative too, so `/wiki/Help:Contents` and `page?q=a:b` keep worki
   from the input, at the price of no raw HTML at all.
 - Valid CommonMark that uses a left-out construct renders differently (as text) than on
   GitHub; docs/markdown.md lists the subset with an example of each construct.
-- Inline parsing does not backtrack: backtick runs and `)` are indexed once, and the
-  emphasis pass skips the part of the text known to hold no opener, so hostile input (tens
-  of thousands of unmatched markers) is parsed in linear time or close to it, and rendering
-  is iterative, so deep nesting cannot reach Python's recursion limit.
+- Inline parsing does not backtrack and takes time linear in the length of the text (up
+  to a logarithmic factor for index lookups), hostile input included (hundreds of
+  thousands of unmatched or overlapping markers): backtick runs and `)` are indexed once,
+  the emphasis pass pairs with a stack of open delimiters instead of rewriting a list, and
+  text is joined once. Rendering is iterative, so deep nesting cannot reach Python's
+  recursion limit. `tests/test_markdown.py` checks that four times the input takes well
+  under sixteen times the time.
+- Overlapping markers nest by the nearest-opener rule, not by CommonMark's:
+  `**a *b** c*` gives `<em><em>a <em>b</em></em> c</em>`. The HTML is well formed; only
+  the choice of tags can differ from other renderers.
 - The tests (`tests/test_markdown.py`) find this ADR by its slug, parse the table below with
   `ast.literal_eval` and check that their case list equals it and that `to_html` gives every
   output, so the table and the code cannot drift apart. Changing a row means amending this

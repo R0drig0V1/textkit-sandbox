@@ -5,8 +5,10 @@ The constructs are ``**strong**``, ``*em*``, code spans (`` `code` ``), links
 that character as is. Anything unmatched is text. Nodes hold raw text: escaping for HTML
 and checking link schemes is ``textkit.markdown.html``'s job.
 
-How it parses, left to right in one pass and then one emphasis pass (a simplified form of
-CommonMark's delimiter algorithm, so it never backtracks and takes at most quadratic time):
+How it parses: one pass from left to right, then one emphasis pass, also from left to right
+(a simplified form of CommonMark's delimiter algorithm). Neither backtracks, and both take
+time linear in the length of the text (up to a logarithmic factor for the ``_Index``
+lookups), because ``to_html`` takes text from anyone:
 
 1. A backslash escape is checked first, so ``\\*`` and ``\\``` are text, never markers. A
    backslash before any other character, or at the end, is a backslash.
@@ -22,7 +24,8 @@ CommonMark's delimiter algorithm, so it never backtracks and takes at most quadr
    the end of the text count as whitespace). The emphasis pass then takes each closer from
    left to right and pairs it with the nearest opener before it: when both runs have two
    or more ``*`` left the pair is strong, otherwise emphasis; what remains of the runs is
-   paired again or printed as ``*``.
+   paired again or printed as ``*``. Overlapping markers therefore nest by that rule, not
+   by CommonMark's: ``**a *b** c*`` gives emphasis inside emphasis, never ``<strong>``.
 
 Every name here is private to the package (phase 3 rule "Packages").
 """
@@ -97,8 +100,8 @@ def _run_length(text: str, start: int, char: str) -> int:
 class _Index:
     """Where the backtick runs and the ``)`` of one text are, found once.
 
-    Looking them up with ``bisect`` instead of rescanning the text keeps parsing close to
-    linear: with a rescan, many unmatched backtick runs or many ``[x](`` with no ``)`` would
+    Looking them up with ``bisect`` instead of rescanning the text keeps parsing linear (up
+    to the logarithmic lookup): with a rescan, many unmatched backtick runs or many ``[x](`` with no ``)`` would
     make it quadratic in the length of the text, which ``to_html`` takes from anyone.
     """
 
@@ -201,59 +204,83 @@ def _tokenize(text: str) -> List[_Node]:
     return nodes
 
 
-def _finish(nodes: List[_Node]) -> List[Inline]:
-    """Turn leftover delimiters into ``*`` text and merge adjacent text nodes."""
+def _merge_text(nodes: List[Inline]) -> List[Inline]:
+    """Merge adjacent ``Text`` nodes and drop empty ones.
+
+    The pieces of a run of text are joined once: adding them one by one would copy the
+    growing string each time, which is quadratic on text such as ``"a* " * N``.
+    """
     result: List[Inline] = []
+    pieces: List[str] = []
     for node in nodes:
-        if isinstance(node, _Delimiter):
-            node = Text("*" * node.count)
         if isinstance(node, Text):
-            if not node.text:
-                continue
-            if result and isinstance(result[-1], Text):
-                node = Text(result.pop().text + node.text)
+            pieces.append(node.text)
+            continue
+        if pieces:
+            joined = "".join(pieces)
+            if joined:
+                result.append(Text(joined))
+            pieces = []
         result.append(node)
+    joined = "".join(pieces)
+    if joined:
+        result.append(Text(joined))
     return result
 
 
-def _pair_emphasis(nodes: List[_Node]) -> None:
-    """Second pass, in place: pair ``*`` delimiters into ``Strong`` and ``Emphasis``."""
-    closer_at = 0
-    # No opener is left below ``bottom``: once a closer finds none, later closers need not
-    # look there again (pairing only changes nodes above the opener it uses). Without this
-    # bound, text full of closers with no opener ("a* a* a* ...") takes quadratic time.
-    bottom = 0
-    while closer_at < len(nodes):
-        closer = nodes[closer_at]
-        if not (isinstance(closer, _Delimiter) and closer.can_close and closer.count):
-            closer_at += 1
+class _Frame:
+    """An opener still waiting for its closer, and the nodes that followed it so far."""
+
+    def __init__(self, opener: _Delimiter) -> None:
+        self.opener = opener
+        self.children: List[Inline] = []
+
+
+def _pair_emphasis(nodes: List[_Node]) -> List[Inline]:
+    """Second pass: pair ``*`` delimiters into ``Strong`` and ``Emphasis``; return the nodes.
+
+    One pass from left to right over a stack of frames, one per opener still unmatched,
+    innermost last. The nearest opener before a closer is always the top frame (an opener
+    after it would be above it), so pairing is O(1): the top frame's nodes become the
+    children of the new node, which joins the frame below it, or stays in the same frame
+    when the opener still has ``*`` left. Every node is moved once per pair that holds it,
+    so the pass is linear in the number of nodes. A closer that finds no frame is text, or
+    a new frame when it can also open; a delimiter that a pair encloses without matching it
+    is already text in that pair, so nothing can pair across a pair's edge.
+    """
+    root: List[Inline] = []
+    frames: List[_Frame] = []
+    for node in nodes:
+        target = frames[-1].children if frames else root
+        if not isinstance(node, _Delimiter):
+            target.append(node)
             continue
-        opener_at = closer_at - 1
-        while opener_at >= bottom:
-            opener = nodes[opener_at]
-            if isinstance(opener, _Delimiter) and opener.can_open and opener.count:
-                break
-            opener_at -= 1
-        if opener_at < bottom:
-            # This closer can still open for a later closer when it is both.
-            bottom = closer_at if closer.can_open else closer_at + 1
-            closer_at += 1
-            continue
-        opener = nodes[opener_at]
-        use = 2 if opener.count >= 2 and closer.count >= 2 else 1
-        # Delimiters between the pair are frozen as "*" text: they can no longer pair with
-        # anything outside it, which keeps the HTML properly nested.
-        children = tuple(_finish(nodes[opener_at + 1 : closer_at]))
-        nodes[opener_at + 1 : closer_at] = [Strong(children) if use == 2 else Emphasis(children)]
-        opener.count -= use
-        closer.count -= use
-        closer_at = opener_at + 2
-        if opener.count == 0:
-            del nodes[opener_at]
-            closer_at -= 1
-        if closer.count == 0:
-            del nodes[closer_at]
-        # With "*" left, the same closer looks for another opener ("***a***").
+        if node.can_close:
+            while node.count and frames:
+                frame = frames[-1]
+                opener = frame.opener
+                use = 2 if opener.count >= 2 and node.count >= 2 else 1
+                opener.count -= use
+                node.count -= use
+                children = tuple(_merge_text(frame.children))
+                pair = Strong(children) if use == 2 else Emphasis(children)
+                if opener.count:
+                    # "*" left on the opener: the same closer pairs again ("***a***").
+                    frame.children = [pair]
+                else:
+                    frames.pop()
+                    (frames[-1].children if frames else root).append(pair)
+        if node.count:
+            if node.can_open:
+                frames.append(_Frame(node))
+            else:
+                (frames[-1].children if frames else root).append(Text("*" * node.count))
+    # Openers never closed are text. Each frame was opened after the content of the frame
+    # below it, so writing them out bottom to top keeps the order (and stays linear).
+    for frame in frames:
+        root.append(Text("*" * frame.opener.count))
+        root.extend(frame.children)
+    return _merge_text(root)
 
 
 def parse_inlines(text: str) -> List[Inline]:
@@ -261,7 +288,6 @@ def parse_inlines(text: str) -> List[Inline]:
 
     See the module docstring for the rules. Adjacent text is merged into one ``Text`` node
     and ``""`` gives ``[]``. Never raises for any ``str``: an unmatched marker is text.
+    Linear time in ``len(text)``, up to a logarithmic factor for the index lookups.
     """
-    nodes = _tokenize(text)
-    _pair_emphasis(nodes)
-    return _finish(nodes)
+    return _pair_emphasis(_tokenize(text))

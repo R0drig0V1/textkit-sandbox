@@ -9,6 +9,7 @@ tested directly in ``tests/test_markdown_blocks.py``, ``tests/test_markdown_inli
 
 import ast
 import pathlib
+import time
 import unittest
 
 import textkit.markdown
@@ -181,6 +182,30 @@ class ToHtmlTest(unittest.TestCase):
                      "[a](" * 20000):
             with self.subTest(text=text[:12]):
                 self.assertTrue(to_html(text).startswith("<p>"))
+
+    def test_hostile_input_takes_linear_time(self):
+        # Time at N and 4N: linear code takes about 4 times as long (measured 4.5 to 5),
+        # quadratic code about 16 times in the limit (the slicing emphasis pass this
+        # replaced measured 10.4 to 12 at these sizes). The best of five runs keeps a busy
+        # machine (checks run in parallel) from inflating one sample.
+        def best_time(text: str) -> float:
+            best = float("inf")
+            for _ in range(5):
+                start = time.perf_counter()
+                to_html(text)
+                best = min(best, time.perf_counter() - start)
+            return best
+
+        cases = {
+            "*a*b": (lambda n: "*a*b" * n, 10000),
+            "nested and overlapping": (lambda n: "*a **b " * n + "c** d* " * n, 5000),
+            "closers with no opener": (lambda n: "a* " * n, 10000),
+            "unmatched backticks": (lambda n: "`x ``y " * n, 10000),
+        }
+        for name, (make, n) in cases.items():
+            with self.subTest(case=name):
+                ratio = best_time(make(4 * n)) / best_time(make(n))
+                self.assertLess(ratio, 8, f"{name}: 4x the input took {ratio:.1f}x the time")
 
     def test_rejects_non_str(self):
         for value in (None, b"# x", 1):
