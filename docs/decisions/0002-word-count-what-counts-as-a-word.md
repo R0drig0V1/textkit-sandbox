@@ -1,5 +1,5 @@
-<!-- ADR 0001: the word rule of textkit.counts.word_count (plan task T1.5). -->
-# 0001. What counts as a word in `word_count`
+<!-- ADR 0002: the word rule of textkit.counts.word_count (plan task T1.5). -->
+# 0002. What counts as a word in `word_count`
 
 ## Context
 

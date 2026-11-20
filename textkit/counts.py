@@ -1,6 +1,6 @@
 """Counting helpers. Every public function is listed in the README's function table.
 
-The word rule used here is decided in docs/decisions/0001-word-count-what-counts-as-a-word.md;
+The word rule used here is decided in docs/decisions/0002-word-count-what-counts-as-a-word.md;
 change that ADR (and its case table) before changing the pattern below.
 """
 
@@ -12,7 +12,7 @@ import unicodedata
 
 @functools.lru_cache(maxsize=None)
 def _word_pattern() -> "re.Pattern[str]":
-    """Compile the word pattern of ADR 0001 (once, on first use).
+    """Compile the word pattern of ADR 0002 (once, on first use).
 
     Python's ``\\w`` does not match combining marks (Unicode category M: Mn, Mc, Me), so
     decomposed text such as NFD ``"cafe\\u0301"`` or Devanagari vowel signs would split
