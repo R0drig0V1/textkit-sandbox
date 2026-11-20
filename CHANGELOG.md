@@ -20,6 +20,7 @@
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (accents) from text.
 - Added `to_camel_case`: converts snake_case or kebab-case identifiers to camelCase.
+- Added `to_html` in the new package `textkit.markdown`: converts a Markdown subset (headings, paragraphs, one-level lists, fenced code, quotes, rules; strong, emphasis, code, links, backslash escapes) to HTML; raw HTML is always escaped and links whose scheme is not `http`, `https` or `mailto` point to `#` (ADR 0009); subcommand `python3 -m textkit markdown <file>`.
 - Added `to_kebab_case`: converts camelCase, PascalCase or snake_case identifiers to kebab-case, splitting words like `to_snake_case` (ADR 0001).
 - Added `to_snake_case`: converts camelCase, PascalCase or kebab-case identifiers to snake_case.
 - Added `truncate`: shortens text to a width, ending in a suffix when cut.
