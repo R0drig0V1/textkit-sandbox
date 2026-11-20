@@ -29,3 +29,13 @@ Who uses it:
   rules 2-4) have no counterpart in ADR 0002 and stay in `cases._split_chunk`.
 
 Changing the word rule changes every caller, so it needs a new ADR that supersedes 0002.
+
+## Helpers built on other helpers
+
+Some public functions are defined in terms of others, so a change to the inner one changes
+the outer one too:
+
+- `strings.slug_title` is `truncate(slugify(text), max_len, suffix="")` with trailing `-`
+  stripped.
+- `strings.is_palindrome` normalizes with `strip_accents`, then `str.casefold()`, and keeps
+  only `str.isalnum()` characters before comparing the text with its reverse.

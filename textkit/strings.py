@@ -109,3 +109,20 @@ def wrap(text: str, width: int) -> list[str]:
     if current:
         lines.append(current)
     return lines
+
+
+def is_palindrome(text: str) -> bool:
+    """Tell whether ``text`` reads the same backwards, ignoring case, accents and the rest.
+
+    The text goes through ``strip_accents`` and then ``str.casefold()``, and only the
+    characters for which ``str.isalnum()`` is true are kept: spaces, punctuation and
+    symbols are ignored, digits count (``"12321"`` is a palindrome, ``"123"`` is not).
+    ``"A man, a plan, a canal: Panama"`` and ``"Añá"`` give ``True``. ``""`` and text with
+    no alphanumeric character (``"!!!"``) give ``True``: the empty sequence reads the same
+    both ways. Comparison is by code point after that normalization. Never raises for a
+    ``str``.
+    """
+    # casefold rather than lower: it folds "ß" to "ss", so "Ss ß" compares as "ssss". Any
+    # combining mark that casefold could still produce is dropped by isalnum.
+    kept = "".join(c for c in strip_accents(text).casefold() if c.isalnum())
+    return kept == kept[::-1]

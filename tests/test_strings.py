@@ -1,7 +1,7 @@
 import unicodedata
 import unittest
 
-from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import is_palindrome, slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -192,6 +192,52 @@ class WrapTest(unittest.TestCase):
     def test_width_below_one_raises_even_for_empty_text(self):
         with self.assertRaises(ValueError):
             wrap("", 0)
+
+
+class IsPalindromeTest(unittest.TestCase):
+    def test_simple_palindrome(self):
+        self.assertTrue(is_palindrome("racecar"))
+
+    def test_not_a_palindrome(self):
+        self.assertFalse(is_palindrome("hello"))
+
+    def test_ignores_case_spaces_and_punctuation(self):
+        self.assertTrue(is_palindrome("A man, a plan, a canal: Panama"))
+        self.assertTrue(is_palindrome("No 'x' in Nixon"))
+
+    def test_ignores_accents(self):
+        self.assertTrue(is_palindrome("Añá"))
+        self.assertTrue(is_palindrome("Sé es"))
+
+    def test_nfc_and_nfd_give_the_same_answer(self):
+        for text in ("Añá", "Ñandú"):
+            self.assertEqual(
+                is_palindrome(unicodedata.normalize("NFC", text)),
+                is_palindrome(unicodedata.normalize("NFD", text)),
+            )
+
+    def test_uses_casefold_not_lower(self):
+        # casefold turns "ß" into "ss"; lower() would leave "ssß", which is not a palindrome.
+        self.assertTrue(is_palindrome("Ss ß"))
+
+    def test_digits_count(self):
+        self.assertTrue(is_palindrome("12321"))
+        self.assertTrue(is_palindrome("12 3-21"))
+        self.assertFalse(is_palindrome("123"))
+        self.assertFalse(is_palindrome("a1b2a"))
+
+    def test_empty_text_is_a_palindrome(self):
+        self.assertTrue(is_palindrome(""))
+
+    def test_text_without_alphanumerics_is_a_palindrome(self):
+        self.assertTrue(is_palindrome("!!! ,. "))
+
+    def test_single_character(self):
+        self.assertTrue(is_palindrome("x"))
+
+    def test_non_latin_letters(self):
+        self.assertTrue(is_palindrome("上海海上"))
+        self.assertFalse(is_palindrome("上海"))
 
 
 if __name__ == "__main__":
