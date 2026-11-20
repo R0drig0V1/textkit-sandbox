@@ -185,6 +185,66 @@ stay with the word before them (ADR 0001).
 
 ```
 
+## Diff: `textkit.diff`
+
+`unified_diff` compares two texts line by line and returns the unified format of GNU
+`diff -u` (`""` when they are equal). A line ends after each `"\n"`, so a `"\r"` is part
+of its line, and a text without a final newline gets the `\ No newline at end of file`
+marker. The format, the numbering and the tie rule are in [docs/diff.md](diff.md).
+
+```pycon
+>>> from textkit.diff import unified_diff
+>>> print(unified_diff("one\ntwo\nthree\n", "one\n2\nthree\n"), end="")
+--- a
++++ b
+@@ -1,3 +1,3 @@
+ one
+-two
++2
+ three
+>>> print(unified_diff("a\n", "a\nb\n", context=0), end="")
+--- a
++++ b
+@@ -1,0 +2 @@
++b
+>>> unified_diff("same\n", "same\n")
+''
+
+```
+
+`apply_patch` applies such a diff, exactly at the lines its hunks state; a patch that does
+not apply raises `PatchError` (a `ValueError`) with the hunk's header in the message.
+
+```pycon
+>>> from textkit.diff import PatchError, apply_patch
+>>> patch = unified_diff("one\ntwo\n", "one\n2\n")
+>>> apply_patch("one\ntwo\n", patch)
+'one\n2\n'
+>>> try:
+...     apply_patch("one\nTWO\n", patch)
+... except PatchError as exc:
+...     print("@@ -1,2 +1,2 @@" in str(exc))
+True
+
+```
+
+`diff_words` compares the words of two texts (the rule of `word_count`, ADR 0002), each
+exactly as it appears; spaces and punctuation are not compared.
+
+```pycon
+>>> from textkit.diff import diff_words
+>>> diff_words("The quick fox.", "The slow, quick dog")
+[('=', 'The'), ('+', 'slow'), ('=', 'quick'), ('-', 'fox'), ('+', 'dog')]
+
+```
+
+The subcommand `diff` prints `unified_diff` of two files (exit 0 equal, 1 different, 2 for a
+file that cannot be read):
+
+```sh
+python3 -m textkit diff old.txt new.txt
+```
+
 ## Errors: `textkit.errors`
 
 A function that rejects a value raises `InvalidValueError`, with a message that names the
