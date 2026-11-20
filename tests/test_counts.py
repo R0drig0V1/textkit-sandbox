@@ -5,7 +5,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.counts import char_freq, word_count
+from textkit.counts import char_freq, reading_time, word_count
 
 # The case table of the word-rule ADR (docs/decisions/*-word-count-what-counts-as-a-word.md),
 # row by row. Kept literal here so a failure names the input; WordCountTest also checks that
@@ -107,6 +107,78 @@ class CharFreqTest(unittest.TestCase):
             with self.subTest(value=bad):
                 with self.assertRaises(TypeError):
                     char_freq(bad)
+
+
+# The case table of the rounding ADR (docs/decisions/*-reading-time-rounding.md), row by row.
+# Each row is (text, wpm, minutes); ReadingTimeTest also checks the ADR lists exactly these.
+READING_TIME_CASES = [
+    ("", 200, 0),
+    ("   \n\t  ", 200, 0),
+    ("!!! ... ---", 200, 0),
+    ("hello", 200, 1),
+    (" ".join(["word"] * 199), 200, 1),
+    (" ".join(["word"] * 200), 200, 1),
+    (" ".join(["word"] * 201), 200, 2),
+    (" ".join(["word"] * 400), 200, 2),
+    (" ".join(["word"] * 401), 200, 3),
+    ("well-known don't 3.14", 3, 1),
+    ("well-known don't 3.14", 2, 2),
+    ("a b c", 1, 3),
+]
+
+
+def _reading_time_adr_cases() -> list:
+    """Parse the rounding ADR's case table into (text, wpm, minutes) triples.
+
+    Found by slug, not number, because the integrator may renumber it. The input column is a
+    Python expression (string literals, ``" ".join(...)``), evaluated with no builtins.
+    """
+    root = pathlib.Path(__file__).resolve().parent.parent
+    (adr,) = (root / "docs" / "decisions").glob("*-reading-time-rounding.md")
+    table = adr.read_text(encoding="utf-8").split("## Cases", 1)[1]
+    rows = re.findall(r"^\| `(.*)` \| (\d+) \| (\d+) \|$", table, re.M)
+    return [(eval(src, {"__builtins__": {}}), int(w), int(m)) for src, w, m in rows]
+
+
+class ReadingTimeTest(unittest.TestCase):
+    def test_adr_cases(self):
+        for text, wpm, expected in READING_TIME_CASES:
+            with self.subTest(text=text[:30], wpm=wpm):
+                self.assertEqual(reading_time(text, wpm), expected)
+
+    def test_cases_match_adr_table(self):
+        self.assertEqual(_reading_time_adr_cases(), READING_TIME_CASES)
+
+    def test_default_wpm_is_200(self):
+        self.assertEqual(reading_time(" ".join(["w"] * 200)), 1)
+        self.assertEqual(reading_time(" ".join(["w"] * 201)), 2)
+
+    def test_counts_words_with_word_count(self):
+        # Punctuation is not a word (ADR 0002), so it does not add reading time.
+        text = "one, two -- three!!! " * 100
+        self.assertEqual(word_count(text), 300)
+        self.assertEqual(reading_time(text, 100), 3)
+
+    def test_wpm_below_one_raises_value_error(self):
+        for bad in (0, -1, -200):
+            with self.subTest(wpm=bad):
+                with self.assertRaises(ValueError):
+                    reading_time("hello", bad)
+        # Checked before the text is read: empty text does not short-circuit to 0.
+        with self.assertRaises(ValueError):
+            reading_time("", 0)
+
+    def test_non_int_wpm_raises_type_error(self):
+        for bad in (200.0, "200", None, True):
+            with self.subTest(wpm=bad):
+                with self.assertRaises(TypeError):
+                    reading_time("hello", bad)
+
+    def test_rejects_non_str(self):
+        for bad in (b"hello", None, 3):
+            with self.subTest(value=bad):
+                with self.assertRaises(TypeError):
+                    reading_time(bad)
 
 
 if __name__ == "__main__":
