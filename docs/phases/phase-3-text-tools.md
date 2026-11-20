@@ -326,7 +326,7 @@ bounce it.
       line of spaces and tabs only does not count for the prefix and becomes empty (its line
       ending stays); a tab and a space are different characters; `""` gives `""`. Tests pin
       a text with no final newline, `"\r\n"` endings and a blank last line.
-- [ ] **T3.8 `center`** (small) in `textkit/strings.py`:
+- [x] **T3.8 `center`** (small) in `textkit/strings.py`:
       `center(text, width, fill=" ") -> str` pads `text` on both sides to `width` code
       points; when the padding is odd, the extra `fill` goes on the right (so not
       `str.center`, which sometimes puts it on the left). A text of `width` or more is

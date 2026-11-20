@@ -12,6 +12,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 
 | Function | Module | What it does |
 |----------|--------|--------------|
+| `center` | `textkit.strings` | Pads text on both sides to a width, the odd extra fill on the right |
 | `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive |
 | `dedent` | `textkit.strings` | Removes the indentation of spaces and tabs common to every non-blank line |
 | `is_palindrome` | `textkit.strings` | Tells whether text reads the same backwards, ignoring case, accents and symbols |

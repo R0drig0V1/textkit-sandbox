@@ -103,6 +103,20 @@ lines become empty and line endings are kept as they are (a tab and a space neve
 
 ```
 
+`center` pads text on both sides to a width; when the padding is odd, the extra fill goes
+on the right (`str.center` sometimes puts it on the left). Longer text is left unchanged.
+
+```pycon
+>>> from textkit.strings import center
+>>> center("ab", 5)
+' ab  '
+>>> center("abc", 7, "*")
+'**abc**'
+>>> center("textkit", 3)
+'textkit'
+
+```
+
 ## Counts: `textkit.counts`
 
 `word_count` counts words by the rule of ADR 0002: hyphenated words, contractions and numbers
