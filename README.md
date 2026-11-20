@@ -12,7 +12,9 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 
 | Function | Module | What it does |
 |----------|--------|--------------|
+| `apply_patch` | `textkit.diff` | Applies a unified diff to a text, exactly where its hunks say (no fuzz) |
 | `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive |
+| `diff_words` | `textkit.diff` | Word-by-word differences of two texts as `(op, word)` pairs |
 | `is_palindrome` | `textkit.strings` | Tells whether text reads the same backwards, ignoring case, accents and symbols |
 | `ngrams` | `textkit.counts` | Runs of `n` consecutive words of a text, in order (rule: ADR 0002) |
 | `reading_time` | `textkit.counts` | Whole minutes to read a text, rounded up (ADR 0004) |
@@ -25,6 +27,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `to_kebab_case` | `textkit.cases` | Converts camelCase, PascalCase or snake_case to kebab-case |
 | `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase or kebab-case to snake_case |
 | `truncate` | `textkit.strings` | Shortens text to a width, ending in a suffix when cut |
+| `unified_diff` | `textkit.diff` | Line differences of two texts in the unified format of GNU `diff -u` (ADR 0007) |
 | `word_count` | `textkit.counts` | Counts the words in a text (rule: ADR 0002) |
 | `wrap` | `textkit.strings` | Splits text into lines of at most `width` characters at spaces |
 
@@ -40,4 +43,8 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
   exception is a bug and keeps its traceback (ADR 0006).
 - Tool subcommands, `python3 -m textkit <tool> ...`: one module `textkit/cli/<name>.py` each
   ([docs/usage.md](docs/usage.md#command-line)), and one bullet each below, in alphabetical
-  order of subcommand. None yet.
+  order of subcommand.
+- `python3 -m textkit diff <file-a> <file-b>`: prints `unified_diff` of the two files
+  (headers `--- a` and `+++ b`; read as UTF-8, `"\r"` kept). Exit 0 when they are equal
+  (nothing printed), 1 when they differ, 2 when a file cannot be read
+  ([docs/diff.md](docs/diff.md)).
