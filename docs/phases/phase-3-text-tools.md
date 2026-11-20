@@ -335,7 +335,7 @@ bounce it.
       even when the text is longer than `width`. Tests pin `center("ab", 5) == " ab  "` (where
       `str.center` gives `"  ab "`) and `center("abc", 6) == " abc  "`.
       PR after T3.7 (see "Order").
-- [ ] **T3.9 `ngrams`** (small) in `textkit/counts.py`:
+- [x] **T3.9 `ngrams`** (small) in `textkit/counts.py`:
       `ngrams(text, n=2) -> list[tuple[str, ...]]`, the runs of `n` consecutive words
       (`_tokens.words`, each word its `token.text`, exactly as in the text), in order. Fewer
       than `n` words give `[]`; `n < 1` raises the phase 3 "Errors" error (`ValueError`
