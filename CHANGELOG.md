@@ -6,3 +6,4 @@
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `truncate`: shortens text to a width, ending in a suffix when cut.
 - Added `to_snake_case`: converts camelCase, PascalCase or kebab-case identifiers to snake_case.
+- Added `strip_accents`: removes combining marks (accents) from text.
