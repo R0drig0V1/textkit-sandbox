@@ -18,6 +18,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `is_palindrome` | `textkit.strings` | Tells whether text reads the same backwards, ignoring case, accents and symbols |
 | `ngrams` | `textkit.counts` | Runs of `n` consecutive words of a text, in order (words: ADR 0002) |
 | `reading_time` | `textkit.counts` | Whole minutes to read a text, rounded up (ADR 0004) |
+| `render` | `textkit.template` | Fills a template (`{{ x }}`, `if`, `for`, filters) from a dict; missing names: ADR 0006 |
 | `sentence_count` | `textkit.counts` | Counts the sentences in a text (abbreviations, ellipses: ADR 0005) |
 | `slug_title` | `textkit.strings` | Slug cut to a maximum length, never ending in `-` |
 | `slugify` | `textkit.strings` | Turns text into a lower-case ASCII slug |
@@ -44,3 +45,10 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
   `textkit/cli/<name>.py` registers a `Command` (`textkit/cli/registry.py`) and is found at
   run time, so adding a tool edits no shared file. A tool returns its own exit code. The
   tools follow, one bullet each, in alphabetical order of subcommand.
+  `python3 -m textkit --help` lists them. Lists and dicts print as JSON with sorted keys.
+  Exit 0 on success, 2 on an unknown function or a wrong argument count, 1 when the
+  function rejects the text (`ValueError`).
+- `python3 -m textkit render <template-file> <json-file>`: renders a template file
+  ([docs/template.md](docs/template.md)) with the JSON object in the second file and writes
+  the result as is. Exit 0 on success, 1 with `line:column: message` on stderr for a
+  template error, 2 for a file that cannot be read or a JSON file that is not an object.
