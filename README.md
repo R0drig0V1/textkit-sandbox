@@ -7,7 +7,8 @@ tiny synthetic project. Nothing here matters; it can be wiped at any time.
 
 ## Functions
 
-Every public function is listed here, once (checked by `scripts/check.sh`).
+Every public function is listed here, once (checked by `scripts/check.sh`). The
+[usage guide](docs/usage.md) has a short, tested example of each one.
 
 | Function | Module | What it does |
 |----------|--------|--------------|
@@ -32,3 +33,5 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 - `tests/test_api.py` (run by the unit tests) is the API contract: every public function has a
   docstring and type hints for all parameters and the return value, and the functions it
   discovers are exactly this table's rows, module included.
+- `tests/test_usage.py` (run by the unit tests) runs every example of `docs/usage.md` as a
+  doctest and checks that every public function has one.
