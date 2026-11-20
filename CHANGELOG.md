@@ -5,6 +5,7 @@
 - Added `char_freq` in `textkit.counts`: counts each non-whitespace character, case-sensitive, keys in order of first occurrence.
 - Added `is_palindrome`: tells whether text reads the same backwards, ignoring case, accents and symbols.
 - Added `reading_time` in `textkit.counts`: whole minutes to read a text at `wpm` words per minute (default 200), from `word_count` (ADR 0002), rounded up: empty text is 0, under one minute is 1 (ADR 0004); `wpm < 1` raises `ValueError`.
+- Added `sentence_count` in `textkit.counts`: counts sentences; listed abbreviations (`Dr.`, `e.g.`), initials and an end followed by lower case (ellipses included) do not end one (ADR 0005).
 - Added `slug_title`: slug cut to a maximum length (character cut), never ending in `-`.
 - Added the `python3 -m textkit` command line.
 - Added `python3 -m textkit --version`.
