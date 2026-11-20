@@ -1,9 +1,11 @@
+import random
+import tracemalloc
 import unittest
 
 import unicodedata
 
 from textkit.errors import InvalidValueError
-from textkit.strings import center, dedent, is_palindrome, slug_title, slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import center, dedent, is_palindrome, levenshtein, slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -348,6 +350,86 @@ class CenterTest(unittest.TestCase):
             center("abcdef", -1)
         with self.assertRaises(InvalidValueError):
             center("", -1)
+
+
+def _full_table_levenshtein(a, b):
+    """Reference edit distance with the whole (len(a) + 1) x (len(b) + 1) table."""
+    table = [[0] * (len(b) + 1) for _ in range(len(a) + 1)]
+    for i in range(len(a) + 1):
+        table[i][0] = i
+    for j in range(len(b) + 1):
+        table[0][j] = j
+    for i in range(1, len(a) + 1):
+        for j in range(1, len(b) + 1):
+            table[i][j] = min(
+                table[i - 1][j] + 1,
+                table[i][j - 1] + 1,
+                table[i - 1][j - 1] + (a[i - 1] != b[j - 1]),
+            )
+    return table[len(a)][len(b)]
+
+
+class LevenshteinTest(unittest.TestCase):
+    def test_kitten_sitting(self):
+        self.assertEqual(levenshtein("kitten", "sitting"), 3)
+
+    def test_symmetric(self):
+        pairs = [("kitten", "sitting"), ("flaw", "lawn"), ("", "abc"), ("abc", "abd"),
+                 ("intention", "execution")]
+        for a, b in pairs:
+            with self.subTest(a=a, b=b):
+                self.assertEqual(levenshtein(a, b), levenshtein(b, a))
+
+    def test_empty_gives_length(self):
+        for s in ["", "a", "abc", "Ñandú", "\U0001F600x"]:
+            with self.subTest(s=s):
+                self.assertEqual(levenshtein("", s), len(s))
+                self.assertEqual(levenshtein(s, ""), len(s))
+
+    def test_equal_texts_are_zero(self):
+        self.assertEqual(levenshtein("textkit", "textkit"), 0)
+
+    def test_each_operation_costs_one(self):
+        self.assertEqual(levenshtein("abc", "abxc"), 1)  # insert
+        self.assertEqual(levenshtein("abc", "ac"), 1)  # delete
+        self.assertEqual(levenshtein("abc", "abd"), 1)  # substitute
+
+    def test_case_sensitive(self):
+        self.assertEqual(levenshtein("Abc", "abc"), 1)
+
+    def test_code_points_not_bytes(self):
+        # One astral character is one code point (four UTF-8 bytes, two UTF-16 units).
+        self.assertEqual(levenshtein("a\U0001F600b", "ab"), 1)
+        self.assertEqual(levenshtein("\u00f1", "n"), 1)
+
+    def test_no_normalization(self):
+        # NFC "\u00e9" against NFD "e\u0301": substitute one, insert the other.
+        self.assertEqual(levenshtein("\u00e9", "e\u0301"), 2)
+
+    def test_matches_full_table_on_random_pairs(self):
+        rng = random.Random(310)
+        for _ in range(200):
+            a = "".join(rng.choice("abc") for _ in range(rng.randint(0, 12)))
+            b = "".join(rng.choice("abc") for _ in range(rng.randint(0, 12)))
+            with self.subTest(a=a, b=b):
+                self.assertEqual(levenshtein(a, b), _full_table_levenshtein(a, b))
+
+    def test_two_rows_of_memory(self):
+        # A full table for two 1000-character texts holds a million entries (several MB);
+        # two rows hold about 2000, far under the 1 MB bound.
+        rng = random.Random(1000)
+        a = "".join(rng.choice("abcdefghij") for _ in range(1000))
+        b = "".join(rng.choice("abcdefghij") for _ in range(1000))
+        tracemalloc.start()
+        try:
+            baseline, _ = tracemalloc.get_traced_memory()
+            distance = levenshtein(a, b)
+            _, peak = tracemalloc.get_traced_memory()
+        finally:
+            tracemalloc.stop()
+        self.assertLess(peak - baseline, 1_000_000)
+        self.assertGreater(distance, 0)
+        self.assertLessEqual(distance, 1000)
 
 
 if __name__ == "__main__":

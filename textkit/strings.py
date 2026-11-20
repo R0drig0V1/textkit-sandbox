@@ -227,3 +227,36 @@ def center(text: str, width: int, fill: str = " ") -> str:
     # Floor division gives the smaller half to the left, so an odd extra goes right.
     left = padding // 2
     return fill * left + text + fill * (padding - left)
+
+
+def levenshtein(a: str, b: str) -> int:
+    """Return the edit distance between ``a`` and ``b``, counted over code points.
+
+    The distance is the least number of single code point insertions, deletions and
+    substitutions, each of cost 1, that turn ``a`` into ``b``
+    (``levenshtein("kitten", "sitting") == 3``). It is symmetric
+    (``levenshtein(a, b) == levenshtein(b, a)``), ``levenshtein("", s) == len(s)`` and it
+    is 0 exactly when ``a == b``. No Unicode normalization is applied, so NFC ``"é"`` and
+    its NFD form (``"e"`` plus a combining accent) are at distance 2.
+
+    Time is ``O(len(a) * len(b))``; memory is two rows of ``min(len(a), len(b)) + 1``
+    integers, not the full table. Never raises for ``str`` arguments.
+    """
+    # Keep the shorter text along the row: memory then grows with the shorter input only.
+    if len(a) < len(b):
+        a, b = b, a
+    # previous[j] is the distance between the first i - 1 code points of a and the first
+    # j of b; current is the row being filled for the first i code points of a.
+    previous = list(range(len(b) + 1))
+    for i, char_a in enumerate(a, start=1):
+        current = [i]
+        for j, char_b in enumerate(b, start=1):
+            current.append(
+                min(
+                    previous[j] + 1,  # delete char_a
+                    current[j - 1] + 1,  # insert char_b
+                    previous[j - 1] + (char_a != char_b),  # substitute (free if equal)
+                )
+            )
+        previous = current
+    return previous[-1]

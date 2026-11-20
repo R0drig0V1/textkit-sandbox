@@ -18,6 +18,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `diff_words` | `textkit.diff` | Word-by-word differences of two texts as `(op, word)` pairs |
 | `dedent` | `textkit.strings` | Removes the spaces and tabs common to the start of every non-blank line |
 | `is_palindrome` | `textkit.strings` | Tells whether text reads the same backwards, ignoring case, accents and symbols |
+| `levenshtein` | `textkit.strings` | Edit distance between two texts over code points (insert, delete, substitute) |
 | `ngrams` | `textkit.counts` | Runs of `n` consecutive words of a text, in order (rule: ADR 0002) |
 | `reading_time` | `textkit.counts` | Whole minutes to read a text, rounded up (ADR 0004) |
 | `render` | `textkit.template` | Fills a text template (`{{ name }}`, `if`, `for`, filters) from a dict (missing names: ADR 0008) |
