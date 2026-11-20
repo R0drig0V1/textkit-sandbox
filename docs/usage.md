@@ -303,6 +303,25 @@ hides it. The command line follows the same split: a function command that raise
 `TextkitError` exits 1 with the message on stderr, while any other exception keeps its
 traceback.
 
+## Markdown: `textkit.markdown`
+
+`to_html` converts a small subset of Markdown to HTML, one block per line: headings,
+paragraphs, one-level lists, fenced code blocks, quotes and `---` rules, with `**strong**`,
+`*em*`, `` `code` `` and `[text](url)` inside. Raw HTML is always escaped, and a link whose
+scheme is not `http`, `https` or `mailto` points to `#` (ADR 0007). Every construct, with
+an example, is in [docs/markdown.md](markdown.md).
+
+```pycon
+>>> from textkit.markdown import to_html
+>>> to_html("# Hi\n\nSome *new* **ideas**.")
+'<h1>Hi</h1>\n<p>Some <em>new</em> <strong>ideas</strong>.</p>\n'
+>>> to_html("- [ok](https://example.com)\n- [no](javascript:alert)\n- <b>")
+'<ul>\n<li><a href="https://example.com">ok</a></li>\n<li><a href="#">no</a></li>\n<li>&lt;b&gt;</li>\n</ul>\n'
+
+```
+
+From the shell, `python3 -m textkit markdown notes.md` writes the HTML of a file.
+
 ## Templates: `textkit.template`
 
 `render` fills a template with values from a dict: `{{ name }}` prints a value (dotted names
