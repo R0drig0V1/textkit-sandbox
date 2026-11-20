@@ -13,6 +13,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 |----------|--------|--------------|
 | `slugify` | `textkit.strings` | Turns text into a lower-case ASCII slug |
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
+| `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase or kebab-case to snake_case |
 
 ## Commands
 
