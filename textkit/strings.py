@@ -75,3 +75,37 @@ def strip_accents(text: str) -> str:
     # Recompose so that characters NFD split without any mark to drop (Hangul syllables,
     # for example) come back in their usual composed form.
     return unicodedata.normalize("NFC", kept)
+
+
+def wrap(text: str, width: int) -> list[str]:
+    """Split ``text`` into lines of at most ``width`` code points, breaking at whitespace.
+
+    Words are filled greedily: each line takes as many words as fit, joined by one space.
+    Runs of whitespace between words collapse to one separator and leading and trailing
+    whitespace is dropped, so no line starts or ends with a space. Existing newlines (and
+    any other ``str.isspace()`` character, such as tabs) are separators like a space, so
+    the text is reflowed rather than kept in its original lines (ADR 0003). A word longer
+    than ``width`` is never split: it gets a line of its own, longer than ``width``.
+    ``wrap("", w)`` and whitespace-only input give ``[]``.
+
+    Raises:
+        ValueError: if ``width < 1``, checked first so that it fails on every input,
+            including ``""``.
+    """
+    if width < 1:
+        raise ValueError(f"width must be at least 1, got {width}")
+    lines: list[str] = []
+    current = ""
+    # str.split() with no argument splits on every whitespace run and drops empty strings,
+    # which gives the collapsing, the trimming and the newline rule of ADR 0003 at once.
+    for word in text.split():
+        if not current:
+            current = word
+        elif len(current) + 1 + len(word) <= width:
+            current += " " + word
+        else:
+            lines.append(current)
+            current = word
+    if current:
+        lines.append(current)
+    return lines
