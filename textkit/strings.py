@@ -235,3 +235,41 @@ def center(text: str, width: int, fill: str = " ") -> str:
     # Floor division gives the left side the smaller half, so an odd extra goes right.
     left = padding // 2
     return fill * left + text + fill * (padding - left)
+
+
+def levenshtein(a: str, b: str) -> int:
+    """Return the edit distance between ``a`` and ``b``, counted over code points.
+
+    The distance is the smallest number of single-code-point insertions, deletions and
+    substitutions, each of cost 1, that turn ``a`` into ``b``:
+    ``levenshtein("kitten", "sitting") == 3``. It is symmetric, ``levenshtein("", s)`` is
+    ``len(s)``, and equal strings give 0. Code points are compared as they are: no Unicode
+    normalization and no case folding, so NFC ``"é"`` and NFD ``"e\\u0301"`` are at
+    distance 2.
+
+    Time is ``O(len(a) * len(b))``; memory is two rows of ``min(len(a), len(b)) + 1``
+    integers, never the full matrix.
+
+    Raises:
+        TypeError: if ``a`` or ``b`` is not a ``str`` (``bytes`` included). No other input
+            is rejected.
+    """
+    for name, value in (("a", a), ("b", b)):
+        if not isinstance(value, str):
+            raise TypeError(f"levenshtein() expects str for {name}, got {type(value).__name__}")
+    # The rows run over the shorter string, so memory follows the smaller length.
+    if len(a) < len(b):
+        a, b = b, a
+    previous = list(range(len(b) + 1))
+    for i, char_a in enumerate(a, start=1):
+        current = [i]
+        for j, char_b in enumerate(b, start=1):
+            current.append(
+                min(
+                    previous[j] + 1,  # delete char_a
+                    current[j - 1] + 1,  # insert char_b
+                    previous[j - 1] + (char_a != char_b),  # substitute (free if equal)
+                )
+            )
+        previous = current
+    return previous[-1]

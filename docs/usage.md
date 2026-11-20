@@ -117,6 +117,18 @@ on the right (`str.center` sometimes puts it on the left). Longer text is left u
 
 ```
 
+`levenshtein` counts the insertions, deletions and substitutions of code points that turn
+one string into the other; it is symmetric and needs only two rows of memory.
+
+```pycon
+>>> from textkit.strings import levenshtein
+>>> levenshtein("kitten", "sitting")
+3
+>>> levenshtein("", "abc")
+3
+
+```
+
 ## Counts: `textkit.counts`
 
 `word_count` counts words by the rule of ADR 0002: hyphenated words, contractions and numbers

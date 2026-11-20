@@ -1,9 +1,10 @@
+import tracemalloc
 import unittest
 
 import unicodedata
 
 from textkit.errors import InvalidValueError
-from textkit.strings import center, dedent, is_palindrome, slug_title, slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import center, dedent, is_palindrome, levenshtein, slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -361,6 +362,67 @@ class CenterTest(unittest.TestCase):
     def test_negative_width_raises_even_for_long_text(self):
         with self.assertRaises(InvalidValueError):
             center("abcdef", -1)
+
+
+class LevenshteinTest(unittest.TestCase):
+    def test_kitten_sitting(self):
+        self.assertEqual(levenshtein("kitten", "sitting"), 3)
+
+    def test_symmetric(self):
+        pairs = [("kitten", "sitting"), ("", "abc"), ("flaw", "lawn"), ("abc", "yabd"), ("ab", "ba")]
+        for a, b in pairs:
+            with self.subTest(a=a, b=b):
+                self.assertEqual(levenshtein(a, b), levenshtein(b, a))
+
+    def test_empty_gives_length(self):
+        for s in ("", "a", "hello", "ñandú"):
+            with self.subTest(s=s):
+                self.assertEqual(levenshtein("", s), len(s))
+                self.assertEqual(levenshtein(s, ""), len(s))
+
+    def test_equal_strings_are_zero(self):
+        self.assertEqual(levenshtein("textkit", "textkit"), 0)
+
+    def test_single_operations(self):
+        self.assertEqual(levenshtein("abc", "abxc"), 1)  # insert
+        self.assertEqual(levenshtein("abc", "ac"), 1)  # delete
+        self.assertEqual(levenshtein("abc", "abd"), 1)  # substitute
+
+    def test_transposition_costs_two(self):
+        self.assertEqual(levenshtein("ab", "ba"), 2)
+
+    def test_known_distances(self):
+        self.assertEqual(levenshtein("flaw", "lawn"), 2)
+        self.assertEqual(levenshtein("saturday", "sunday"), 3)
+        self.assertEqual(levenshtein("abc", "xyz"), 3)
+
+    def test_case_sensitive(self):
+        self.assertEqual(levenshtein("Text", "text"), 1)
+
+    def test_counts_code_points_without_normalization(self):
+        self.assertEqual(levenshtein("caf\u00e9", "cafe"), 1)
+        self.assertEqual(levenshtein("\u00e9", "e\u0301"), 2)
+        self.assertEqual(levenshtein("\U0001F600", "\U0001F601"), 1)
+
+    def test_memory_is_two_rows(self):
+        a = "ab" * 500
+        b = "ba" * 500
+        tracemalloc.start()
+        try:
+            distance = levenshtein(a, b)
+            _, peak = tracemalloc.get_traced_memory()
+        finally:
+            tracemalloc.stop()
+        self.assertEqual(distance, 2)
+        self.assertLess(peak, 1_000_000)
+
+    def test_non_str_raises_type_error(self):
+        for bad in (b"abc", None, 3, ["abc"]):
+            with self.subTest(bad=bad):
+                with self.assertRaises(TypeError):
+                    levenshtein(bad, "abc")
+                with self.assertRaises(TypeError):
+                    levenshtein("abc", bad)
 
 
 if __name__ == "__main__":
