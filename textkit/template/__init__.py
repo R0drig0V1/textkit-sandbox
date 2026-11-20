@@ -2,7 +2,7 @@
 
 ``render(template, context)`` fills ``{{ name }}``, ``{% if %}``, ``{% for %}`` and
 ``{# comment #}`` tags from a dict; see ``docs/template.md`` for the syntax, the filters and
-every error, and ADR 0006 for names missing from the context.
+every error, and ADR 0007 for names missing from the context.
 
 The package has three stages, one module each: ``lexer`` (text and tag tokens with their
 positions), ``parser`` (a tree of nodes; every syntax error is raised here) and ``renderer``

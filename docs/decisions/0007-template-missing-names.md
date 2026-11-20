@@ -1,5 +1,5 @@
-<!-- ADR 0006: names missing from the context in textkit.template.render (plan task T3.4). -->
-# 0006. `textkit.template`: names missing from the context
+<!-- ADR 0007: names missing from the context in textkit.template.render (plan task T3.4). -->
+# 0007. `textkit.template`: names missing from the context
 
 ## Context
 

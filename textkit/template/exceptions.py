@@ -3,12 +3,14 @@
 Both classes are importable from the package (``from textkit.template import TemplateError``)
 but are not in its ``__all__``: ``__all__`` lists functions only (phase 3 rule "Packages").
 
-They subclass ``ValueError`` because ``textkit.errors`` (plan task T3.2) is not merged yet
-(phase 3 rule "Errors"); when it is, the base class becomes ``InvalidValueError``.
+They subclass ``textkit.errors.InvalidValueError`` (plan task T3.2, ADR 0006; phase 3 rule
+"Errors"), so ``except TextkitError`` catches them; they are not ``ValueError``s.
 """
 
+from textkit.errors import InvalidValueError
 
-class TemplateError(ValueError):
+
+class TemplateError(InvalidValueError):
     """A template that cannot be rendered with the given context.
 
     Attributes:

@@ -6,7 +6,7 @@ context at the bottom, and one scope per enclosing ``for`` holding its variable 
 ``loop`` (``{"index": n}``, from 1), so the innermost loop wins and ``loop`` hides a context
 key of that name.
 
-Missing names follow ADR 0006 (``docs/decisions/0006-template-missing-names.md``): an error
+Missing names follow ADR 0007 (``docs/decisions/0007-template-missing-names.md``): an error
 in ``{{ }}`` and ``for``, false in ``if``. Values print as ``str(value)``, except ``None``,
 which prints as ``""``. Output is plain text: nothing is escaped.
 """
@@ -35,7 +35,7 @@ def render(template: str, context: dict[str, Any]) -> str:
 
     A value prints as ``str(value)``, ``None`` as ``""``; filters apply to that string.
     A name missing from the context is an error in ``{{ }}`` and ``for`` and false in
-    ``if`` (ADR 0006).
+    ``if`` (ADR 0007).
 
     Raises:
         TypeError: if ``template`` is not a ``str`` or ``context`` is not a ``dict``.
@@ -68,7 +68,7 @@ def _render(nodes: List[Node], scopes: _Scopes, out: List[str]) -> None:
             out.append(_text(value, node))
         elif isinstance(node, If):
             value = _lookup(node.expression, scopes, node)
-            # A missing name is false, whatever the filters (ADR 0006).
+            # A missing name is false, whatever the filters (ADR 0007).
             truth = value is not _MISSING and (
                 bool(_text(value, node)) if node.expression.filters else bool(value)
             )
@@ -133,7 +133,7 @@ def _lookup(expression: Expression, scopes: _Scopes, node: Any) -> Any:
 
 
 def _missing(expression: Expression, node: Any) -> NoReturn:
-    """Raise the ``TemplateError`` for a missing name at ``node`` (ADR 0006)."""
+    """Raise the ``TemplateError`` for a missing name at ``node`` (ADR 0007)."""
     raise TemplateError(f"{expression.dotted!r} is not defined", node.line, node.column)
 
 

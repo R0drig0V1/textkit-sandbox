@@ -23,13 +23,19 @@ import sys
 from typing import Any
 
 from textkit.cli.registry import PROG, Command, register
+from textkit.errors import TextkitError
 from textkit.template import TemplateError, render
 
 _NAME = "render"
 
 
-class _InputError(Exception):
-    """A file of the command line that cannot be used; the message is ``<path>: <reason>``."""
+class _InputError(TextkitError):
+    """A file of the command line that cannot be used; the message is ``<path>: <reason>``.
+
+    A ``TextkitError`` like every exception class in ``textkit/`` (phase 3 rule "Errors",
+    checked by ``tests/test_errors.py``); it never leaves this module: ``_run`` turns it into
+    exit 2.
+    """
 
 
 def _configure(parser: argparse.ArgumentParser) -> None:

@@ -235,7 +235,7 @@ what is printed. The syntax, every filter and every error are in
 ```
 
 A name missing from the context is an error where it is printed and false in an `if`
-(ADR 0006). Errors carry the line and column of the offending tag:
+(ADR 0007). Errors carry the line and column of the offending tag:
 
 ```pycon
 >>> from textkit.template import TemplateError

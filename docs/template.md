@@ -1,5 +1,5 @@
 <!-- Reference of the template engine textkit.template (plan task T3.4): syntax, filters,
-errors. Keep it in sync with textkit/template/ and with ADR 0006 (missing names). -->
+errors. Keep it in sync with textkit/template/ and with ADR 0007 (missing names). -->
 # Templates: `textkit.template`
 
 ```python
@@ -48,7 +48,7 @@ the command line form is `python3 -m textkit render <template-file> <json-file>`
   `{% if flag | lower %}` is true for `False`, whose text is `"false"`.
 - `for` accepts a `list` only: not a string, tuple, dict or `None`, and not a filtered value
   (filters always produce text).
-- **Missing names** (ADR 0006, [decisions/0006](decisions/0006-template-missing-names.md)): a
+- **Missing names** (ADR 0007, [decisions/0007](decisions/0007-template-missing-names.md)): a
   name that is not in the context, or a key missing from a dict on the way, is an error in
   `{{ }}` and `for` and is **false** in `if`, so `{% if user.admin %}` can test an optional
   key. The price: a typo inside an `if` is not reported, it is just false. A dotted name
@@ -79,8 +79,10 @@ to an int). It is checked when the template is parsed, not when it is rendered.
 
 ## Errors
 
-Both classes are importable from `textkit.template` and subclass `ValueError` (they will
-subclass `textkit.errors.InvalidValueError` once that exists, plan task T3.2).
+Both classes are importable from `textkit.template` and subclass
+`textkit.errors.InvalidValueError` (plan task T3.2, ADR 0006), so `except TextkitError`
+catches them; they are not `ValueError`s. A `ValueError` raised by the standard library inside
+the engine (an over-long integer, say) never escapes: it becomes a `TemplateError`.
 
 - **`TemplateError`** has `message`, `line` and `column`; `str(error)` is
   `"<line>:<column>: <message>"`. Both numbers count from 1. A line ends after each `"\n"`

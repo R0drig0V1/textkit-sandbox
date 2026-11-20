@@ -11,4 +11,4 @@ One file per decision, `NNNN-title.md`, with Context / Decision / Consequences.
 | [0004](0004-reading-time-rounding.md) | `reading_time` rounds up to whole minutes: empty text is 0, under one minute is 1 |
 | [0005](0005-sentence-count-abbreviations-and-ellipses.md) | Where `sentence_count` ends a sentence: abbreviations, ellipses, lower case |
 | [0006](0006-error-hierarchy.md) | `InvalidValueError` is a `TextkitError`, not a `ValueError`: an escaping `ValueError` is a bug |
-| [0006](0006-template-missing-names.md) | `textkit.template`: a missing name is an error in `{{ }}` and `for`, false in `if` |
+| [0007](0007-template-missing-names.md) | `textkit.template`: a missing name is an error in `{{ }}` and `for`, false in `if` |

@@ -6,6 +6,7 @@ delimiter of the offending tag (for a block with no end tag, of its opening tag)
 
 import unittest
 
+from textkit.errors import InvalidValueError, TextkitError
 from textkit.template import parser
 from textkit.template.exceptions import TemplateError, TemplateSyntaxError
 from textkit.template.parser import Expression, Filter, For, If, Output, Text
@@ -176,10 +177,12 @@ class SyntaxErrorTest(unittest.TestCase):
         too_deep = "{% if a %}" * (parser.MAX_DEPTH + 1)
         self.assertSyntaxError(too_deep, 1, 10 * parser.MAX_DEPTH + 1, "nested deeper")
 
-    def test_syntax_error_is_a_template_error_and_a_value_error(self):
-        # Base class per the phase 3 rule "Errors" (before textkit.errors exists).
+    def test_syntax_error_is_a_template_error_and_an_invalid_value_error(self):
+        # Base class per the phase 3 rule "Errors" (textkit.errors, T3.2): not a ValueError.
         self.assertTrue(issubclass(TemplateSyntaxError, TemplateError))
-        self.assertTrue(issubclass(TemplateError, ValueError))
+        self.assertTrue(issubclass(TemplateError, InvalidValueError))
+        self.assertTrue(issubclass(TemplateError, TextkitError))
+        self.assertFalse(issubclass(TemplateError, ValueError))
 
 
 if __name__ == "__main__":
