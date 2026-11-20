@@ -91,6 +91,18 @@ False
 
 ```
 
+`dedent` removes the spaces and tabs common to the start of every non-blank line; blank
+lines become empty and line endings are kept as they are (a tab and a space never match).
+
+```pycon
+>>> from textkit.strings import dedent
+>>> dedent("    def f():\n        return 1\n")
+'def f():\n    return 1\n'
+>>> dedent("  a\r\n   \r\n    b")
+'a\r\n\r\n  b'
+
+```
+
 ## Counts: `textkit.counts`
 
 `word_count` counts words by the rule of ADR 0002: hyphenated words, contractions and numbers

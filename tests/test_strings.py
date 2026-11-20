@@ -2,7 +2,7 @@ import unittest
 
 import unicodedata
 
-from textkit.strings import is_palindrome, slug_title, slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import dedent, is_palindrome, slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -235,6 +235,71 @@ class IsPalindromeTest(unittest.TestCase):
     def test_non_ascii_letters_count(self):
         self.assertTrue(is_palindrome("øxø"))
         self.assertFalse(is_palindrome("øx"))
+
+
+class DedentTest(unittest.TestCase):
+    def test_common_prefix_removed(self):
+        self.assertEqual(dedent("    a\n      b\n    c\n"), "a\n  b\nc\n")
+
+    def test_empty_gives_empty(self):
+        self.assertEqual(dedent(""), "")
+
+    def test_no_common_prefix_unchanged(self):
+        self.assertEqual(dedent("a\n  b\n"), "a\n  b\n")
+
+    def test_no_final_newline(self):
+        self.assertEqual(dedent("  a\n  b"), "a\nb")
+
+    def test_crlf_endings_kept(self):
+        self.assertEqual(dedent("  a\r\n    b\r\n"), "a\r\n  b\r\n")
+
+    def test_form_feed_ends_a_line(self):
+        # str.splitlines() treats "\x0c" as a line boundary, so "  b" is its own line.
+        self.assertEqual(dedent("  a\x0c  b"), "a\x0cb")
+
+    def test_other_splitlines_boundaries_end_a_line(self):
+        for end in ("\r", "\x0b", "\x1c", "\x1d", "\x1e", "\x85", "\u2028", "\u2029"):
+            with self.subTest(end=repr(end)):
+                self.assertEqual(dedent(f"  a{end}  b{end}"), f"a{end}b{end}")
+
+    def test_blank_lines_ignored_and_emptied(self):
+        self.assertEqual(
+            dedent("    a\n\n  \t \n      b\n"), "a\n\n\n  b\n"
+        )
+
+    def test_blank_line_keeps_crlf(self):
+        self.assertEqual(dedent("  a\r\n   \r\n  b"), "a\r\n\r\nb")
+
+    def test_blank_last_line(self):
+        self.assertEqual(dedent("  a\n  b\n  "), "a\nb\n")
+        self.assertEqual(dedent("  a\n  b\n \t"), "a\nb\n")
+
+    def test_blank_only_text_keeps_endings(self):
+        self.assertEqual(dedent("  \n\t\n   "), "\n\n")
+
+    def test_tab_and_space_differ(self):
+        self.assertEqual(dedent("\ta\n    b\n"), "\ta\n    b\n")
+        self.assertEqual(dedent(" \ta\n  b\n"), "\ta\n b\n")
+
+    def test_shared_tab_prefix_removed(self):
+        self.assertEqual(dedent("\t\ta\n\tb\n"), "\ta\nb\n")
+
+    def test_tabs_not_expanded(self):
+        self.assertEqual(dedent("\t  a\n\t    b"), "a\n  b")
+
+    def test_other_whitespace_is_not_indent(self):
+        # Only spaces and tabs form the prefix; a no-break space is content.
+        self.assertEqual(dedent("  \u00a0a\n  b"), "\u00a0a\nb")
+
+    def test_already_dedented_unchanged(self):
+        text = "def f():\n    return 1\n"
+        self.assertEqual(dedent(text), text)
+
+    def test_non_str_raises_type_error(self):
+        for bad in (b"  a", None, 3, ["  a"]):
+            with self.subTest(bad=bad):
+                with self.assertRaises(TypeError):
+                    dedent(bad)
 
 
 if __name__ == "__main__":
