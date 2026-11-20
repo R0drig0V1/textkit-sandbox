@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added `apply_patch` in the new package `textkit.diff`: applies a unified diff (GNU numbering) at the lines its hunks state, with no fuzz; raises `PatchError` (an `InvalidValueError`) for a malformed patch or one that does not apply.
+- Added `center`: pads text on both sides with `fill` to `width` code points, the odd extra on the right (unlike `str.center`); a bad `fill` or a negative `width` raises `InvalidValueError`.
 - Added `char_freq` in `textkit.counts`: counts each non-whitespace character, case-sensitive, keys in order of first occurrence.
 - Added `diff_words` in `textkit.diff`: word-by-word differences as `("=" | "-" | "+", word)` pairs over the words of ADR 0002.
 - Added `dedent`: removes the prefix of spaces and tabs common to every non-blank line (no `textwrap`); line endings, as `str.splitlines` finds them, are kept; blank lines become empty.

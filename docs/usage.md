@@ -101,6 +101,22 @@ stay as they are; lines of spaces and tabs only become empty.
 
 ```
 
+`center` pads text on both sides to `width` code points. When the padding is odd the extra
+fill goes on the right, unlike `str.center`; text already `width` long or longer is returned
+unchanged. A `fill` that is not one character, or a negative `width`, is an
+`InvalidValueError`.
+
+```pycon
+>>> from textkit.strings import center
+>>> center("ab", 5)
+' ab  '
+>>> center("abc", 6, "*")
+'*abc**'
+>>> center("too long", 3)
+'too long'
+
+```
+
 ## Counts: `textkit.counts`
 
 `word_count` counts words by the rule of ADR 0002: hyphenated words, contractions and numbers

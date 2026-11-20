@@ -3,7 +3,7 @@ import unittest
 import unicodedata
 
 from textkit.errors import InvalidValueError
-from textkit.strings import dedent, is_palindrome, slug_title, slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import center, dedent, is_palindrome, slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -286,6 +286,68 @@ class DedentTest(unittest.TestCase):
 
     def test_trailing_spaces_kept(self):
         self.assertEqual(dedent("  a  \n  b\t\n"), "a  \nb\t\n")
+
+
+class CenterTest(unittest.TestCase):
+    def test_odd_padding_extra_on_right(self):
+        # str.center gives "  ab " here: the extra space on the left.
+        self.assertEqual(center("ab", 5), " ab  ")
+        self.assertNotEqual(center("ab", 5), "ab".center(5))
+
+    def test_odd_padding_odd_text(self):
+        self.assertEqual(center("abc", 6), " abc  ")
+
+    def test_extra_always_on_right(self):
+        # Non-empty texts only: "" has no left/right split (test_empty_text covers it).
+        for text in ("a", "ab", "abc", "abcd"):
+            for width in range(len(text), len(text) + 8):
+                with self.subTest(text=text, width=width):
+                    # A fill that no text contains, so the left padding is countable.
+                    result = center(text, width, "*")
+                    self.assertEqual(len(result), width)
+                    left = len(result) - len(result.lstrip("*"))
+                    right = width - len(text) - left
+                    self.assertIn(right - left, (0, 1))
+                    self.assertEqual(result[left : left + len(text)], text)
+
+    def test_even_padding_is_symmetric(self):
+        self.assertEqual(center("ab", 6), "  ab  ")
+
+    def test_custom_fill(self):
+        self.assertEqual(center("ab", 5, "*"), "*ab**")
+        self.assertEqual(center("x", 4, "-"), "-x--")
+
+    def test_non_ascii_fill_and_text(self):
+        self.assertEqual(center("ñ", 4, "·"), "·ñ··")
+
+    def test_empty_text(self):
+        self.assertEqual(center("", 3, "*"), "***")
+        self.assertEqual(center("", 0), "")
+
+    def test_text_of_width_unchanged(self):
+        self.assertEqual(center("abc", 3), "abc")
+
+    def test_longer_text_unchanged(self):
+        self.assertEqual(center("abcdef", 3), "abcdef")
+        self.assertEqual(center("abc", 0), "abc")
+
+    def test_fill_not_one_character_raises(self):
+        for fill in ("", "ab", "**"):
+            with self.subTest(fill=fill):
+                with self.assertRaises(InvalidValueError):
+                    center("ab", 5, fill)
+
+    def test_negative_width_raises(self):
+        with self.assertRaises(InvalidValueError):
+            center("ab", -1)
+
+    def test_checks_come_first_even_for_long_text(self):
+        with self.assertRaises(InvalidValueError):
+            center("abcdef", 3, "")
+        with self.assertRaises(InvalidValueError):
+            center("abcdef", -1)
+        with self.assertRaises(InvalidValueError):
+            center("", -1)
 
 
 if __name__ == "__main__":
