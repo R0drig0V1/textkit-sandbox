@@ -124,3 +124,24 @@ def slug_title(text: str, max_len: int) -> str:
     if max_len < 0:
         raise ValueError(f"max_len ({max_len}) must not be negative")
     return truncate(slugify(text), max_len, suffix="").rstrip("-")
+
+
+def is_palindrome(text: str) -> bool:
+    """Return whether ``text`` reads the same backwards, ignoring case, accents and symbols.
+
+    Steps, in order:
+
+    1. Accents are removed with :func:`strip_accents` (``"Dábale"`` -> ``"Dabale"``).
+    2. The text is case-folded with ``str.casefold`` (stronger than ``lower``: ``"ß"``
+       becomes ``"ss"``).
+    3. Only characters for which ``str.isalnum()`` is true are kept, so spaces,
+       punctuation and ``_`` are ignored while digits and non-ASCII letters count.
+
+    The remaining sequence is compared with its reverse. ``""`` and text with no
+    alphanumeric characters give ``True`` (the empty sequence is its own reverse). Never
+    raises for a ``str`` argument.
+    """
+    # strip_accents before casefold: casefold can expand characters (e.g. "İ" -> "i" plus a
+    # combining dot), and stripping first keeps such marks out of the comparison.
+    kept = [ch for ch in strip_accents(text).casefold() if ch.isalnum()]
+    return kept == kept[::-1]
