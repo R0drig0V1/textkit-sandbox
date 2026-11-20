@@ -1,6 +1,7 @@
+import unicodedata
 import unittest
 
-from textkit.strings import squeeze, truncate
+from textkit.strings import slugify, squeeze, truncate
 
 
 class SqueezeTest(unittest.TestCase):
@@ -50,6 +51,35 @@ class TruncateTest(unittest.TestCase):
     def test_negative_width_raises(self):
         with self.assertRaises(ValueError):
             truncate("", -1, suffix="")
+
+
+class SlugifyTest(unittest.TestCase):
+    def test_punctuation_and_spaces_become_one_hyphen(self):
+        self.assertEqual(slugify("Hello, World!"), "hello-world")
+
+    def test_strips_hyphens_at_both_ends(self):
+        self.assertEqual(slugify("--a b--"), "a-b")
+
+    def test_underscore_is_a_separator(self):
+        self.assertEqual(slugify("snake_case__name"), "snake-case-name")
+
+    def test_keeps_digits(self):
+        self.assertEqual(slugify("Top 10 Tips"), "top-10-tips")
+
+    def test_non_ascii_removed_without_separator(self):
+        self.assertEqual(slugify("na\u00efve"), "nave")
+
+    def test_nfc_input_drops_precomposed_letters(self):
+        nfc = unicodedata.normalize("NFC", "Ñandú")
+        self.assertEqual(slugify(nfc), "and")
+
+    def test_nfd_input_keeps_base_letters(self):
+        nfd = unicodedata.normalize("NFD", "Ñandú")
+        self.assertEqual(slugify(nfd), "nandu")
+
+    def test_empty_and_punctuation_only_give_empty(self):
+        self.assertEqual(slugify(""), "")
+        self.assertEqual(slugify("!!!"), "")
 
 
 if __name__ == "__main__":
