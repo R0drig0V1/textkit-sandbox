@@ -2,6 +2,7 @@
 
 import re
 import unicodedata
+from typing import Optional
 
 from textkit.errors import InvalidValueError
 
@@ -148,3 +149,54 @@ def is_palindrome(text: str) -> bool:
     # combining dot), and stripping first keeps such marks out of the comparison.
     kept = [ch for ch in strip_accents(text).casefold() if ch.isalnum()]
     return kept == kept[::-1]
+
+
+def dedent(text: str) -> str:
+    """Remove the prefix of spaces and tabs common to every non-blank line of ``text``.
+
+    ``"    a\\n      b\\n"`` -> ``"a\\n  b\\n"``. Lines are split with
+    ``str.splitlines(keepends=True)`` and each line ending is kept exactly as it was. That
+    split also ends a line at ``"\\r"``, ``"\\x0b"``, ``"\\x0c"``, ``"\\x1c"``-``"\\x1e"``,
+    ``"\\x85"``, ``"\\u2028"`` and ``"\\u2029"``, not only at ``"\\n"`` and ``"\\r\\n"`` (the
+    ``"\\n"``-only rule of the template and diff tools does not apply here).
+
+    - A line made only of spaces and tabs (or empty) is *blank*: it does not count for the
+      common prefix and becomes empty, its line ending kept.
+    - The prefix is compared character by character, so a tab and a space are different
+      characters: ``"\\ta\\n    b"`` has no common prefix and is returned unchanged.
+    - Only spaces and tabs form the prefix; other whitespace (``"\\u3000"``, for example)
+      ends it.
+
+    ``""`` gives ``""``. Never raises for a ``str`` argument. Written without ``textwrap``,
+    whose ``dedent`` splits lines at ``"\\n"`` only.
+    """
+    # Split each line into its body and the ending splitlines found, so endings such as
+    # "\r\n" or "\x0c" are put back unchanged. A line from splitlines(keepends=True) is never
+    # empty, so line.splitlines() always has one element (the body, possibly "").
+    parts = []
+    for line in text.splitlines(keepends=True):
+        body = line.splitlines()[0]
+        parts.append((body, line[len(body):]))
+
+    prefix: Optional[str] = None
+    for body, _ in parts:
+        indent = body[: len(body) - len(body.lstrip(" \t"))]
+        if indent == body:
+            continue  # blank: spaces and tabs only, never part of the prefix
+        if prefix is None:
+            prefix = indent
+        else:
+            # Keep the longest common start of the two indents, character by character.
+            common = 0
+            while common < min(len(prefix), len(indent)) and prefix[common] == indent[common]:
+                common += 1
+            prefix = prefix[:common]
+
+    cut = len(prefix) if prefix else 0
+    out = []
+    for body, ending in parts:
+        if body.lstrip(" \t") == "":
+            out.append(ending)
+        else:
+            out.append(body[cut:] + ending)
+    return "".join(out)

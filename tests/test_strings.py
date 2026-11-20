@@ -3,7 +3,7 @@ import unittest
 import unicodedata
 
 from textkit.errors import InvalidValueError
-from textkit.strings import is_palindrome, slug_title, slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import dedent, is_palindrome, slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -236,6 +236,56 @@ class IsPalindromeTest(unittest.TestCase):
     def test_non_ascii_letters_count(self):
         self.assertTrue(is_palindrome("øxø"))
         self.assertFalse(is_palindrome("øx"))
+
+
+class DedentTest(unittest.TestCase):
+    def test_removes_common_prefix(self):
+        self.assertEqual(dedent("    a\n      b\n"), "a\n  b\n")
+
+    def test_empty_text(self):
+        self.assertEqual(dedent(""), "")
+
+    def test_no_common_prefix_unchanged(self):
+        self.assertEqual(dedent("a\n  b\n"), "a\n  b\n")
+
+    def test_tab_and_space_are_different(self):
+        self.assertEqual(dedent("\ta\n    b\n"), "\ta\n    b\n")
+        self.assertEqual(dedent(" \ta\n  b\n"), "\ta\n b\n")
+
+    def test_common_tab_prefix(self):
+        self.assertEqual(dedent("\t\ta\n\tb\n"), "\ta\nb\n")
+
+    def test_no_final_newline(self):
+        self.assertEqual(dedent("  a\n    b"), "a\n  b")
+
+    def test_crlf_endings_kept(self):
+        self.assertEqual(dedent("  a\r\n    b\r\n"), "a\r\n  b\r\n")
+
+    def test_form_feed_ends_a_line(self):
+        # splitlines treats "\x0c" as a line ending: "  b" is a line of its own.
+        self.assertEqual(dedent("  a\x0c  b\n"), "a\x0cb\n")
+
+    def test_next_line_ends_a_line(self):
+        self.assertEqual(dedent("  a\x85  b"), "a\x85b")
+
+    def test_blank_lines_ignored_and_emptied(self):
+        self.assertEqual(dedent("    a\n \t \n\n    b\n"), "a\n\n\nb\n")
+
+    def test_blank_last_line(self):
+        self.assertEqual(dedent("  a\n  b\n  "), "a\nb\n")
+        self.assertEqual(dedent("  a\n  b\n  \n"), "a\nb\n\n")
+
+    def test_blank_line_ending_kept(self):
+        self.assertEqual(dedent("  a\r\n  \r\n  b"), "a\r\n\r\nb")
+
+    def test_only_blank_lines(self):
+        self.assertEqual(dedent("  \n\t\r\n"), "\n\r\n")
+
+    def test_other_whitespace_not_part_of_prefix(self):
+        self.assertEqual(dedent("  \u3000a\n  b\n"), "\u3000a\nb\n")
+
+    def test_trailing_spaces_kept(self):
+        self.assertEqual(dedent("  a  \n  b\t\n"), "a  \nb\t\n")
 
 
 if __name__ == "__main__":
