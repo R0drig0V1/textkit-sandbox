@@ -189,7 +189,7 @@ bounce it.
         `[Token("cafe\u0301", 0, 5), Token("x", 6, 7)]`).
       No README row (a private module). CHANGELOG line:
       "`_tokens.words` returns tokens with their offsets."
-- [ ] **T3.4 template engine** (large): package `textkit/template/` with at least
+- [x] **T3.4 template engine** (large): package `textkit/template/` with at least
       `lexer.py`, `parser.py` and `renderer.py`. Public function:
       `render(template: str, context: dict[str, Any]) -> str`.
       Syntax: `{{ expr }}` prints a value, where `expr` is a dotted name (`user.name`
@@ -266,7 +266,7 @@ bounce it.
       `docs/usage.md`, the README row and the CHANGELOG line. At least 40 tests over the
       three modules.
       PR after T3.1.
-- [ ] **T3.6 line diff** (large): package `textkit/diff/` with at least `lcs.py`,
+- [x] **T3.6 line diff** (large): package `textkit/diff/` with at least `lcs.py`,
       `unified.py` and `patch.py`. Public functions:
       `unified_diff(a: str, b: str, context: int = 3) -> str`,
       `apply_patch(text: str, patch: str) -> str` and
