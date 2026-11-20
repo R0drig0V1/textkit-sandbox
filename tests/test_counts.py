@@ -5,7 +5,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.counts import word_count
+from textkit.counts import char_freq, word_count
 
 # Every row of the case table in ADR 0002 (what counts as a word), in the same order.
 WORD_COUNT_CASES = [
@@ -70,6 +70,39 @@ class WordCountTest(unittest.TestCase):
     def test_rejects_non_str(self):
         with self.assertRaises(TypeError):
             word_count(["a", "b"])  # type: ignore[arg-type]
+
+
+class CharFreqTest(unittest.TestCase):
+    def test_counts_each_character(self):
+        self.assertEqual(char_freq("banana"), {"b": 1, "a": 3, "n": 2})
+
+    def test_keys_in_order_of_first_occurrence(self):
+        self.assertEqual(list(char_freq("cabbage")), ["c", "a", "b", "g", "e"])
+
+    def test_case_sensitive(self):
+        self.assertEqual(char_freq("aAa"), {"a": 2, "A": 1})
+
+    def test_whitespace_not_counted(self):
+        # Space, tab, newline, carriage return, no-break space, em space, line separator.
+        self.assertEqual(char_freq(" a\tb\nc\r\u00a0\u2003\u2028a "), {"a": 2, "b": 1, "c": 1})
+
+    def test_punctuation_and_digits_counted(self):
+        self.assertEqual(char_freq("a, 1!1"), {"a": 1, ",": 1, "1": 2, "!": 1})
+
+    def test_empty_and_whitespace_only(self):
+        self.assertEqual(char_freq(""), {})
+        self.assertEqual(char_freq(" \n\t "), {})
+
+    def test_no_normalization(self):
+        self.assertEqual(char_freq("\u00fa"), {"\u00fa": 1})
+        self.assertEqual(char_freq("u\u0301"), {"u": 1, "\u0301": 1})
+
+    def test_returns_plain_dict(self):
+        self.assertIs(type(char_freq("ab")), dict)
+
+    def test_rejects_non_str(self):
+        with self.assertRaises(TypeError):
+            char_freq(["a", "b"])  # type: ignore[arg-type]
 
 
 if __name__ == "__main__":
