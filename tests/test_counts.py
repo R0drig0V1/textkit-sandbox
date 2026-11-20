@@ -5,7 +5,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.counts import char_freq, reading_time, word_count
+from textkit.counts import char_freq, reading_time, sentence_count, word_count
 
 # The case table of the word-rule ADR (docs/decisions/*-word-count-what-counts-as-a-word.md),
 # row by row. Kept literal here so a failure names the input; WordCountTest also checks that
@@ -179,6 +179,98 @@ class ReadingTimeTest(unittest.TestCase):
             with self.subTest(value=bad):
                 with self.assertRaises(TypeError):
                     reading_time(bad)
+
+
+# The case table of the sentence-rule ADR
+# (docs/decisions/*-sentence-count-abbreviations-and-ellipses.md), row by row, kept literal
+# like WORD_COUNT_CASES; SentenceCountTest checks the ADR table lists exactly these rows.
+SENTENCE_COUNT_CASES = [
+    ("", 0),
+    ("   \n\t ", 0),
+    ("...", 0),
+    ("!?! …", 0),
+    ("Hello", 1),
+    ("Hello.", 1),
+    ("Hello. World.", 2),
+    ("Is it? Yes! Good.", 3),
+    ("Really?! Yes.", 2),
+    ("Pi is 3.14. It is irrational.", 2),
+    ("Visit example.com today.", 1),
+    ("Version 1.2.3 is out. Get it.", 2),
+    ("Dr. Smith arrived. He sat.", 2),
+    ("Ask MR. Jones or mrs. Lee.", 1),
+    ("Some cities, e.g. Paris, are big.", 1),
+    ("Kramer vs. Kramer won. It is old.", 2),
+    ("(Prof. Lee) Hi.", 1),
+    ("J. R. R. Tolkien wrote it.", 1),
+    ("We bought pens, etc. Then we left.", 2),  # "etc." is not in the list
+    ("We bought pens, etc. and paper.", 1),  # ...but lower case continues the sentence
+    ("I met John Smith Jr. He waved.", 2),
+    ("I saw the Dr. Then I left.", 1),  # known wrong answer: titles precede a name
+    ("Wait... What?", 2),
+    ("Wait… What?", 2),
+    ("He paused... then left.", 1),
+    ("And so...", 1),
+    ("Hello. ... World.", 2),
+    ("\"Wow!\" he said.", 1),
+    ("He said \"Stop.\" Then he left.", 2),
+    ("(It works.) Next one.", 2),
+    ("first. second.", 1),  # known wrong answer: lower-case sentence starts
+    ("Title\n\nBody text", 1),
+    ("Ça va? Oui.", 2),
+    ("日本語。英語。", 1),  # "。" is not a terminator
+]
+
+
+def _sentence_adr_cases() -> list:
+    """Parse the sentence-rule ADR case table into (input, count) pairs, found by slug."""
+    root = pathlib.Path(__file__).resolve().parent.parent
+    (adr,) = (root / "docs" / "decisions").glob("*-sentence-count-abbreviations-and-ellipses.md")
+    table = adr.read_text(encoding="utf-8").split("## Cases", 1)[1]
+    rows = re.findall(r"^\| `(.*)` \| (\d+) \|$", table, re.M)
+    return [(ast.literal_eval(src), int(n)) for src, n in rows]
+
+
+class SentenceCountTest(unittest.TestCase):
+    def test_adr_cases(self):
+        for text, expected in SENTENCE_COUNT_CASES:
+            with self.subTest(text=text):
+                self.assertEqual(sentence_count(text), expected)
+
+    def test_cases_match_adr_table(self):
+        self.assertEqual(_sentence_adr_cases(), SENTENCE_COUNT_CASES)
+
+    def test_every_listed_abbreviation(self):
+        for abbr in ("Dr.", "Mr.", "Mrs.", "Ms.", "Mx.", "Prof.", "vs.", "e.g.", "i.e."):
+            with self.subTest(abbr=abbr):
+                self.assertEqual(sentence_count(f"See {abbr} Lee now. Done."), 2)
+                self.assertEqual(sentence_count(f"See {abbr.upper()} Lee now. Done."), 2)
+
+    def test_abbreviation_only_before_a_single_dot(self):
+        # "Dr.." or "Dr.!" is not the abbreviation's own dot, so it is an ordinary end.
+        self.assertEqual(sentence_count("Ask the Dr.. Then go."), 2)
+        self.assertEqual(sentence_count("Ask the Dr! Then go."), 2)
+
+    def test_closers_after_terminator(self):
+        for text in ("He said \u201cGo.\u201d Then left.", "A (bee.) C.", "\u00abNon.\u00bb Oui."):
+            with self.subTest(text=text):
+                self.assertEqual(sentence_count(text), 2)
+
+    def test_mark_without_letter_is_not_a_sentence(self):
+        # ADR 0002: a combining mark with no letter before it is not a word.
+        self.assertEqual(sentence_count("Hi. \u0301. Bye."), 2)
+
+    def test_matches_word_count_zero(self):
+        for text in ("", "?!", "- -- ...", "\u0301"):
+            with self.subTest(text=text):
+                self.assertEqual(word_count(text), 0)
+                self.assertEqual(sentence_count(text), 0)
+
+    def test_rejects_non_str(self):
+        for bad in (b"Hello.", None, 3, ["Hello."]):
+            with self.subTest(value=bad):
+                with self.assertRaises(TypeError):
+                    sentence_count(bad)
 
 
 if __name__ == "__main__":
