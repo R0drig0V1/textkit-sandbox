@@ -2,7 +2,7 @@ import unittest
 
 import unicodedata
 
-from textkit.strings import slugify, squeeze, truncate
+from textkit.strings import slugify, squeeze, strip_accents, truncate
 
 
 class SqueezeTest(unittest.TestCase):
@@ -84,6 +84,33 @@ class TruncateTest(unittest.TestCase):
 
     def test_counts_code_points(self):
         self.assertEqual(truncate("Ñandú!", 5, suffix="."), "Ñand.")
+
+
+class StripAccentsTest(unittest.TestCase):
+    def test_plan_example(self):
+        self.assertEqual(strip_accents("Ñandú"), "Nandu")
+
+    def test_nfd_input(self):
+        self.assertEqual(strip_accents(unicodedata.normalize("NFD", "Ñandú")), "Nandu")
+
+    def test_several_marks_on_one_letter(self):
+        # "ệ" carries a circumflex and a dot below.
+        self.assertEqual(strip_accents("Tiếng Việt"), "Tieng Viet")
+
+    def test_plain_ascii_unchanged(self):
+        self.assertEqual(strip_accents("Hello, World!"), "Hello, World!")
+
+    def test_empty(self):
+        self.assertEqual(strip_accents(""), "")
+
+    def test_letters_without_decomposition_kept(self):
+        self.assertEqual(strip_accents("øłß"), "øłß")
+
+    def test_lone_combining_mark_removed(self):
+        self.assertEqual(strip_accents("a\u0301\u0308"), "a")
+
+    def test_hangul_stays_composed(self):
+        self.assertEqual(strip_accents("한국어"), "한국어")
 
 
 if __name__ == "__main__":
