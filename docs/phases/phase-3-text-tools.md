@@ -171,7 +171,7 @@ bounce it.
       `## Errors: \`textkit.errors\`` to `docs/usage.md`. CHANGELOG line: "Added
       `textkit.errors`: functions raise `InvalidValueError` instead of `ValueError`."
       Depends on T3.1 (both change the command line's error handling).
-- [ ] **T3.3 tokens with offsets** (medium): in `textkit/_tokens.py`, `words(text)` returns
+- [x] **T3.3 tokens with offsets** (medium): in `textkit/_tokens.py`, `words(text)` returns
       `list[Token]` instead of `list[str]`, where `Token` is a `typing.NamedTuple` with
       `text: str`, `start: int` and `end: int`, and `text_argument[start:end] == token.text`.
       Offsets come from the match itself (`re.finditer`), never from searching for the word.
