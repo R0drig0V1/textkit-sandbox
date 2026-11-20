@@ -218,6 +218,37 @@ False
 The command line exits 1 with the message on stderr, and no traceback, when a function command
 raises a `TextkitError`; any other exception keeps its traceback.
 
+## Templates: `textkit.template`
+
+`render` fills a template from a dict: `{{ name }}` prints a value, `{% if %}` and
+`{% for %}` choose and repeat, and filters such as `slug` and `truncate:<width>` transform
+what is printed. The syntax, every filter and every error are in
+[template.md](template.md).
+
+```pycon
+>>> from textkit.template import render
+>>> render("Hello, {{ user.name | upper }}!", {"user": {"name": "Ada"}})
+'Hello, ADA!'
+>>> render("{% for t in tags %}{{ loop.index }}.{{ t | slug }} {% endfor %}", {"tags": ["Big Data", "AI"]})
+'1.big-data 2.ai '
+
+```
+
+A name missing from the context is an error where it is printed and false in an `if`
+(ADR 0006). Errors carry the line and column of the offending tag:
+
+```pycon
+>>> from textkit.template import TemplateError
+>>> render("{% if admin %}root{% else %}guest{% endif %}", {})
+'guest'
+>>> try:
+...     render("Hi\n{{ nmae }}", {"name": "Ada"})
+... except TemplateError as error:
+...     print(error.line, error.column, error.message)
+2 1 'nmae' is not defined
+
+```
+
 ## Command line
 
 Every public function that takes one text argument is also a command, with the other
