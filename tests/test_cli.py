@@ -1,10 +1,12 @@
-"""Tests for textkit/__main__.py, the ``python3 -m textkit`` command line (plan tasks T2.6, T2.7).
+"""Tests for textkit/cli/, the ``python3 -m textkit`` command line (plan tasks T2.6, T2.7, T3.1).
 
 The expected command set is computed here from the public-function definition of the phase 1
-rules, independently of the discovery code in ``textkit/__main__.py``: public functions are
+rules, independently of the discovery code in ``textkit/cli/functions.py``: public functions are
 read with ``ast`` from the sources (as ``scripts/check.sh`` does), then kept when they have
 exactly one parameter without a default. Every command is also run once in a subprocess with
 ``sys.executable -m textkit``, so a function added later is exercised with no test change.
+The tool registry of ``textkit/cli/registry.py`` is tested in ``tests/test_cli_registry.py``;
+``_run`` and ``_run_bytes`` are also the helpers of the tools' subprocess tests.
 """
 
 import ast
@@ -23,7 +25,7 @@ from typing import Any, Dict, List, Tuple
 from unittest import mock
 
 import textkit
-import textkit.__main__ as cli
+import textkit.cli.main as cli
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
@@ -78,6 +80,22 @@ def _run(*args: str) -> "subprocess.CompletedProcess[str]":
         capture_output=True,
         text=True,
         encoding="utf-8",
+        timeout=60,
+    )
+
+
+def _run_bytes(*args: str) -> "subprocess.CompletedProcess[bytes]":
+    """``_run`` without text mode: stdout and stderr come back as bytes, ``"\\r"`` included.
+
+    Text mode turns ``"\\r\\n"`` and ``"\\r"`` into ``"\\n"``, so a test whose expected output
+    contains ``"\\r"`` uses this helper and compares with the expected text encoded as UTF-8.
+    """
+    env = dict(os.environ, PYTHONIOENCODING="utf-8")
+    return subprocess.run(
+        [sys.executable, "-m", "textkit", *args],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
         timeout=60,
     )
 
