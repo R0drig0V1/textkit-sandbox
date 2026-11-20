@@ -1,6 +1,7 @@
 """String helpers. Every public function is listed in the README's function table."""
 
 import re
+import unicodedata
 
 
 def squeeze(text: str) -> str:
@@ -58,3 +59,19 @@ def slug_title(text: str, max_len: int) -> str:
     if max_len < 0:
         raise ValueError(f"max_len must be >= 0, got {max_len}")
     return truncate(slugify(text), max_len, suffix="").rstrip("-")
+
+
+def strip_accents(text: str) -> str:
+    """Remove combining marks (accents, diacritics) from ``text``.
+
+    ``"Ñandú"`` becomes ``"Nandu"``. The text is decomposed to NFD, every character with a
+    non-zero canonical combining class is dropped, and the rest is recomposed to NFC.
+    Works the same for NFC and NFD input. Letters that are distinct base characters
+    rather than a base plus a mark (``"ø"``, ``"ł"``, ``"ß"``) are kept unchanged. Never
+    raises for a ``str``.
+    """
+    decomposed = unicodedata.normalize("NFD", text)
+    kept = "".join(c for c in decomposed if not unicodedata.combining(c))
+    # Recompose so that characters NFD split without any mark to drop (Hangul syllables,
+    # for example) come back in their usual composed form.
+    return unicodedata.normalize("NFC", kept)
