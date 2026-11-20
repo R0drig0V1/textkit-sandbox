@@ -249,6 +249,9 @@ A name missing from the context is an error where it is printed and false in an 
 
 ```
 
+From the shell, `python3 -m textkit render <template-file> <json-file>` does the same with
+files; it prints `line:column: message` and exits 1 on a template error.
+
 ## Command line
 
 Every public function that takes one text argument is also a command, with the other

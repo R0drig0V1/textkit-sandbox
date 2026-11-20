@@ -41,4 +41,9 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
   exception is a bug and keeps its traceback (ADR 0006).
 - Tool subcommands, `python3 -m textkit <tool> ...`: one module `textkit/cli/<name>.py` each
   ([docs/usage.md](docs/usage.md#command-line)), and one bullet each below, in alphabetical
-  order of subcommand. None yet.
+  order of subcommand.
+- `python3 -m textkit render <template-file> <json-file>`: renders a template
+  (`textkit.template.render`, [docs/template.md](docs/template.md)) with the JSON object in
+  the second file as its context and writes the result unchanged. Exit 0 on success, 1 for a
+  template error (`line:column: message` on stderr), 2 for a file that cannot be read or a
+  JSON file that is not a JSON object.

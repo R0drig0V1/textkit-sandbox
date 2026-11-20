@@ -8,7 +8,7 @@
 - Added `reading_time` in `textkit.counts`: whole minutes to read a text at `wpm` words per minute (default 200), from `word_count` (ADR 0002), rounded up: empty text is 0, under one minute is 1 (ADR 0004); `wpm < 1` raises `InvalidValueError`.
 - Added `ngrams` in `textkit.counts`: the runs of `n` consecutive words (default 2, words as in `word_count`, ADR 0002, kept exactly as written), in order; fewer than `n` words give `[]`; `n < 1` raises `ValueError`.
 - Added `reading_time` in `textkit.counts`: whole minutes to read a text at `wpm` words per minute (default 200), from `word_count` (ADR 0002), rounded up: empty text is 0, under one minute is 1 (ADR 0004); `wpm < 1` raises `ValueError`.
-- Added `render` in the new package `textkit.template`: a text template engine with `{{ name }}`, `{% if %}`, `{% for %}` (with `loop.index`), comments and a fixed table of filters; errors `TemplateError` and `TemplateSyntaxError` carry the line and column; a missing name is an error in output and `for`, false in `if` (ADR 0006).
+- Added `render` in the new package `textkit.template`: a text template engine with `{{ name }}`, `{% if %}`, `{% for %}` (with `loop.index`), comments and a fixed table of filters; errors `TemplateError` and `TemplateSyntaxError` carry the line and column; a missing name is an error in output and `for`, false in `if` (ADR 0006); subcommand `python3 -m textkit render <template-file> <json-file>`.
 - Added `sentence_count` in `textkit.counts`: counts sentences; listed abbreviations (`Dr.`, `e.g.`), initials and an end followed by lower case (ellipses included) do not end one (ADR 0005).
 - Added `slug_title`: slug cut to a maximum length (character cut), never ending in `-`.
 - Added the `python3 -m textkit` command line.
