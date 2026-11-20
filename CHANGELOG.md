@@ -5,6 +5,7 @@
 - Added `char_freq` in `textkit.counts`: counts each non-whitespace character, case-sensitive, keys in order of first occurrence.
 - Added `is_palindrome`: tells whether text reads the same backwards, ignoring case, accents and symbols.
 - Added `slug_title`: slug cut to a maximum length (character cut), never ending in `-`.
+- Added the `python3 -m textkit` command line.
 - Added `slugify`: turns text into a lower-case ASCII slug (non-ASCII removed, no normalization).
 - Added `squeeze`: collapses runs of whitespace into single spaces.
 - Added `strip_accents`: removes combining marks (accents) from text.
