@@ -1,7 +1,7 @@
 import unicodedata
 import unittest
 
-from textkit.strings import slug_title, slugify, squeeze, truncate
+from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate
 
 
 class SqueezeTest(unittest.TestCase):
@@ -107,6 +107,29 @@ class SlugTitleTest(unittest.TestCase):
     def test_negative_max_len_raises(self):
         with self.assertRaises(ValueError):
             slug_title("Hello", -1)
+
+
+class StripAccentsTest(unittest.TestCase):
+    def test_removes_accents_nfc(self):
+        self.assertEqual(strip_accents("\u00d1and\u00fa"), "Nandu")
+
+    def test_removes_accents_nfd(self):
+        self.assertEqual(strip_accents("N\u0303andu\u0301"), "Nandu")
+
+    def test_several_marks_on_one_letter(self):
+        self.assertEqual(strip_accents("\u1ec7"), "e")  # e with circumflex and dot below
+
+    def test_plain_ascii_unchanged(self):
+        self.assertEqual(strip_accents("Hello, World!"), "Hello, World!")
+
+    def test_empty(self):
+        self.assertEqual(strip_accents(""), "")
+
+    def test_letters_without_decomposition_kept(self):
+        self.assertEqual(strip_accents("\u00f8\u0142\u00df"), "\u00f8\u0142\u00df")
+
+    def test_non_latin_recomposed(self):
+        self.assertEqual(strip_accents("\ud55c\uae00"), "\ud55c\uae00")  # Hangul
 
 
 if __name__ == "__main__":
