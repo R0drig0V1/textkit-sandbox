@@ -8,4 +8,4 @@ sessions list completed tasks in their PR body instead of ticking them here.
 |-------|------|--------|
 | 1. Core helpers | [phase-1-core-helpers.md](phase-1-core-helpers.md) | done |
 | 2. Tools | [phase-2-tools.md](phase-2-tools.md) | done |
-| 3. Text tools | [phase-3-text-tools.md](phase-3-text-tools.md) | not started |
+| 3. Text tools | [phase-3-text-tools.md](phase-3-text-tools.md) | done |
