@@ -12,6 +12,7 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | Function | Module | What it does |
 |----------|--------|--------------|
 | `char_freq` | `textkit.counts` | Counts each non-whitespace character, case-sensitive, in order of first occurrence |
+| `is_palindrome` | `textkit.strings` | Tells whether text reads the same backwards, ignoring case, accents, spaces and punctuation |
 | `reading_time` | `textkit.counts` | Whole minutes to read a text at `wpm` words per minute, rounded up (ADR 0004) |
 | `sentence_count` | `textkit.counts` | Counts the sentences in a text, by the rule of ADR 0005 |
 | `slug_title` | `textkit.strings` | Makes a slug of at most `max_len` characters that never ends in `-` |
