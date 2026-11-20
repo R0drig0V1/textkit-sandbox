@@ -1,7 +1,7 @@
 import unicodedata
 import unittest
 
-from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate
+from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -130,6 +130,68 @@ class StripAccentsTest(unittest.TestCase):
 
     def test_non_latin_recomposed(self):
         self.assertEqual(strip_accents("\ud55c\uae00"), "\ud55c\uae00")  # Hangul
+
+
+class WrapTest(unittest.TestCase):
+    def test_fills_lines_greedily(self):
+        self.assertEqual(wrap("the quick brown fox", 10), ["the quick", "brown fox"])
+
+    def test_line_may_be_exactly_width(self):
+        self.assertEqual(wrap("ab cd", 5), ["ab cd"])
+        self.assertEqual(wrap("ab cd", 4), ["ab", "cd"])
+
+    def test_every_line_fits_and_has_no_edge_space(self):
+        lines = wrap("lorem ipsum dolor sit amet consectetur adipiscing elit", 12)
+        for line in lines:
+            self.assertLessEqual(len(line), 12)
+            self.assertEqual(line, line.strip())
+
+    def test_long_word_gets_its_own_line(self):
+        self.assertEqual(wrap("a extraordinary b", 5), ["a", "extraordinary", "b"])
+
+    def test_long_word_alone(self):
+        self.assertEqual(wrap("extraordinary", 3), ["extraordinary"])
+
+    def test_runs_of_spaces_collapse(self):
+        self.assertEqual(wrap("a    b", 10), ["a b"])
+
+    def test_leading_and_trailing_spaces_dropped(self):
+        self.assertEqual(wrap("   a b   ", 10), ["a b"])
+
+    def test_separating_space_is_not_kept(self):
+        self.assertEqual(wrap("aaa bbb", 3), ["aaa", "bbb"])
+        self.assertEqual(wrap("aaa   bbb", 4), ["aaa", "bbb"])
+
+    def test_empty_text_gives_no_lines(self):
+        self.assertEqual(wrap("", 5), [])
+
+    def test_whitespace_only_gives_no_lines(self):
+        self.assertEqual(wrap("   \n  ", 5), [])
+
+    def test_newlines_are_separators_and_text_is_reflowed(self):
+        # ADR 0003: existing newlines are not kept as line breaks.
+        self.assertEqual(wrap("one\ntwo three", 20), ["one two three"])
+        self.assertEqual(wrap("a\n\nb", 20), ["a b"])
+        self.assertEqual(wrap("a\r\nb\tc", 20), ["a b c"])
+
+    def test_no_line_contains_a_newline(self):
+        for line in wrap("alpha\nbeta\ngamma delta", 6):
+            self.assertNotIn("\n", line)
+
+    def test_width_one(self):
+        self.assertEqual(wrap("a b c", 1), ["a", "b", "c"])
+
+    def test_counts_code_points(self):
+        self.assertEqual(wrap("ñandú ñu", 8), ["ñandú ñu"])
+
+    def test_width_below_one_raises(self):
+        for width in (0, -1):
+            with self.assertRaises(ValueError):
+                wrap("a b", width)
+
+    def test_width_below_one_raises_even_for_empty_text(self):
+        with self.assertRaises(ValueError):
+            wrap("", 0)
 
 
 if __name__ == "__main__":
