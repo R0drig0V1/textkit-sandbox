@@ -2,7 +2,7 @@ import unittest
 
 import unicodedata
 
-from textkit.strings import slugify, squeeze, strip_accents, truncate, wrap
+from textkit.strings import slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 
 class SqueezeTest(unittest.TestCase):
@@ -164,6 +164,36 @@ class WrapTest(unittest.TestCase):
     def test_no_line_contains_a_newline(self):
         for line in wrap("x\ny\n\nz w\n", 3):
             self.assertNotIn("\n", line)
+
+
+class SlugTitleTest(unittest.TestCase):
+    def test_character_cut_mid_word(self):
+        self.assertEqual(slug_title("Hello, World!", 8), "hello-wo")
+
+    def test_trailing_hyphen_stripped(self):
+        self.assertEqual(slug_title("Hello, World!", 6), "hello")
+
+    def test_whole_slug_fits(self):
+        self.assertEqual(slug_title("Hello, World!", 11), "hello-world")
+        self.assertEqual(slug_title("Hello, World!", 50), "hello-world")
+
+    def test_zero_max_len_gives_empty(self):
+        self.assertEqual(slug_title("x", 0), "")
+
+    def test_punctuation_only_gives_empty(self):
+        self.assertEqual(slug_title("!!!", 5), "")
+
+    def test_never_longer_than_max_len(self):
+        for n in range(0, 15):
+            result = slug_title("Hello, World!", n)
+            self.assertLessEqual(len(result), n)
+            self.assertFalse(result.endswith("-"))
+
+    def test_negative_max_len_raises(self):
+        with self.assertRaises(ValueError):
+            slug_title("x", -1)
+        with self.assertRaises(ValueError):
+            slug_title("", -1)
 
 
 if __name__ == "__main__":
