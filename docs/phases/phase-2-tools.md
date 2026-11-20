@@ -25,7 +25,7 @@ start at once.
       `typing.get_type_hints` (so an annotation that does not evaluate on the running Python
       fails), and asserts the discovered set equals the README function table.
       Depends on T1.1 to T1.8.
-- [ ] **T2.6 command line**: `textkit/__main__.py` so that `python3 -m textkit <function>
+- [x] **T2.6 command line**: `textkit/__main__.py` so that `python3 -m textkit <function>
       <text>` prints the result of any public function of one text argument, and lists them
       with `--help`. Entry point `_main(argv: Optional[List[str]] = None) -> int`, called
       under `if __name__ == "__main__":` (importing the module has no side effects).
@@ -42,7 +42,7 @@ start at once.
       public-function definition, and runs every command once via `subprocess` with
       `sys.executable -m textkit`. Add the CHANGELOG line "Added the `python3 -m textkit`
       command line." (no README row). Depends on T1.1 to T1.8.
-- [ ] **T2.7 `--version`**: `__version__ = "0.1.0"` in `textkit/__init__.py` (the only place
+- [x] **T2.7 `--version`**: `__version__ = "0.1.0"` in `textkit/__init__.py` (the only place
       in `textkit/` the version string appears; `__main__.py` reads `textkit.__version__`);
       `python3 -m textkit --version` prints exactly `textkit 0.1.0` and exits 0. Test via
       `subprocess` with `sys.executable`: the output equals `f"textkit {textkit.__version__}\n"`
