@@ -318,7 +318,7 @@ bounce it.
       `docs/usage.md`, the README rows and the CHANGELOG lines. At least 40 tests over the
       three modules.
       PR after T3.1 and T3.3.
-- [ ] **T3.7 `dedent`** (small) in `textkit/strings.py`: `dedent(text) -> str` removes the
+- [x] **T3.7 `dedent`** (small) in `textkit/strings.py`: `dedent(text) -> str` removes the
       prefix of spaces and tabs common to every non-blank line (no `textwrap`). Lines are
       split with `str.splitlines(keepends=True)` and their endings are kept as they are (so
       `"\x0c"` and `"\x85"` end a line too, unlike the `"\n"`-only rule of T3.4 and T3.6:
