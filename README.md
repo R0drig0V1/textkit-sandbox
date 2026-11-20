@@ -12,8 +12,8 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | Function | Module | What it does |
 |----------|--------|--------------|
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
-| `truncate` | `textkit.strings` | Shortens text to a width, ending in a suffix when cut |
 | `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase or kebab-case names to snake_case |
+| `truncate` | `textkit.strings` | Shortens text to a width, ending in a suffix when cut |
 
 ## Commands
 
