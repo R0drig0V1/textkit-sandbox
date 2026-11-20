@@ -94,7 +94,7 @@ bounce it.
 
 ## Tasks
 
-- [ ] **T3.1 command registry** (medium): turn `textkit/__main__.py` into a package
+- [x] **T3.1 command registry** (medium): turn `textkit/__main__.py` into a package
       `textkit/cli/`, so that a tool adds a subcommand without editing a shared file.
       `textkit/cli/registry.py`, exactly:
       `@dataclass(frozen=True) class Command` with `name: str`, `summary: str` (one line),

@@ -19,3 +19,4 @@
 - Added `word_count` in the new module `textkit.counts`: counts words; hyphenated words, contractions and numbers count once (ADR 0002).
 - Added `wrap`: splits text into lines of at most `width` characters at spaces; existing newlines are treated as spaces (ADR 0003).
 - `_tokens.words` returns tokens with their offsets.
+- Split the command line into `textkit/cli/`.

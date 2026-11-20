@@ -175,6 +175,42 @@ stay with the word before them (ADR 0001).
 
 Every public function that takes one text argument is also a command, with the other
 parameters at their defaults; see "Commands" in the [README](../README.md#commands).
+Tools (subcommands with arguments of their own) are listed by `--help` under `tools:`.
+
+The command line is the package `textkit/cli/`: `functions.py` discovers the function
+commands, `registry.py` holds the tools, `main.py` builds the parser and runs the
+subcommand, and `textkit/__main__.py` only calls it. A tool is one module
+`textkit/cli/<name>.py` that registers a `Command` when imported:
+
+```python
+import argparse
+import sys
+
+from textkit.cli.registry import PROG, Command, register
+
+
+def _configure(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("file")
+
+
+def _run(args: argparse.Namespace) -> int:
+    try:
+        with open(args.file, encoding="utf-8", newline="") as f:
+            text = f.read()
+    except (OSError, UnicodeDecodeError) as exc:
+        reason = getattr(exc, "strerror", None) or exc  # OSError's reason, without the path
+        print(f"{PROG} shout: error: {args.file}: {reason}", file=sys.stderr)
+        return 2
+    sys.stdout.write(text.upper())
+    return 0
+
+
+COMMAND = register(Command("shout", "Print a file in upper case.", _configure, _run))
+```
+
+`python3 -m textkit` imports every module of `textkit/cli/` (with `pkgutil`) before it
+parses the arguments, so `shout` then appears under `tools:` and runs. A tool named like a
+function command, or two tools with one name, raise `RuntimeError` on every run.
 
 ```sh
 python3 -m textkit slugify "Hello, World!"     # prints hello-world
