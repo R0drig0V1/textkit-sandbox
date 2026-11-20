@@ -7,7 +7,7 @@ start at once.
 - [x] **T2.1 `reading_time`** in `textkit/counts.py`: `reading_time(text, wpm=200) -> int`,
       whole minutes, from `word_count`. Write an ADR on rounding (an empty text, under one
       minute). `wpm < 1` raises `ValueError`. Depends on T1.5.
-- [ ] **T2.2 `sentence_count`** in `textkit/counts.py`: `sentence_count(text) -> int`.
+- [x] **T2.2 `sentence_count`** in `textkit/counts.py`: `sentence_count(text) -> int`.
       Write an ADR on abbreviations (`"e.g."`, `"Dr."`) and ellipses. Depends on T1.5 (it
       creates `textkit/counts.py`).
 - [ ] **T2.3 `to_kebab_case`** in `textkit/cases.py`: `to_kebab_case(name) -> str`, built on

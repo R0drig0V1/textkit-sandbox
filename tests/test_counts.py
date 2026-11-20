@@ -5,7 +5,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.counts import char_freq, reading_time, word_count
+from textkit.counts import char_freq, reading_time, sentence_count, word_count
 
 # Every row of the case table in ADR 0002 (what counts as a word), in the same order.
 WORD_COUNT_CASES = [
@@ -149,6 +149,89 @@ class ReadingTimeTest(unittest.TestCase):
     def test_rejects_non_str(self):
         with self.assertRaises(TypeError):
             reading_time(["a", "b"])  # type: ignore[arg-type]
+
+
+def _sentence_adr_cases() -> list:
+    """Parse the case table of the sentence ADR (found by title, so renumbering does not break it)."""
+    root = pathlib.Path(__file__).resolve().parents[1]
+    (adr,) = (root / "docs" / "decisions").glob("*-what-ends-a-sentence.md")
+    rows = re.findall(r"^\| `(.*)` \| (\d+) \|$", adr.read_text(encoding="utf-8"), re.M)
+    return [(ast.literal_eval(text), int(count)) for text, count in rows]
+
+
+# Every row of the case table in ADR 0005 (what ends a sentence), in the same order.
+SENTENCE_COUNT_CASES = [
+    ("", 0),
+    ("Hello", 1),
+    ("Hello.", 1),
+    ("Hello. World.", 2),
+    ("Hello! World? Yes.", 3),
+    ("Really?!", 1),
+    ("Stop!!! Now.", 2),
+    ("One. Two", 2),
+    ("3.14 is pi.", 1),
+    ("Visit example.com today.", 1),
+    ("Hello.World", 1),
+    ("Version 2. Then 3.", 2),
+    ("Use a tool, e.g. a hammer.", 1),
+    ("Use a tool, e.g. Python.", 1),
+    ("Use i.e., this one.", 1),
+    ("I met Dr. Smith. He was kind.", 2),
+    ("Mr. and Mrs. Smith left.", 1),
+    ("Apples, pears, etc. and more.", 1),
+    ("Apples, pears, etc. Then we left.", 2),
+    ("Wait... what?", 1),
+    ("Wait... What?", 2),
+    ("Wait… What?", 2),
+    ("Wait...what?", 1),
+    ("...and then.", 1),
+    ("Hmm...", 1),
+    ('He said "Hi." Then he left.', 2),
+    ('"Help!" she cried.', 1),
+    ("(It works.) Good.", 2),
+    ("¿Qué tal? Bien.", 2),
+    ("Ñandú. Ñandú.", 2),
+    ("Line one.\nLine two.", 2),
+    ("Title\n\nBody text.", 1),
+    ("Ask the Dr. Then go.", 1),
+    ("J. R. R. Tolkien wrote it.", 4),
+    ("U.S. Army", 2),
+    ("Is it? yes.", 1),
+    ("你好。再见。", 1),
+    ("!!! ... ?", 0),
+    (" \n\t ", 0),
+]
+
+
+class SentenceCountTest(unittest.TestCase):
+    def test_adr_table(self):
+        for text, expected in SENTENCE_COUNT_CASES:
+            with self.subTest(text=text):
+                self.assertEqual(sentence_count(text), expected)
+
+    def test_cases_match_adr_table(self):
+        # Keeps "tests every row" true when the ADR table changes.
+        self.assertEqual(SENTENCE_COUNT_CASES, _sentence_adr_cases())
+
+    def test_abbreviations_ignore_case(self):
+        self.assertEqual(sentence_count("DR. Smith is here."), 1)
+        self.assertEqual(sentence_count("E.g. Python is one."), 1)
+
+    def test_abbreviation_needs_a_single_dot(self):
+        # Only a lone "." after an abbreviation is exempt; "Dr..." is an ellipsis.
+        self.assertEqual(sentence_count("Ask the Dr... Then go."), 2)
+
+    def test_nfc_and_nfd_agree(self):
+        nfd = "N\u0303andu\u0301. N\u0303andu\u0301."  # decomposed "Ñandú. Ñandú."
+        self.assertEqual(sentence_count(nfd), sentence_count("Ñandú. Ñandú."))
+
+    def test_long_punctuation_runs(self):
+        # Many terminator runs before a lower-case word: one sentence, in linear time.
+        self.assertEqual(sentence_count("a" + " ." * 100_000 + " b"), 1)
+
+    def test_rejects_non_str(self):
+        with self.assertRaises(TypeError):
+            sentence_count(b"Hello.")  # type: ignore[arg-type]
 
 
 if __name__ == "__main__":
