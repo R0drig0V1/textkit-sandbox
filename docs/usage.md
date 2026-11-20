@@ -303,6 +303,38 @@ hides it. The command line follows the same split: a function command that raise
 `TextkitError` exits 1 with the message on stderr, while any other exception keeps its
 traceback.
 
+## Templates: `textkit.template`
+
+`render` fills a template with values from a dict: `{{ name }}` prints a value (dotted names
+follow dict keys, filters such as `slug` or `truncate:20` apply to the printed text),
+`{% if %}` and `{% for %}` blocks nest, and nothing is HTML-escaped. The full syntax, every
+filter and every error are in [template.md](template.md).
+
+```pycon
+>>> from textkit.template import render
+>>> render("Hi {{ user.name | upper }}!", {"user": {"name": "Ada"}})
+'Hi ADA!'
+>>> render("{% for t in tags %}{{ loop.index }}.{{ t | strip_accents | slug }} {% endfor %}", {"tags": ["Big News", "Café"]})
+'1.big-news 2.cafe '
+
+```
+
+A name missing from the context is an error in `{{ }}` and `for`, with the line and column
+of its tag, but false in `if`, so optional keys are tested with `if` (ADR 0008). `None`
+prints as empty text.
+
+```pycon
+>>> render("{% if nick %}{{ nick }}{% else %}anonymous{% endif %}", {})
+'anonymous'
+>>> render("[{{ nick }}]", {"nick": None})
+'[]'
+>>> render("line one\n  {{ nick }}", {})
+Traceback (most recent call last):
+    ...
+textkit.template.errors.TemplateError: 2:3: name 'nick' is not defined
+
+```
+
 ## Command line
 
 Every public function that takes one text argument is also a command, with the other
@@ -347,4 +379,5 @@ function command, or two tools with one name, raise `RuntimeError` on every run.
 ```sh
 python3 -m textkit slugify "Hello, World!"     # prints hello-world
 python3 -m textkit --help                      # lists the commands
+python3 -m textkit render page.txt data.json   # renders a template (docs/template.md)
 ```

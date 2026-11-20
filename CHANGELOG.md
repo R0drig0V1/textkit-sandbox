@@ -11,6 +11,7 @@
 - Added `levenshtein`: edit distance (insert, delete, substitute, each cost 1) between two strings over code points, with two rows of memory.
 - Added `ngrams` in `textkit.counts`: the runs of `n` consecutive words (default 2) of a text, in order, words exactly as in the text (ADR 0002); fewer than `n` words give `[]`, `n < 1` raises `InvalidValueError`.
 - Added `reading_time` in `textkit.counts`: whole minutes to read a text at `wpm` words per minute (default 200), from `word_count` (ADR 0002), rounded up: empty text is 0, under one minute is 1 (ADR 0004); `wpm < 1` raises `InvalidValueError`.
+- Added `render` in the new package `textkit.template`: a small template engine (`{{ name | filter }}`, `if`/`else`, `for` with `loop.index`, comments; nothing escaped) with `TemplateError` and `TemplateSyntaxError` (both `InvalidValueError`s) carrying line and column; a missing name is an error except in `if`, where it is false (ADR 0008); and the `python3 -m textkit render <template-file> <json-file>` subcommand.
 - Added `sentence_count` in `textkit.counts`: counts sentences; listed abbreviations (`Dr.`, `e.g.`), initials and an end followed by lower case (ellipses included) do not end one (ADR 0005).
 - Added `slug_title`: slug cut to a maximum length (character cut), never ending in `-`.
 - Added the `python3 -m textkit` command line.

@@ -189,7 +189,7 @@ bounce it.
         `[Token("cafe\u0301", 0, 5), Token("x", 6, 7)]`).
       No README row (a private module). CHANGELOG line:
       "`_tokens.words` returns tokens with their offsets."
-- [ ] **T3.4 template engine** (large): package `textkit/template/` with at least
+- [x] **T3.4 template engine** (large): package `textkit/template/` with at least
       `lexer.py`, `parser.py` and `renderer.py`. Public function:
       `render(template: str, context: dict[str, Any]) -> str`.
       Syntax: `{{ expr }}` prints a value, where `expr` is a dotted name (`user.name`
