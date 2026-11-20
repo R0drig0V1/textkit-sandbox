@@ -185,7 +185,9 @@ class ParseTest(unittest.TestCase):
 
     def test_a_closing_tag_must_match_the_innermost_open_block(self):
         error = self.assertSyntaxErrorAt("{% if a %}\n{% endfor %}", 2, 1)
-        self.assertEqual(error.message, "'endfor' found while the 'if' at line 1, column 1 is still open")
+        self.assertEqual(
+            error.message, "'endfor' found while the 'if' at line 1, column 1 is still open"
+        )
         self.assertSyntaxErrorAt("{% for x in xs %}{% if x %}{% endfor %}", 1, 28)
         # else belongs to if only.
         self.assertSyntaxErrorAt("{% for x in xs %}{% else %}{% endfor %}", 1, 18)

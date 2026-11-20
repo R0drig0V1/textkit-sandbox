@@ -312,4 +312,5 @@ function command, or two tools with one name, raise `RuntimeError` on every run.
 ```sh
 python3 -m textkit slugify "Hello, World!"     # prints hello-world
 python3 -m textkit --help                      # lists the commands
+python3 -m textkit render page.txt data.json   # renders a template (docs/template.md)
 ```

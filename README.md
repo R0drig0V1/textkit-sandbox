@@ -45,9 +45,6 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
   `textkit/cli/<name>.py` registers a `Command` (`textkit/cli/registry.py`) and is found at
   run time, so adding a tool edits no shared file. A tool returns its own exit code. The
   tools follow, one bullet each, in alphabetical order of subcommand.
-  `python3 -m textkit --help` lists them. Lists and dicts print as JSON with sorted keys.
-  Exit 0 on success, 2 on an unknown function or a wrong argument count, 1 when the
-  function rejects the text (`ValueError`).
 - `python3 -m textkit render <template-file> <json-file>`: renders a template file
   ([docs/template.md](docs/template.md)) with the JSON object in the second file and writes
   the result as is. Exit 0 on success, 1 with `line:column: message` on stderr for a

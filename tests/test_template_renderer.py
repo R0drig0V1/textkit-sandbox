@@ -184,7 +184,10 @@ class RenderTest(unittest.TestCase):
         self.assertIn("needs a list", error.message)
 
     def test_render_time_errors_in_nested_blocks_point_at_their_tag(self):
-        template = "{% for u in users %}\n  {% if u.ok %}\n    {{ u.name }}\n  {% endif %}\n{% endfor %}"
+        template = (
+            "{% for u in users %}\n  {% if u.ok %}\n    {{ u.name }}\n  {% endif %}\n"
+            "{% endfor %}"
+        )
         error = self.assertErrorAt(TemplateError, template, {"users": [{"ok": True}]}, 3, 5)
         self.assertEqual(error.message, "'u' has no key 'name'")
         self.assertErrorAt(TemplateError, template, {"users": ["x"]}, 2, 3)
