@@ -37,6 +37,7 @@ from textkit.cli.functions import (
     _summary,
     _textkit_modules,
 )
+from textkit.errors import TextkitError
 
 _PROG = registry.PROG
 
@@ -133,9 +134,14 @@ def _main(argv: Optional[List[str]] = None) -> int:
     Exit codes: 0 on success (and for ``--help`` and ``--version``); 2 on an unknown
     subcommand, a wrong argument count or no arguments at all, with the usage and message on
     stderr (argparse's own handling, so ``_main`` returns the code instead of raising
-    ``SystemExit``); for a function command, 1 when the function raises ``ValueError`` for
-    the given text, with the message on stderr; for a tool, whatever its ``run`` returns, as
-    is (a tool handles its own errors: nothing it raises is caught here).
+    ``SystemExit``); for a function command, 1 when the function rejects the given text with
+    a ``textkit.errors.TextkitError`` (ADR 0006), with the message on stderr and no
+    traceback; for a tool, whatever its ``run`` returns, as is (a tool handles its own
+    errors: nothing it raises is caught here).
+
+    Any other exception propagates, a plain ``ValueError`` included: textkit never raises
+    one for a rejected input, so one that escapes a function is a bug and keeps its
+    traceback.
 
     Raises ``RuntimeError`` when two modules define the same function command, two tools
     share a name, or a tool is named like a function command (checked before parsing, so on
@@ -156,7 +162,7 @@ def _main(argv: Optional[List[str]] = None) -> int:
         return tool.run(args)
     try:
         result = _call(commands[args.command], args.text)
-    except ValueError as exc:
+    except TextkitError as exc:
         print(f"{_PROG} {args.command}: error: {exc}", file=sys.stderr)
         return 1
     print(_format(result))

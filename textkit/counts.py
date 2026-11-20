@@ -5,12 +5,14 @@ and implemented once, in ``textkit._tokens.words``; change that ADR (and its cas
 before changing the pattern there. The rounding of ``reading_time`` is decided in
 docs/decisions/0004-reading-time-rounding.md. The sentence rule of ``sentence_count``
 (abbreviations, ellipses) is decided in
-docs/decisions/0005-sentence-count-abbreviations-and-ellipses.md.
+docs/decisions/0005-sentence-count-abbreviations-and-ellipses.md. A rejected argument value
+raises ``textkit.errors.InvalidValueError`` (ADR 0006).
 """
 
 import re
 
 from textkit._tokens import words
+from textkit.errors import InvalidValueError
 
 
 def word_count(text: str) -> int:
@@ -67,7 +69,8 @@ def reading_time(text: str, wpm: int = 200) -> int:
     ``2``. The arithmetic is on integers, so there is no floating-point rounding.
 
     Raises:
-        ValueError: if ``wpm < 1``, checked before ``text`` is read (even for ``""``).
+        InvalidValueError: if ``wpm < 1``, checked before ``text`` is read (even for
+            ``""``).
         TypeError: if ``wpm`` is not an ``int`` (``bool`` and ``float`` included), or if
             ``text`` is not a ``str`` (raised by ``word_count``).
     """
@@ -75,7 +78,7 @@ def reading_time(text: str, wpm: int = 200) -> int:
     if isinstance(wpm, bool) or not isinstance(wpm, int):
         raise TypeError(f"reading_time() expects an int wpm, got {type(wpm).__name__}")
     if wpm < 1:
-        raise ValueError(f"wpm must be at least 1, got {wpm}")
+        raise InvalidValueError(f"wpm must be at least 1, got {wpm}")
     # Ceiling division without floats: -(-a // b) == ceil(a / b) for integers, and 0 for a == 0.
     return -(-word_count(text) // wpm)
 
@@ -160,7 +163,8 @@ def ngrams(text: str, n: int = 2) -> list[tuple[str, ...]]:
     give ``[]``. The first call builds the word pattern (about 0.1 s).
 
     Raises:
-        ValueError: if ``n < 1``, checked before ``text`` is read (even for ``""``).
+        InvalidValueError: if ``n < 1``, checked before ``text`` is read (even for
+            ``""``).
         TypeError: if ``n`` is not an ``int`` (``bool`` and ``float`` included), or if
             ``text`` is not a ``str`` (``bytes`` included).
     """
@@ -168,7 +172,7 @@ def ngrams(text: str, n: int = 2) -> list[tuple[str, ...]]:
     if isinstance(n, bool) or not isinstance(n, int):
         raise TypeError(f"ngrams() expects an int n, got {type(n).__name__}")
     if n < 1:
-        raise ValueError(f"n must be at least 1, got {n}")
+        raise InvalidValueError(f"n must be at least 1, got {n}")
     # Checked here as well as in words() so the error names the public function.
     if not isinstance(text, str):
         raise TypeError(f"ngrams() expects str, got {type(text).__name__}")
