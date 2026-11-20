@@ -178,5 +178,43 @@ parameters at their defaults; see "Commands" in the [README](../README.md#comman
 
 ```sh
 python3 -m textkit slugify "Hello, World!"     # prints hello-world
-python3 -m textkit --help                      # lists the commands
+python3 -m textkit --help                      # lists the commands and the tools
 ```
+
+The command line is the package `textkit/cli/`: `main.py` holds the parser, `functions.py`
+discovers the function commands and `registry.py` holds the tool subcommands. A tool (a
+package such as `textkit/template/`) adds its subcommand as one more module,
+`textkit/cli/<name>.py`, without editing any other file: the module registers a `Command`
+when it is imported, and `python3 -m textkit` finds it with `pkgutil`.
+
+```python
+"""Tool subcommand: python3 -m textkit shout <file> (an illustration, not a real tool)."""
+
+import argparse
+import sys
+
+from textkit.cli.registry import PROG, Command, register
+
+
+def _configure(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("file")
+
+
+def _run(args: argparse.Namespace) -> int:
+    try:
+        with open(args.file, encoding="utf-8", newline="") as f:
+            text = f.read()
+    except (OSError, UnicodeDecodeError) as exc:
+        print(f"{PROG} shout: error: {args.file}: {exc}", file=sys.stderr)
+        return 2
+    sys.stdout.write(text.upper())
+    return 0
+
+
+register(Command("shout", "Print a file in upper case", configure=_configure, run=_run))
+```
+
+`--help` lists the tools under `tools:`, after the function commands. The subcommand name is
+the module name, and a tool can never take the name of a function command or of another tool:
+both raise `RuntimeError` on every run. `_main` returns `run`'s exit code as is and catches
+no error for a tool, so `run` handles its own.

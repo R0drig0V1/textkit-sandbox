@@ -32,6 +32,10 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 - `scripts/check.sh`: unit tests, this table, the changelog, ADR numbering.
 - `python3 -m textkit <function> "<text>"`: prints the result of a public function that
   takes one text argument (found at run time; other parameters keep their defaults).
-  `python3 -m textkit --help` lists them. Lists and dicts print as JSON with sorted keys.
-  Exit 0 on success, 2 on an unknown function or a wrong argument count, 1 when the
-  function rejects the text (`ValueError`).
+  `python3 -m textkit --help` lists them under `commands:`, then the tool subcommands under
+  `tools:`. Lists and dicts print as JSON with sorted keys. Exit 0 on success, 2 on an
+  unknown command or a wrong argument count, 1 when the function rejects the text
+  (`ValueError`).
+- Tool subcommands, `python3 -m textkit <tool> ...`: one module `textkit/cli/<name>.py` each
+  ([docs/usage.md](docs/usage.md#command-line)), and one bullet each below, in alphabetical
+  order of subcommand. None yet.
