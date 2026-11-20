@@ -63,6 +63,27 @@ with no precomposed form, which normalizing to NFC first would not.
 - `tests/test_counts.py` tests every row below and checks that this table and the tests list
   the same cases, so the two cannot drift apart silently.
 
+## Offsets
+
+Amended by plan task T3.3, so that tools built on the word rule (word diffs, n-grams) can map a
+word back to its place in the text. `textkit._tokens.words(text)` returns `Token(text, start,
+end)` tuples instead of bare strings; the rule above, and so every count, does not change.
+
+- **Offsets count code points**, as Python's `str` indexing does, so
+  `text_argument[start:end] == token.text` always holds. A character outside the BMP
+  (`"\U0001F600"`) is one position, not two UTF-16 units or four UTF-8 bytes: in
+  `"\U0001F600 ab"` the word `"ab"` is at `2:4`.
+- **Combining marks stay inside their word** (rule 2), so a word's span ends after its last
+  mark: NFD `"café x"` gives `"café"` at `0:5` and `"x"` at `6:7`. The offsets
+  are those of the text as given; it is never normalized first, which would shift them.
+- **Offsets come from the match** (`re.finditer`), never from searching for the word's text,
+  which would give the first occurrence of a repeated word: in `"the cat the cat"` the second
+  `"the"` is at `8:11`.
+- Tokens are in input order, with strictly increasing, non-overlapping spans
+  (`t[i].end <= t[i + 1].start`).
+- Words are compared by `token.text`: callers that compare words (a word diff, n-grams) look
+  at the text only, since the same word at two places is two different tuples.
+
 ## Cases
 
 Inputs are Python string literals.
