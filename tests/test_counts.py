@@ -72,7 +72,6 @@ class WordCountTest(unittest.TestCase):
             word_count(["a", "b"])  # type: ignore[arg-type]
 
 
-
 class CharFreqTest(unittest.TestCase):
     def test_counts_each_character(self):
         self.assertEqual(char_freq("banana"), {"b": 1, "a": 3, "n": 2})
