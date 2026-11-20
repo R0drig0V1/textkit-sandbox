@@ -5,7 +5,7 @@ import pathlib
 import re
 import unittest
 
-from textkit.counts import word_count
+from textkit.counts import char_freq, word_count
 
 # The case table of the word-rule ADR (docs/decisions/*-word-count-what-counts-as-a-word.md),
 # row by row. Kept literal here so a failure names the input; WordCountTest also checks that
@@ -65,6 +65,48 @@ class WordCountTest(unittest.TestCase):
             with self.subTest(value=bad):
                 with self.assertRaises(TypeError):
                     word_count(bad)
+
+
+class CharFreqTest(unittest.TestCase):
+    def test_counts_each_character(self):
+        self.assertEqual(char_freq("hello"), {"h": 1, "e": 1, "l": 2, "o": 1})
+
+    def test_case_sensitive(self):
+        self.assertEqual(char_freq("aAa"), {"a": 2, "A": 1})
+
+    def test_skips_every_isspace_character(self):
+        # space, tab, newline, carriage return, vertical tab, form feed, NBSP, em space,
+        # line separator, ideographic space: all have str.isspace() true.
+        spaces = " \t\n\r\v\f\u00a0\u2003\u2028\u3000"
+        self.assertTrue(all(ch.isspace() for ch in spaces))
+        self.assertEqual(char_freq(f"a{spaces}b"), {"a": 1, "b": 1})
+
+    def test_keys_in_order_of_first_occurrence(self):
+        result = char_freq("banana split")
+        self.assertEqual(list(result), ["b", "a", "n", "s", "p", "l", "i", "t"])
+        self.assertEqual(result["a"], 3)
+        self.assertEqual(result["n"], 2)
+
+    def test_punctuation_and_digits_are_counted(self):
+        self.assertEqual(char_freq("a1!a1!"), {"a": 2, "1": 2, "!": 2})
+
+    def test_empty_and_whitespace_only(self):
+        self.assertEqual(char_freq(""), {})
+        self.assertEqual(char_freq("  \n\t "), {})
+
+    def test_code_points_without_normalization(self):
+        # NFD "é" is "e" plus a combining acute accent: two code points, two keys.
+        self.assertEqual(char_freq("e\u0301"), {"e": 1, "\u0301": 1})
+        self.assertEqual(char_freq("\u00e9"), {"\u00e9": 1})
+
+    def test_returns_plain_dict(self):
+        self.assertIs(type(char_freq("ab")), dict)
+
+    def test_rejects_non_str(self):
+        for bad in (b"hello", None, 3, ["a"]):
+            with self.subTest(value=bad):
+                with self.assertRaises(TypeError):
+                    char_freq(bad)
 
 
 if __name__ == "__main__":
