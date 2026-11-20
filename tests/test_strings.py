@@ -1,7 +1,7 @@
 import unicodedata
 import unittest
 
-from textkit.strings import slugify, squeeze, truncate
+from textkit.strings import slug_title, slugify, squeeze, truncate
 
 
 class SqueezeTest(unittest.TestCase):
@@ -80,6 +80,33 @@ class SlugifyTest(unittest.TestCase):
     def test_empty_and_punctuation_only_give_empty(self):
         self.assertEqual(slugify(""), "")
         self.assertEqual(slugify("!!!"), "")
+
+
+class SlugTitleTest(unittest.TestCase):
+    def test_cut_inside_a_word(self):
+        self.assertEqual(slug_title("Hello, World!", 8), "hello-wo")
+
+    def test_cut_after_separator_strips_trailing_hyphen(self):
+        self.assertEqual(slug_title("Hello, World!", 6), "hello")
+
+    def test_fits_is_full_slug(self):
+        self.assertEqual(slug_title("Hello, World!", 11), "hello-world")
+
+    def test_zero_max_len_gives_empty(self):
+        self.assertEqual(slug_title("x", 0), "")
+
+    def test_matches_truncate_of_slugify(self):
+        for n in range(0, 15):
+            expected = truncate(slugify("Hello, World!"), n, suffix="").rstrip("-")
+            self.assertEqual(slug_title("Hello, World!", n), expected)
+            self.assertLessEqual(len(slug_title("Hello, World!", n)), n)
+
+    def test_empty_slug_gives_empty(self):
+        self.assertEqual(slug_title("!!!", 5), "")
+
+    def test_negative_max_len_raises(self):
+        with self.assertRaises(ValueError):
+            slug_title("Hello", -1)
 
 
 if __name__ == "__main__":
