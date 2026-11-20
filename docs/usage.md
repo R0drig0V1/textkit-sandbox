@@ -117,6 +117,19 @@ unchanged. A `fill` that is not one character, or a negative `width`, is an
 
 ```
 
+`levenshtein` is the edit distance: the fewest code point insertions, deletions and
+substitutions that turn one text into the other. It keeps two rows of the table, so memory
+grows with the shorter text only; time grows with the product of both lengths.
+
+```pycon
+>>> from textkit.strings import levenshtein
+>>> levenshtein("kitten", "sitting")
+3
+>>> levenshtein("", "abc")
+3
+
+```
+
 ## Counts: `textkit.counts`
 
 `word_count` counts words by the rule of ADR 0002: hyphenated words, contractions and numbers

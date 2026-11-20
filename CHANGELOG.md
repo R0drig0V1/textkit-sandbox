@@ -8,6 +8,7 @@
 - Added `diff_words` in `textkit.diff`: word-by-word differences as `("=" | "-" | "+", word)` pairs over the words of ADR 0002.
 - Added `dedent`: removes the prefix of spaces and tabs common to every non-blank line (no `textwrap`); line endings, as `str.splitlines` finds them, are kept; blank lines become empty.
 - Added `is_palindrome`: tells whether text reads the same backwards, ignoring case, accents and symbols.
+- Added `levenshtein` in `textkit.strings`: the edit distance between two texts over code points (insert, delete and substitute each cost 1), with two rows of memory.
 - Added `ngrams` in `textkit.counts`: the runs of `n` consecutive words (default 2, words as in `word_count`, ADR 0002, kept exactly as written), in order; fewer than `n` words give `[]`; `n < 1` raises `InvalidValueError`.
 - Added `reading_time` in `textkit.counts`: whole minutes to read a text at `wpm` words per minute (default 200), from `word_count` (ADR 0002), rounded up: empty text is 0, under one minute is 1 (ADR 0004); `wpm < 1` raises `InvalidValueError`.
 - Added `render` in the new package `textkit.template`: a text template engine with `{{ name }}`, `{% if %}`, `{% for %}` (with `loop.index`), comments and a fixed table of filters; errors `TemplateError` and `TemplateSyntaxError` carry the line and column; a missing name is an error in output and `for`, false in `if` (ADR 0008); subcommand `python3 -m textkit render <template-file> <json-file>`.
