@@ -2,6 +2,7 @@ import unittest
 
 import unicodedata
 
+from textkit.errors import InvalidValueError
 from textkit.strings import is_palindrome, slug_title, slugify, squeeze, strip_accents, truncate, wrap
 
 
@@ -69,17 +70,17 @@ class TruncateTest(unittest.TestCase):
         self.assertEqual(truncate("hello", 0, suffix=""), "")
 
     def test_width_below_suffix_raises(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidValueError):
             truncate("hello world", 2)
 
     def test_width_below_suffix_raises_even_if_text_fits(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidValueError):
             truncate("ab", 2)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidValueError):
             truncate("", 0, suffix="...")
 
     def test_negative_width_raises(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidValueError):
             truncate("", -1, suffix="")
 
     def test_counts_code_points(self):
@@ -143,9 +144,9 @@ class WrapTest(unittest.TestCase):
 
     def test_width_below_one_raises(self):
         for width in (0, -1):
-            with self.assertRaises(ValueError):
+            with self.assertRaises(InvalidValueError):
                 wrap("abc", width)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidValueError):
             wrap("", 0)
 
     def test_width_one(self):
@@ -190,9 +191,9 @@ class SlugTitleTest(unittest.TestCase):
             self.assertFalse(result.endswith("-"))
 
     def test_negative_max_len_raises(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidValueError):
             slug_title("x", -1)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidValueError):
             slug_title("", -1)
 
 

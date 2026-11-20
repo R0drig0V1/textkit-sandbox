@@ -11,6 +11,7 @@ docs/decisions/0005-sentence-count-abbreviations-and-ellipses.md.
 import re
 
 from textkit._tokens import words
+from textkit.errors import InvalidValueError
 
 
 def word_count(text: str) -> int:
@@ -67,7 +68,8 @@ def reading_time(text: str, wpm: int = 200) -> int:
     ``2``. The arithmetic is on integers, so there is no floating-point rounding.
 
     Raises:
-        ValueError: if ``wpm < 1``, checked before ``text`` is read (even for ``""``).
+        InvalidValueError: if ``wpm < 1``, checked before ``text`` is read (even for
+            ``""``).
         TypeError: if ``wpm`` is not an ``int`` (``bool`` and ``float`` included), or if
             ``text`` is not a ``str`` (raised by ``word_count``).
     """
@@ -75,7 +77,7 @@ def reading_time(text: str, wpm: int = 200) -> int:
     if isinstance(wpm, bool) or not isinstance(wpm, int):
         raise TypeError(f"reading_time() expects an int wpm, got {type(wpm).__name__}")
     if wpm < 1:
-        raise ValueError(f"wpm must be at least 1, got {wpm}")
+        raise InvalidValueError(f"wpm must be at least 1, got {wpm}")
     # Ceiling division without floats: -(-a // b) == ceil(a / b) for integers, and 0 for a == 0.
     return -(-word_count(text) // wpm)
 
@@ -160,7 +162,8 @@ def ngrams(text: str, n: int = 2) -> list[tuple[str, ...]]:
     pattern (about 0.1 s).
 
     Raises:
-        ValueError: if ``n < 1``, checked before ``text`` is read (even for ``""``).
+        InvalidValueError: if ``n < 1``, checked before ``text`` is read (even for
+            ``""``).
         TypeError: if ``n`` is not an ``int`` (``bool`` and ``float`` included), or if
             ``text`` is not a ``str`` (``bytes`` included).
     """
@@ -168,7 +171,7 @@ def ngrams(text: str, n: int = 2) -> list[tuple[str, ...]]:
     if isinstance(n, bool) or not isinstance(n, int):
         raise TypeError(f"ngrams() expects an int n, got {type(n).__name__}")
     if n < 1:
-        raise ValueError(f"n must be at least 1, got {n}")
+        raise InvalidValueError(f"n must be at least 1, got {n}")
     if not isinstance(text, str):
         raise TypeError(f"ngrams() expects str, got {type(text).__name__}")
     found = [token.text for token in words(text)]

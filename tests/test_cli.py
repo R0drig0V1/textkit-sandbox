@@ -194,15 +194,16 @@ class MainTest(unittest.TestCase):
                 self.assertEqual(out, "")
                 self.assertIn("usage:", err)
 
-    def test_output_formats_and_value_error(self) -> None:
+    def test_output_formats_and_textkit_error(self) -> None:
         fake = _fake_module(
             "textkit.fake",
+            "from textkit.errors import InvalidValueError\n"
             "def as_str(text): return text.upper()\n"
             "def as_bool(text): return text == 'yes'\n"
             "def as_int(text): return len(text)\n"
             "def as_list(text): return list(text)\n"
             "def as_dict(text): return {'z': 1, 'ñ': 2, 'a': [text]}\n"
-            "def fails(text): raise ValueError('bad text')\n",
+            "def fails(text): raise InvalidValueError('bad text')\n",
         )
         with mock.patch.object(cli, "_textkit_modules", return_value=[fake]):
             cases = [

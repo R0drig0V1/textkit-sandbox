@@ -28,6 +28,7 @@ import textkit.cli
 import textkit.cli.main as cli
 from textkit.cli import registry
 from textkit.cli.registry import PROG, Command
+from textkit.errors import InvalidValueError
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 CLI_DIR = ROOT / "textkit" / "cli"
@@ -175,13 +176,13 @@ class MainWithToolsTest(RegistryTestCase):
         self.assertEqual(code, 0)
         self.assertIn(FAKE.summary, out)
 
-    def test_value_error_from_a_tool_is_not_caught(self) -> None:
-        # _main catches ValueError around function commands only: a tool handles its own.
+    def test_textkit_error_from_a_tool_is_not_caught(self) -> None:
+        # _main catches TextkitError around function commands only: a tool handles its own.
         def run(args: argparse.Namespace) -> int:
-            raise ValueError("not caught")
+            raise InvalidValueError("not caught")
 
         registry.register(dataclasses.replace(FAKE, run=run))
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidValueError):
             _main_captured([FAKE.name, "x"])
 
     def test_no_tools_block_without_tools(self) -> None:

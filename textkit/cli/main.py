@@ -1,10 +1,12 @@
-"""``_main``: the parser and the dispatch of ``python3 -m textkit`` (plan tasks T2.6, T2.7, T3.1).
+"""``_main``: parser and dispatch of ``python3 -m textkit`` (plan tasks T2.6, T2.7, T3.1, T3.2).
 
 Two kinds of subcommand share one namespace of names:
 
 - function commands, ``python3 -m textkit <function> <text>``: one per public function of
   textkit that takes one text argument (``textkit/cli/functions.py``, T2.6). The result is
-  printed; a ``ValueError`` from the function exits 1.
+  printed; a ``TextkitError`` from the function (``textkit/errors.py``, T3.2) exits 1 with
+  its message. Any other exception, a plain ``ValueError`` included, is a bug in textkit and
+  propagates with its traceback (ADR 0006).
 - tools, ``python3 -m textkit <name> ...``: one per ``Command`` registered by a module
   ``textkit/cli/<name>.py`` (``textkit/cli/registry.py``). ``_main`` lets the tool add its
   arguments, then returns the exit code of ``Command.run`` as is.
@@ -29,6 +31,7 @@ import textkit.cli
 from textkit.cli import registry
 from textkit.cli.functions import _call, _commands, _format, _summary, _textkit_modules
 from textkit.cli.registry import PROG, Command
+from textkit.errors import TextkitError
 
 # The modules of textkit/cli/ that are the command line itself, not tools.
 _MACHINERY = frozenset({"functions", "main", "registry"})
@@ -126,9 +129,11 @@ def _main(argv: Optional[List[str]] = None) -> int:
     Exit codes: 0 on success (and for ``--help`` and ``--version``); 2 on an unknown command,
     a wrong argument count or no arguments at all, with the usage and message on stderr
     (argparse's own handling, so ``_main`` returns the code instead of raising
-    ``SystemExit``); for a function command, 1 when the function raises ``ValueError`` for the
-    given text, with the message on stderr; for a tool, whatever ``Command.run`` returns.
-    Only function commands are wrapped in ``except ValueError``: a tool handles its own errors.
+    ``SystemExit``); for a function command, 1 when the function raises ``TextkitError`` for
+    the given text, with the message on stderr and no traceback; for a tool, whatever
+    ``Command.run`` returns. Only function commands are wrapped in ``except TextkitError``: a
+    tool handles its own errors. A plain ``ValueError`` is not caught: textkit never raises
+    one on purpose, so one that escapes is a bug and keeps its traceback (ADR 0006).
 
     Raises ``RuntimeError`` when a tool has the name of a function command. It is checked
     after discovery and before parsing, so the clash fails every run (``--help`` included),
@@ -151,7 +156,7 @@ def _main(argv: Optional[List[str]] = None) -> int:
             return tool.run(args)
     try:
         result = _call(commands[args.command], args.text)
-    except ValueError as exc:
+    except TextkitError as exc:
         print(f"{PROG} {args.command}: error: {exc}", file=sys.stderr)
         return 1
     print(_format(result))
