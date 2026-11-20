@@ -15,11 +15,11 @@ Every public function is listed here, once (checked by `scripts/check.sh`).
 | `slug_title` | `textkit.strings` | Slug cut to a maximum length, never ending in `-` |
 | `slugify` | `textkit.strings` | Turns text into a lower-case ASCII slug |
 | `squeeze` | `textkit.strings` | Collapses runs of whitespace into single spaces |
-| `truncate` | `textkit.strings` | Shortens text to a width, ending in a suffix when cut |
+| `strip_accents` | `textkit.strings` | Removes combining marks (accents) from text |
 | `to_camel_case` | `textkit.cases` | Converts snake_case or kebab-case to camelCase |
 | `to_kebab_case` | `textkit.cases` | Converts camelCase, PascalCase or snake_case to kebab-case |
 | `to_snake_case` | `textkit.cases` | Converts camelCase, PascalCase or kebab-case to snake_case |
-| `strip_accents` | `textkit.strings` | Removes combining marks (accents) from text |
+| `truncate` | `textkit.strings` | Shortens text to a width, ending in a suffix when cut |
 | `word_count` | `textkit.counts` | Counts the words in a text (rule: ADR 0002) |
 | `wrap` | `textkit.strings` | Splits text into lines of at most `width` characters at spaces |
 
