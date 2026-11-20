@@ -17,33 +17,44 @@ splits and a "non-space" rule over-counts.
 A **word** is a maximal match of
 
 ```
-[^\W_]+(?:(?:[-'’]|(?<=\d)[.,](?=\d))[^\W_]+)*
+RUN(?:(?:[-'’]|(?<=\d)[.,](?=\d))RUN)*      where RUN = (?:[^\W_]\p{M}*)+
 ```
 
-that is:
+(`\p{M}` is every Unicode mark, categories Mn, Mc and Me; Python's `re` has no `\p{...}`, so
+the code generates that class from `unicodedata`), that is:
 
 1. **Core characters** are letters and digits of any script: Python's Unicode `\w` minus `_`.
    So `"naïve"`, `"año"` and `"2026"` are words; `_` is a separator (`"snake_case"` is two
    words), because in prose it is markup or an identifier, not part of a word.
-2. **Hyphens join** two runs when there is exactly one: `"well-known"` and `"R2-D2"` are one
+2. **Combining marks** (Unicode category M) belong to the word when they follow a core
+   character or another mark of it. Python's `\w` does **not** match them (it matches what
+   `str.isalnum()` accepts, plus `_`, and marks are not alphanumeric), so without this rule
+   decomposed (NFD) text splits words (`"cafe\u0301"` would be two) and so do scripts whose
+   vowel signs are marks (Devanagari `"हिन्दी"` would be three). A mark with no core character
+   before it (after a space or punctuation) is not a word and not counted.
+3. **Hyphens join** two runs when there is exactly one: `"well-known"` and `"R2-D2"` are one
    word each. A doubled hyphen (`"rock--roll"`, the ASCII stand-in for an em dash) separates,
    and so does a hyphen with a space on either side (`"a - b"` is two words).
-3. **Apostrophes join** two runs when there is exactly one, ASCII `'` or typographic `’`
+4. **Apostrophes join** two runs when there is exactly one, ASCII `'` or typographic `’`
    (U+2019): `"don't"` and `"don’t"` are one word. Leading or trailing apostrophes (quotes,
    plural possessives such as `"dogs'"`) are not part of the word but do not create one.
-4. **Numbers** are words. A `.` or `,` between two digits joins them, so decimals and
+5. **Numbers** are words. A `.` or `,` between two digits joins them, so decimals and
    thousands separators stay one number (`"3.14"`, `"1,000,000"`). Anywhere else, `.` and `,`
    are punctuation (`"end.Start"` is two words).
-5. **Everything else separates**: whitespace of any kind and length (spaces, tabs, newlines),
+6. **Everything else separates**: whitespace of any kind and length (spaces, tabs, newlines),
    all other punctuation and symbols. Input with no core character counts `0`.
 
-Non-`str` input raises `TypeError`; there is no Unicode normalization (it is not needed,
-since combining marks are part of `\w`).
+Non-`str` input raises `TypeError`. No Unicode normalization is applied: rule 2 already makes
+NFC and NFD forms of the same text count the same, and it also covers stacked marks and marks
+with no precomposed form, which normalizing to NFC first would not.
 
 ## Consequences
 
 - Prose counts match what a reader expects for contractions, compounds and numbers, which
   `str.split()` does not.
+- The mark class follows the Unicode version of the running Python's `unicodedata`, the same
+  database `\w` uses, rather than hand-written ranges that would go stale. Building it scans
+  every code point (about 0.1 s), so it is done once, on the first call, not at import.
 - One regular expression defines the rule, so T1.10 can move it into `textkit/_tokens.py`
   unchanged and `word_count` becomes `len(words(text))`.
 - Edge cases the rule settles in a possibly surprising way: `"_"` separates; a version string
@@ -78,3 +89,7 @@ Inputs are Python string literals.
 | `"snake_case"` | 2 |
 | `"naïve café"` | 2 |
 | `"año 2026"` | 2 |
+| `"nai\u0308ve cafe\u0301"` | 2 |
+| `"N\u0303andu\u0301"` | 1 |
+| `"\u0939\u093f\u0928\u094d\u0926\u0940"` | 1 |
+| `"\u0301 a"` | 1 |

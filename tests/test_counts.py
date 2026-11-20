@@ -31,6 +31,10 @@ WORD_COUNT_CASES = [
     ("snake_case", 2),
     ("naïve café", 2),
     ("año 2026", 2),
+    ("nai\u0308ve cafe\u0301", 2),  # NFD of "naïve café"
+    ("N\u0303andu\u0301", 1),  # NFD of "Ñandú"
+    ("\u0939\u093f\u0928\u094d\u0926\u0940", 1),  # Hindi, vowel signs are Mc/Mn marks
+    ("\u0301 a", 1),  # a mark with no letter before it is not a word
 ]
 
 
