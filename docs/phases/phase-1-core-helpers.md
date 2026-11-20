@@ -60,7 +60,7 @@ anything else). Tasks with no "Depends on" can start at once.
       ADR on how runs of capitals are split (`HTTPServer`, `parseURL2`). The ADR ends with a
       table of cases (input -> output), at least: `HTTPServer`, `parseURL2`, `camelCase`,
       `PascalCase`, `kebab-case`, `already_snake`, `""`; `tests/test_cases.py` tests every row.
-- [ ] **T1.8 `to_camel_case`** in `textkit/cases.py`: `to_camel_case(name) -> str` for
+- [x] **T1.8 `to_camel_case`** in `textkit/cases.py`: `to_camel_case(name) -> str` for
       snake_case and kebab-case input (`"user_id"` -> `"userId"`). Separators are `_` and `-`
       (a run of them counts as one); leading and trailing separators are dropped; the first
       word is lower-cased and the rest capitalized (`"HTTP_server"` -> `"httpServer"`); input

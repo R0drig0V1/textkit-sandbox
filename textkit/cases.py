@@ -51,3 +51,29 @@ def to_snake_case(name: str) -> str:
         if chunk:
             words.extend(_split_chunk(chunk))
     return "_".join(word.lower() for word in words)
+
+
+def to_camel_case(name: str) -> str:
+    """Convert a snake_case or kebab-case name to camelCase (`"user_id"` -> `"userId"`).
+
+    `_` and `-` separate words; a run of them counts as one separator, and leading and
+    trailing runs are dropped (the same separator rule as ADR 0001, rule 1). The first word
+    is lower-cased and every other word capitalized with `str.capitalize` (first character
+    upper-cased, the rest lower-cased), so `"HTTP_server"` -> `"httpServer"` and
+    `"SCREAMING_SNAKE"` -> `"screamingSnake"`. Case boundaries inside a word are not split:
+    that is `to_snake_case`'s job.
+
+    A name with no separator at all is returned with only its first character lower-cased
+    (`"PascalCase"` -> `"pascalCase"`), so camelCase input comes back unchanged.
+
+    Never raises for a `str`; `""` and separator-only input give `""`. Lossy like
+    `to_snake_case`: round trips between the two are not guaranteed (ADR 0001).
+    """
+    if not _SEPARATORS.search(name):
+        # No separator: the plan keeps the name as typed apart from its first character,
+        # so existing camelCase and PascalCase boundaries survive.
+        return name[:1].lower() + name[1:]
+    words = [chunk for chunk in _SEPARATORS.split(name) if chunk]
+    if not words:
+        return ""
+    return words[0].lower() + "".join(word.capitalize() for word in words[1:])
