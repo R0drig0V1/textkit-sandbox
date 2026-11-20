@@ -82,3 +82,79 @@ def reading_time(text: str, wpm: int = 200) -> int:
     words = word_count(text)
     # Integer ceiling division: exact for any size, no float rounding (ADR 0004).
     return -(-words // wpm)
+
+
+# The sentence rule of ADR 0005 (docs/decisions/0005-what-ends-a-sentence.md).
+_TERMINATORS = frozenset(".!?…")
+# Closing quotes and brackets that may sit between a terminator run and the following space.
+_CLOSERS = frozenset("\"'”’)]}»")
+# Casefolded abbreviations whose single trailing "." never ends a sentence. Kept short on
+# purpose: ADR 0005 explains why "etc", "Jr" and "Sr" are not here.
+_ABBREVIATIONS = frozenset({"dr", "mr", "mrs", "ms", "prof", "st", "vs", "cf", "e.g", "i.e"})
+
+
+def _is_abbreviation(text: str, dot: int) -> bool:
+    """True if the characters before the ``.`` at ``dot`` form an abbreviation of ADR 0005.
+
+    The candidate runs back from ``dot`` through word characters and ``.`` (so ``"e.g"``
+    is one candidate).
+    """
+    start = dot
+    while start > 0 and (text[start - 1].isalnum() or text[start - 1] == "."):
+        start -= 1
+    return text[start:dot].casefold() in _ABBREVIATIONS
+
+
+def sentence_count(text: str) -> int:
+    """Return the number of sentences in ``text``, following ADR 0005.
+
+    A run of ``.``, ``!``, ``?`` or ``…`` ends a sentence when, after any closing quotes or
+    brackets, it is followed by the end of the text or by whitespace; when the next letter
+    or digit is not lower case (``"e.g. a hammer"`` and ``"Wait... what?"`` stay one
+    sentence); and, for a single ``.``, when the word before it is not one of the
+    abbreviations ``Dr``, ``Mr``, ``Mrs``, ``Ms``, ``Prof``, ``St``, ``vs``, ``cf``,
+    ``e.g``, ``i.e`` (case-insensitive). Only sentences with at least one letter or digit
+    (``str.isalnum()``) count, so a last sentence without a terminator counts and
+    punctuation alone does not. ``""`` gives 0. The ADR lists the known miscounts
+    (initials, ``"U.S."``, an abbreviation at the real end of a sentence).
+
+    Raises:
+        TypeError: if ``text`` is not a ``str``.
+    """
+    if not isinstance(text, str):
+        raise TypeError(f"text must be a str, not {type(text).__name__}")
+    n = len(text)
+    count = 0
+    has_word = False  # the current sentence contains a letter or digit
+    # Index of the first word character at or after the last look-ahead position (n if
+    # none). Look-ahead positions only grow, so caching it keeps the scan linear.
+    next_word = -1
+    i = 0
+    while i < n:
+        ch = text[i]
+        if ch not in _TERMINATORS:
+            if ch.isalnum():
+                has_word = True
+            i += 1
+            continue
+        end = i
+        while end < n and text[end] in _TERMINATORS:
+            end += 1
+        if has_word:  # a run before any word ends nothing, so skip the checks
+            after = end
+            while after < n and text[after] in _CLOSERS:
+                after += 1
+            ends = after == n or text[after].isspace()
+            if ends and after < n:
+                if next_word < after:
+                    next_word = after
+                    while next_word < n and not text[next_word].isalnum():
+                        next_word += 1
+                ends = next_word == n or not text[next_word].islower()
+            if ends and end - i == 1 and ch == "." and _is_abbreviation(text, i):
+                ends = False
+            if ends:
+                count += 1
+                has_word = False
+        i = end
+    return count + (1 if has_word else 0)

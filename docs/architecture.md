@@ -27,5 +27,8 @@ Who uses it:
   with `-` or any other character keep the `[-_]+` split, because ADR 0002 joins a single
   `-` and drops punctuation that ADR 0001 keeps inside a word. Case boundaries (ADR 0001
   rules 2-4) have no counterpart in ADR 0002 and stay in `cases._split_chunk`.
+- `counts.sentence_count` does not use it: it needs only ADR 0002's word character
+  (`str.isalnum()`), not whole words; its sentence rule is
+  [ADR 0005](decisions/0005-what-ends-a-sentence.md).
 
 Changing the word rule changes every caller, so it needs a new ADR that supersedes 0002.
